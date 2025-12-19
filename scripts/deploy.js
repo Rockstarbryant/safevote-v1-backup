@@ -17,23 +17,23 @@ async function main() {
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log('💰 Account balance:', ethers.formatEther(balance), 'Native Token\n');
 
-  // Deploy VotingSystem with UUPS proxy
-  console.log('📝 Deploying VotingSystem (Upgradeable)...');
+  // Deploy SafeVoteV2 with UUPS proxy
+  console.log('📝 Deploying SafeVoteV2 (Upgradeable)...');
 
-  const VotingSystem = await ethers.getContractFactory('VotingSystem');
+  const SafeVoteV2 = await ethers.getContractFactory('SafeVoteV2');
 
-  const votingSystem = await upgrades.deployProxy(VotingSystem, [], {
+  const proxy = await upgrades.deployProxy(SafeVoteV2, [], {
     initializer: 'initialize',
     kind: 'uups',
-     unsafeAllow: ['delegatecall', 'external-library-linking'],
+     unsafeAllow: ['delegatecall', 'external-library-linking', 'constructor'],
   });
 
   if ([84532, 421614, 97].includes(chainId)) {  // Base, Arb, BNB testnets
   redeployOptions.unsafeAllow = ['delegatecall'];
 }
 
-  await votingSystem.waitForDeployment();
-  const proxyAddress = await votingSystem.getAddress();
+  await proxy.waitForDeployment();
+  const proxyAddress = await proxy.getAddress();
 
   console.log('✅ Proxy deployed to:', proxyAddress);
 
@@ -89,12 +89,12 @@ export const DEPLOYMENT_BLOCK = ${deploymentInfo.blockNumber};
   // === Copy ABI (same for all chains) ===
   const artifactPath = path.join(
     __dirname,
-    '../artifacts/contracts/VotingSystem.sol/VotingSystem.json'
+    '../artifacts/contracts/SafeVoteV2.sol/SafeVoteV2.json'
   );
 
   if (fs.existsSync(artifactPath)) {
     const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
-    const abiPath = path.join(frontendDir, 'VotingSystemABI.js');
+    const abiPath = path.join(frontendDir, 'SafeVoteV2ABI.js');
     const abiContent = `// Auto-generated ABI — Safe for all chains
 export const VOTING_SYSTEM_ABI = ${JSON.stringify(artifact.abi, null, 2)};
 `;

@@ -1,6 +1,8 @@
 require('@nomicfoundation/hardhat-verify');
 require('@nomicfoundation/hardhat-toolbox');
 require('@openzeppelin/hardhat-upgrades');
+require("hardhat-abi-exporter");
+require("hardhat-deploy");
 require('dotenv').config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -12,6 +14,7 @@ module.exports = {
         enabled: true,
         runs: 200,
       },
+      viaIR: true,
     },
   },
   networks: {
@@ -59,7 +62,7 @@ module.exports = {
         network: "baseSepolia",
         chainId: 84532,
         urls: {
-          apiURL: "https://api-sepolia.basescan.org/api",
+          apiURL: "https://api.etherscan.io/v2/api",
           browserURL: "https://sepolia.basescan.org"
         }
       },
@@ -67,7 +70,7 @@ module.exports = {
         network: "arbitrumSepolia",
         chainId: 421614,
         urls: {
-          apiURL: "https://api-sepolia.arbiscan.io/api",
+          apiURL: "https://api.etherscan.io/v2/api",
           browserURL: "https://sepolia.arbiscan.io"
         }
       },
@@ -75,7 +78,7 @@ module.exports = {
         network: "bnbTestnet",
         chainId: 97,
         urls: {
-          apiURL: "https://api-testnet.bscscan.com/api",
+          apiURL: "https://api.etherscan.io/v2/api",
           browserURL: "https://testnet.bscscan.com"
         }
       },
@@ -83,8 +86,8 @@ module.exports = {
         network: "seiTestnet",
         chainId: 1328,
         urls: {
-          apiURL: "https://api-sei-testnet.seiscan.com/api",
-          browserURL: "https://www.seiscan.com/atlantic-2"
+          apiURL:  "https://testnet.seiscan.com/api",
+          browserURL:  "https://testnet.seiscan.com"
         }
       }
     ]
@@ -103,5 +106,12 @@ module.exports = {
   },
   sourcify: {
     enabled: true,
+  },
+   abiExporter: {
+    path: './abis',
+    runOnCompile: true,
+    clear: true,
+    flat: true,
+    format: "minimal"  // or "full", "json"
   },
 };

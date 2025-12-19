@@ -1,0 +1,27 @@
+{
+  "name": "safevote-key-service",
+  "version": "2.0.0",
+  "description": "Off-chain key generation and vote tracking",
+  "main": "keyService.js",
+  "scripts": {
+    "start": "node keyService.js",
+    "dev": "nodemon keyService.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "ethers": "^5.7.2",
+    "express": "^4.22.1",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^7.2.0",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.3.11",
+    "mysql2": "^3.15.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

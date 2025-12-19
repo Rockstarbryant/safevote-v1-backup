@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Dashboard - Live Coverage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #0f172a, #1e293b);
+            color: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin-top: 1rem;
+        }
+        .timer {
+            font-size: 3.5rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+        .status-active { background-color: #22c55e; }
+        .status-completed { background-color: #3b82f6; }
+        .status-cancelled { background-color: #ef4444; }
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .success-toast {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+    <div class="max-w-7xl mx-auto space-y-10">
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <h1 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Election Dashboard
+            </h1>
+            <p class="text-xl text-purple-300">Real-time Live Coverage & Results</p>
+            <div id="connection-status" class="text-sm mt-4">
+                <span class="inline-block px-3 py-1 bg-yellow-500/30 rounded-full">🔄 Connecting to blockchain...</span>
+            </div>
+            <div id="network-info" class="text-xs opacity-75 mt-2"></div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed top-4 right-4 px-6 py-3 bg-green-500/90 rounded-lg shadow-lg hidden success-toast">
+            <span id="toastMessage">Success!</span>
+        </div>
+
+        <!-- Transaction Hash Lookup -->
+        <div class="glass p-8 rounded-2xl">
+            <h2 class="text-2xl font-bold mb-6">Election Lookup</h2>
+            <p class="text-purple-300 mb-4">Enter a transaction hash where the election was created to load election details</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-purple-300 text-sm block mb-2">Transaction Hash</label>
+                    <input type="text" id="txnHash" placeholder="0x..." class="w-full px-4 py-3 bg-white/10 rounded-lg text-white">
+                </div>
+                <div>
+                    <label class="text-purple-300 text-sm block mb-2">Election ID (optional - will auto-detect if not specified)</label>
+                    <input type="number" id="electionId" placeholder="Leave blank for auto-detect" class="w-full px-4 py-3 bg-white/10 rounded-lg text-white">
+                </div>
+                <div>
+                    <label class="text-purple-300 text-sm block mb-2">Custom ABI (optional - paste JSON if auto-detection fails)</label>
+                    <textarea id="customAbi" placeholder="[{...}]" class="w-full px-4 py-3 bg-white/10 rounded-lg text-white h-24"></textarea>
+                </div>
+                <button onclick="lookupElectionByTxn()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold hover:opacity-90 transition">
+                    Load Election
+                </button>
+            </div>
+        </div>
+
+        <!-- Election Info -->
+        <div id="election-info" class="glass p-8 rounded-2xl shadow-2xl hidden">
+            <h2 class="text-3xl font-bold mb-6">Election Details</h2>
+            <div class="grid md:grid-cols-2 gap-6 text-lg">
+                <div><span class="font-semibold text-purple-300">Title:</span> <span id="title">-</span></div>
+                <div><span class="font-semibold text-purple-300">Creator:</span> <span id="creator">-</span></div>
+                <div><span class="font-semibold text-purple-300">Description:</span> <span id="description">-</span></div>
+                <div><span class="font-semibold text-purple-300">Location:</span> <span id="location">-</span></div>
+                <div><span class="font-semibold text-purple-300">Start:</span> <span id="startTime">-</span></div>
+                <div><span class="font-semibold text-purple-300">End:</span> <span id="endTime">-</span></div>
+                <div><span class="font-semibold text-purple-300">Registered Voters:</span> <span id="totalVoters">-</span></div>
+                <div><span class="font-semibold text-purple-300">Votes Cast:</span> <span id="votesCast" class="text-2xl font-bold text-green-400">-</span></div>
+                <div class="md:col-span-2">
+                    <span class="font-semibold text-purple-300">Status:</span> 
+                    <span id="status" class="inline-block px-4 py-2 rounded-full text-white font-bold">-</span>
+                </div>
+                <div class="md:col-span-2">
+                    <span class="font-semibold text-purple-300">Contract Address:</span> 
+                    <span id="contractAddress" class="font-mono text-sm break-all">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Timer -->
+        <div id="timer-section" class="glass p-8 rounded-2xl text-center hidden">
+            <h2 class="text-2xl font-bold mb-4">Time Remaining</h2>
+            <div id="timer" class="timer text-purple-300">Loading...</div>
+        </div>
+
+        <!-- Voter Stats -->
+        <div id="stats-section" class="glass p-8 rounded-2xl hidden">
+            <h2 class="text-2xl font-bold mb-6">Voter Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <p class="text-lg opacity-80">Participation Rate</p>
+                    <p id="participation" class="text-4xl font-bold text-green-400">0%</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg opacity-80">Anonymous Mode</p>
+                    <p id="anonymous" class="text-4xl font-bold text-purple-400">-</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg opacity-80">Delegation Allowed</p>
+                    <p id="delegation" class="text-4xl font-bold text-blue-400">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Positions & Live Results -->
+        <div id="results-section" class="space-y-8 hidden">
+            <h2 class="text-3xl font-bold">Live Results by Position</h2>
+            <div id="positions-container" class="grid gap-8 md:grid-cols-2"></div>
+        </div>
+
+        <!-- Merkle Key Fetcher -->
+        <div id="merkle-section" class="glass p-8 rounded-2xl hidden">
+            <h2 class="text-2xl font-bold mb-4">Your Voting Key (from Blockchain)</h2>
+            <p class="mb-4 opacity-80">Enter your wallet address to retrieve your Merkle proof key for voting.</p>
+            <div class="flex flex-col md:flex-row gap-4">
+                <input type="text" id="voterAddress" placeholder="0x..." class="px-4 py-3 bg-white/10 rounded-lg flex-1 text-white">
+                <button onclick="fetchMerkleKey()" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold hover:opacity-90 transition">
+                    Get My Key
+                </button>
+            </div>
+            <pre id="merkleKey" class="mt-6 p-4 bg-black/30 rounded-lg font-mono text-sm break-all hidden overflow-x-auto"></pre>
+            <p id="merkleStatus" class="mt-4 text-sm opacity-75"></p>
+        </div>
+
+        <!-- Error Display -->
+        <div id="error-section" class="glass p-8 rounded-2xl border border-red-500/30 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-red-400">Error</h2>
+            <p id="error-message" class="text-red-300"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.js"></script>
+    <script>
+        const POLL_INTERVAL = 5000;
+        
+        let provider;
+        let contract;
+        let contractAddress;
+        let electionData = null;
+        let positionCharts = {};
+        let pollIntervals = [];
+
+        const CONTRACT_ABI = [
+            "function getElection(uint256 electionId) public view returns (tuple(string title, string description, string location, address creator, uint256 startTime, uint256 endTime, uint256 totalRegisteredVoters, uint256 totalVotesCast, uint8 status, bool allowAnonymous, bool allowDelegation, tuple(string title, uint8 maxSelections, string[] candidates)[] positions) election)",
+            "function getElectionResults(uint256 electionId, uint256 positionIndex) public view returns (tuple(uint256[] votesCast, uint256 totalVotes) results)",
+            "function merkleRoots(uint256 electionId, address voterAddress) public view returns (bytes32)",
+            "event ElectionCreatedV2(uint256 indexed electionId, address indexed creator, string title)",
+            "event VoteCastV2(uint256 indexed electionId, address indexed voter, uint256[] positionVotes)",
+            "event ElectionCompletedV2(uint256 indexed electionId)"
+        ];
+
+        // Minimal ABI for fallback
+        const MINIMAL_ABI = [
+            "function getElection(uint256) public view returns (bytes)"
+        ];
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function updateConnectionStatus(text, color) {
+            const statusEl = document.getElementById('connection-status');
+            const colorClass = {
+                'yellow': 'bg-yellow-500/30',
+                'green': 'bg-green-500/30',
+                'red': 'bg-red-500/30'
+            }[color] || 'bg-yellow-500/30';
+            
+            statusEl.innerHTML = `<span class="inline-block px-3 py-1 ${colorClass} rounded-full">${text}</span>`;
+        }
+
+        function showError(message) {
+            const errorSection = document.getElementById('error-section');
+            document.getElementById('error-message').textContent = message;
+            errorSection.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error-section').classList.add('hidden');
+        }
+
+        async function initProvider() {
+            try {
+                if (typeof ethers === 'undefined') {
+                    throw new Error("ethers.js library failed to load");
+                }
+
+                if (!window.ethereum) {
+                    throw new Error("MetaMask not found. Please install MetaMask.");
+                }
+
+                provider = new ethers.BrowserProvider(window.ethereum);
+                
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                } catch (err) {
+                    if (err.code === 4001) {
+                        throw new Error("User rejected connection");
+                    }
+                    throw err;
+                }
+
+                const network = await provider.getNetwork();
+                const accounts = await provider.listAccounts();
+                
+                document.getElementById('network-info').innerHTML = 
+                    `Network: ${network.name} (Chain ID: ${network.chainId}) | Account: ${accounts[0]?.address.substring(0, 10)}...`;
+
+                updateConnectionStatus('✓ Connected', 'green');
+                return true;
+            } catch (err) {
+                console.error("Provider init error:", err);
+                updateConnectionStatus(`✗ Error: ${err.message}`, 'red');
+                showError(err.message);
+                return false;
+            }
+        }
+
+        async function lookupElectionByTxn() {
+            try {
+                hideError();
+                const txnHash = document.getElementById('txnHash').value.trim();
+                
+                if (!txnHash) {
+                    showError('Please enter a transaction hash');
+                    return;
+                }
+
+                if (!txnHash.startsWith('0x') || txnHash.length !== 66) {
+                    showError('Invalid transaction hash format (should be 0x followed by 64 hex characters)');
+                    return;
+                }
+
+                updateConnectionStatus('🔄 Initializing...', 'yellow');
+
+                if (!provider) {
+                    const connected = await initProvider();
+                    if (!connected) return;
+                }
+
+                updateConnectionStatus('🔄 Fetching transaction...', 'yellow');
+
+                // Get transaction receipt
+                const receipt = await provider.getTransactionReceipt(txnHash);
+                
+                if (!receipt) {
+                    showError('Transaction not found. Please verify the hash and network.');
+                    updateConnectionStatus('✗ Transaction not found', 'red');
+                    return;
+                }
+
+                if (!receipt.to && !receipt.contractAddress) {
+                    showError('This transaction does not interact with a contract.');
+                    updateConnectionStatus('✗ Invalid transaction', 'red');
+                    return;
+                }
+
+                // Get the contract address (either 'to' if it's a call, or 'contractAddress' if it's a deployment)
+                contractAddress = receipt.to || receipt.contractAddress;
+
+                updateConnectionStatus('🔄 Verifying contract...', 'yellow');
+
+                // Verify contract exists
+                const code = await provider.getCode(contractAddress);
+                if (code === '0x') {
+                    showError(`No contract found at ${contractAddress}`);
+                    updateConnectionStatus('✗ No contract', 'red');
+                    return;
+                }
+
+                // Try custom ABI first, then fallback to default
+                let abi = CONTRACT_ABI;
+                const customAbiText = document.getElementById('customAbi').value.trim();
+                if (customAbiText) {
+                    try {
+                        abi = JSON.parse(customAbiText);
+                    } catch (e) {
+                        showError('Invalid custom ABI format. Using default ABI.');
+                    }
+                }
+
+                // Create contract instance
+                contract = new ethers.Contract(contractAddress, abi, provider);
+
+                updateConnectionStatus('🔄 Loading election...', 'yellow');
+
+                let electionId = parseInt(document.getElementById('electionId').value);
+
+                // If no election ID provided, try to find it from the transaction
+                if (!electionId || isNaN(electionId)) {
+                    // Try common election IDs
+                    let found = false;
+                    for (let i = 0; i <= 10; i++) {
+                        try {
+                            const election = await contract.getElection(i);
+                            if (election && election.title) {
+                                electionId = i;
+                                found = true;
+                                break;
+                            }
+                        } catch (e) {
+                            // Try next ID
+                        }
+                    }
+
+                    if (!found) {
+                        showError('Could not auto-detect election ID. Please specify it manually and optionally provide a custom ABI.');
+                        updateConnectionStatus('✗ Election not found', 'red');
+                        return;
+                    }
+                }
+
+                // Load election data
+                await loadElection(electionId);
+                updateConnectionStatus('✓ Connected', 'green');
+                setupLivePolling(electionId);
+
+            } catch (err) {
+                console.error("Lookup error:", err);
+                showError(`Error: ${err.message}. If this persists, try providing a custom ABI.`);
+                updateConnectionStatus('✗ Error', 'red');
+            }
+        }
+
+        async function loadElection(electionId) {
+            try {
+                const election = await contract.getElection(electionId);
+                electionData = election;
+
+                document.getElementById('election-info').classList.remove('hidden');
+                document.getElementById('timer-section').classList.remove('hidden');
+                document.getElementById('stats-section').classList.remove('hidden');
+                document.getElementById('results-section').classList.remove('hidden');
+                document.getElementById('merkle-section').classList.remove('hidden');
+
+                document.getElementById('title').textContent = election.title;
+                document.getElementById('description').textContent = election.description || "No description";
+                document.getElementById('location').textContent = election.location || "Online";
+                document.getElementById('creator').textContent = election.creator.substring(0, 6) + "..." + election.creator.substring(38);
+                document.getElementById('startTime').textContent = new Date(Number(election.startTime) * 1000).toLocaleString();
+                document.getElementById('endTime').textContent = new Date(Number(election.endTime) * 1000).toLocaleString();
+                document.getElementById('totalVoters').textContent = election.totalRegisteredVoters.toString();
+                document.getElementById('votesCast').textContent = election.totalVotesCast.toString();
+                document.getElementById('contractAddress').textContent = contractAddress;
+
+                const statusEl = document.getElementById('status');
+                const statusMap = ["Active", "Completed", "Cancelled"];
+                const statusText = statusMap[Number(election.status)] || "Unknown";
+                statusEl.textContent = statusText;
+                statusEl.className = `inline-block px-4 py-2 rounded-full text-white font-bold status-${statusText.toLowerCase()}`;
+
+                document.getElementById('anonymous').textContent = election.allowAnonymous ? "Yes" : "No";
+                document.getElementById('delegation').textContent = election.allowDelegation ? "Yes" : "No";
+
+                updateParticipation(election);
+                updateTimer(election.endTime);
+                await loadPositions(electionId, election.positions);
+                showToast('Election loaded successfully!');
+
+            } catch (err) {
+                console.error("Election load error:", err);
+                showError(`Error loading election: ${err.message}`);
+            }
+        }
+
+        function updateParticipation(election) {
+            const total = Number(election.totalRegisteredVoters);
+            const cast = Number(election.totalVotesCast);
+            const rate = total > 0 ? ((cast / total) * 100).toFixed(2) : 0;
+            document.getElementById('participation').textContent = `${rate}%`;
+        }
+
+        function updateTimer(endTime) {
+            const timerEl = document.getElementById('timer');
+            
+            const existingInterval = pollIntervals.find(i => i.name === 'timer');
+            if (existingInterval) clearInterval(existingInterval.id);
+
+            const interval = setInterval(() => {
+                const diff = Number(endTime) * 1000 - Date.now();
+                if (diff <= 0) {
+                    timerEl.textContent = "Election Ended";
+                    clearInterval(interval);
+                    return;
+                }
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                timerEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }, 1000);
+
+            pollIntervals = pollIntervals.filter(i => i.name !== 'timer');
+            pollIntervals.push({ name: 'timer', id: interval });
+        }
+
+        async function loadPositions(electionId, positions) {
+            const container = document.getElementById('positions-container');
+            container.innerHTML = '';
+
+            for (let i = 0; i < positions.length; i++) {
+                const pos = positions[i];
+                
+                const div = document.createElement('div');
+                div.className = 'glass p-8 rounded-2xl';
+                div.innerHTML = `
+                    <h3 class="text-2xl font-bold mb-4 text-purple-300">${pos.title}</h3>
+                    <p class="mb-6 opacity-80">Max Selections: ${pos.maxSelections}</p>
+                    <div class="chart-container">
+                        <canvas id="chart-${i}"></canvas>
+                    </div>
+                `;
+                container.appendChild(div);
+
+                await updatePositionChart(electionId, i, pos);
+            }
+        }
+
+        async function updatePositionChart(electionId, posIndex, position) {
+            try {
+                const results = await contract.getElectionResults(electionId, posIndex);
+                const voteData = results.votesCast.map(v => Number(v));
+
+                const canvasId = `chart-${posIndex}`;
+                const ctx = document.getElementById(canvasId);
+                
+                if (!ctx) return;
+
+                if (positionCharts[posIndex]) {
+                    positionCharts[posIndex].destroy();
+                }
+
+                positionCharts[posIndex] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: position.candidates,
+                        datasets: [{
+                            label: 'Votes',
+                            data: voteData,
+                            backgroundColor: 'rgba(168, 85, 247, 0.7)',
+                            borderColor: '#a855f7',
+                            borderWidth: 2,
+                            borderRadius: 4,
+                            hoverBackgroundColor: 'rgba(168, 85, 247, 0.9)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error(`Error loading position ${posIndex}:`, err);
+            }
+        }
+
+        function setupLivePolling(electionId) {
+            const pollId = setInterval(async () => {
+                try {
+                    if (contract && electionData) {
+                        const election = await contract.getElection(electionId);
+                        
+                        if (election.totalVotesCast.toString() !== electionData.totalVotesCast.toString()) {
+                            document.getElementById('votesCast').textContent = election.totalVotesCast.toString();
+                            updateParticipation(election);
+                            
+                            for (let i = 0; i < election.positions.length; i++) {
+                                await updatePositionChart(electionId, i, election.positions[i]);
+                            }
+                        }
+                        
+                        electionData = election;
+                    }
+                } catch (err) {
+                    console.error("Polling error:", err);
+                }
+            }, POLL_INTERVAL);
+
+            pollIntervals.push({ name: 'polling', id: pollId });
+        }
+
+        async function fetchMerkleKey() {
+            const statusEl = document.getElementById('merkleStatus');
+            const keyEl = document.getElementById('merkleKey');
+            const address = document.getElementById('voterAddress').value.trim();
+
+            if (!address) {
+                statusEl.textContent = "Please enter an address";
+                return;
+            }
+
+            try {
+                if (!ethers.isAddress(address)) {
+                    statusEl.textContent = "Invalid Ethereum address";
+                    return;
+                }
+
+                statusEl.textContent = "Fetching from blockchain...";
+                const electionId = parseInt(document.getElementById('electionId').value);
+                
+                const merkleRoot = await contract.merkleRoots(electionId, address);
+                
+                if (merkleRoot === "0x0000000000000000000000000000000000000000000000000000000000000000") {
+                    statusEl.textContent = "Address not found in voter list";
+                    keyEl.classList.add('hidden');
+                } else {
+                    keyEl.textContent = JSON.stringify({
+                        electionId: electionId,
+                        voterAddress: address,
+                        merkleRoot: merkleRoot,
+                        contractAddress: contractAddress,
+                        timestamp: new Date().toISOString()
+                    }, null, 2);
+                    keyEl.classList.remove('hidden');
+                    statusEl.textContent = "✓ Merkle root retrieved from contract";
+                }
+            } catch (err) {
+                statusEl.textContent = `Error: ${err.message}`;
+                keyEl.classList.add('hidden');
+            }
+        }
+
+        window.lookupElectionByTxn = lookupElectionByTxn;
+        window.fetchMerkleKey = fetchMerkleKey;
+
+        window.addEventListener('beforeunload', () => {
+            pollIntervals.forEach(i => clearInterval(i.id));
+            Object.values(positionCharts).forEach(chart => chart.destroy());
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+[
+  "constructor(address)",
+  "event BatchProcessed(uint256 indexed,uint256,address indexed)",
+  "event RelayerAdded(address indexed)",
+  "event RelayerRemoved(address indexed)",
+  "event VoteQueued(address indexed,uint256 indexed,bytes32)",
+  "function addRelayer(address)",
+  "function authorizedRelayers(address) view returns (bool)",
+  "function getNonce(address) view returns (uint256)",
+  "function hashVote(uint256,bytes32,uint256[][],address,uint256) pure returns (bytes32)",
+  "function isVoteProcessed(bytes32) view returns (bool)",
+  "function nonces(address) view returns (uint256)",
+  "function owner() view returns (address)",
+  "function processedVotes(bytes32) view returns (bool)",
+  "function removeRelayer(address)",
+  "function safeVote() view returns (address)",
+  "function submitBatch(tuple(uint256,bytes32,bytes32[],uint256[][],address,uint256,bytes)[])",
+  "function transferOwnership(address)",
+  "function verifySignature(bytes32,bytes,address) pure returns (bool)"
+]

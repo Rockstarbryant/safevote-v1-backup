@@ -4,9 +4,9 @@
 window.CHAIN_CONFIG = {
   11155111: { name: "Ethereum Sepolia", proxy: "0xd8bFdD7f2bb39D5D78a4Bb1D9D2f70968C63e8F3" },
   84532: { name: "Base Sepolia", proxy: "0xC724408090C739daD30f5a9d6756DB0d56e060be" },
-  421614: { name: "Arbitrum Sepolia", proxy: "0x38290e4834FFc92065B921E092BCD0b5D65aD4A0" },
+  421614: { name: "Arbitrum Sepolia", proxy: "0xfa84a89D170084675b7ECb110a883fD47757916c" },
   97: { name: "BNB Testnet", proxy: "0x38290e4834FFc92065B921E092BCD0b5D65aD4A0" },
-  1328: { name: "Sei Testnet", proxy: "0x38290e4834FFc92065B921E092BCD0b5D65aD4A0" },
+  1328: { name: "Sei Testnet", proxy: "0x74774C664826c6d5583D0feA0D636205a6986dAc" },
 };
 
 // Global contract address

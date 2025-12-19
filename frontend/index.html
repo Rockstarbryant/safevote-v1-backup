@@ -47,7 +47,7 @@
     <!-- Network Switcher -->
     <div class="glass rounded-lg px-4 py-2 flex items-center gap-3">
         <i class="fas fa-network-wired text-purple-300"></i>
-        <select id="networkSwitcher" class="bg-transparent text-white font-medium focus:outline-none cursor-pointer">
+        <select id="networkSwitcher" class="bg-purple-700 text-white font-medium focus:outline-none cursor-pointer">
             <option value="11155111">Ethereum Sepolia</option>
             <option value="84532">Base Sepolia</option>
             <option value="421614">Arbitrum Sepolia</option>
@@ -89,7 +89,13 @@
           <button onclick="UI.showModal('createOrgModal')" class="btn-primary">
             <i class="fas fa-plus mr-2"></i>Create Organization
           </button>
-          <button onclick="UI.showModal('joinOrgModal')" class="btn-secondary">
+          <button onclick="showElectionConductor()" class="btn-primary">
+        <i class="fas fa-vote-yea mr-2"></i>Create Election
+    </button>
+    <a href="http://localhost:5173" target="_blank" class="btn-primary">
+  <i class="fas fa-poll"></i> View Elections
+</a>
+    <button onclick="UI.showModal('joinOrgModal')" class="btn-secondary">
             <i class="fas fa-key mr-2"></i>Access Private Org
           </button>
         </div>
@@ -327,6 +333,41 @@ window.clearCacheAndReload = function() {
     <!-- Modals -->
     <div id="modalsContainer"></div>
 
+    <!-- Election Conductor Section -->
+<section id="electionConductorSection" class="hidden container mx-auto px-6 py-12">
+    <button onclick="hideElectionConductor()" class="btn-secondary mb-6">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Home
+    </button>
+    <div id="electionConductorContainer"></div>
+</section>
+
+<!-- Load Election Conductor JS -->
+<script>
+window.viewOrgElections = function(orgId) {
+    sessionStorage.setItem('orgId', orgId);
+    window.location.href = './election-dashboard.html?orgId=' + orgId;
+};
+</script>
+
+<script>
+    function showElectionConductor() {
+        document.getElementById('welcomeSection').classList.add('hidden');
+        document.getElementById('organizationsGrid').parentElement.classList.add('hidden');
+        document.getElementById('electionConductorSection').classList.remove('hidden');
+        
+        if (window.ElectionConductor) {
+            ElectionConductor.init();
+        }
+    }
+
+    function hideElectionConductor() {
+        document.getElementById('electionConductorSection').classList.add('hidden');
+        document.getElementById('welcomeSection').classList.remove('hidden');
+        document.getElementById('organizationsGrid').parentElement.classList.remove('hidden');
+    }
+</script>
+</script>
+
     <!-- Scripts -->
 
     <script>
@@ -349,6 +390,8 @@ window.clearCacheAndReload = function() {
     <script type="module" src="js/ui.js"></script>
     <script type="module" src="js/contract.js"></script>
     <script type="module" src="js/app.js"></script>
+     <script type="module" src="js/electionConductor.js"></script>
+    <script type="module" src="js/electionDashboard.js"></script>
 
     <script>
 // Auto-clear persistent cache on every page load/refresh

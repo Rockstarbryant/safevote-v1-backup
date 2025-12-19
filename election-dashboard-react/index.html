@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Dashboard Pro - Advanced Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .card-glow {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-left: 4px solid #a855f7;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: slideIn 0.3s ease-out; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto space-y-8">
+        <!-- Header -->
+        <div class="text-center space-y-2 animate-in">
+            <h1 class="text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent">
+                Election Dashboard Pro
+            </h1>
+            <p class="text-xl text-purple-300">Real-time Advanced Analytics & Insights</p>
+        </div>
+
+        <!-- Search & Sync -->
+        <div class="glass card-glow p-6 rounded-2xl animate-in">
+            <div class="grid md:grid-cols-3 gap-4">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search by Election ID or Title..." 
+                    class="px-4 py-3 bg-white/10 rounded-lg text-white border border-white/20"
+                    onkeyup="searchElections()"
+                >
+                <select id="electionSelect" class="px-4 py-3 bg-white/10 rounded-lg text-white border border-white/20">
+                    <option value="">Select Election</option>
+                </select>
+                <button onclick="syncAndLoad()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold hover:shadow-lg transition">
+                    🔄 Sync & Load
+                </button>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div id="metricsSection" class="hidden">
+            <div class="grid md:grid-cols-4 gap-4 animate-in">
+                <div class="stat-card">
+                    <p class="opacity-75 text-sm">Total Voters</p>
+                    <p class="text-3xl font-bold text-purple-400" id="totalVoters">-</p>
+                </div>
+                <div class="stat-card">
+                    <p class="opacity-75 text-sm">Votes Cast</p>
+                    <p class="text-3xl font-bold text-pink-400" id="votesCast">-</p>
+                </div>
+                <div class="stat-card">
+                    <p class="opacity-75 text-sm">Participation Rate</p>
+                    <p class="text-3xl font-bold text-green-400" id="participationRate">-</p>
+                </div>
+                <div class="stat-card">
+                    <p class="opacity-75 text-sm">Status</p>
+                    <p class="text-3xl font-bold text-blue-400" id="status">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Election Details -->
+        <div id="detailsSection" class="hidden glass card-glow p-8 rounded-2xl animate-in space-y-6">
+            <h2 class="text-3xl font-bold" id="electionTitle">-</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-purple-300 text-sm">Description</p>
+                    <p id="description" class="text-lg">-</p>
+                </div>
+                <div>
+                    <p class="text-purple-300 text-sm">Location</p>
+                    <p id="location" class="text-lg">-</p>
+                </div>
+                <div>
+                    <p class="text-purple-300 text-sm">Created By</p>
+                    <p id="creator" class="text-lg font-mono text-sm">-</p>
+                </div>
+                <div>
+                    <p class="text-purple-300 text-sm">Duration</p>
+                    <p><span id="startTime" class="text-lg">-</span> to <span id="endTime" class="text-lg">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div id="chartsSection" class="hidden space-y-8">
+            <!-- Vote Growth Chart -->
+            <div class="glass card-glow p-6 rounded-2xl animate-in">
+                <h3 class="text-2xl font-bold mb-4">Vote Growth Over Time</h3>
+                <div class="chart-container">
+                    <canvas id="voteGrowthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Position Results -->
+            <div class="glass card-glow p-6 rounded-2xl animate-in">
+                <h3 class="text-2xl font-bold mb-4">Results by Position</h3>
+                <div id="positionsContainer" class="grid md:grid-cols-2 gap-8"></div>
+            </div>
+
+            <!-- Demographics & Insights -->
+            <div class="grid md:grid-cols-3 gap-4 animate-in">
+                <div class="glass card-glow p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4">Participation Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="participationChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass card-glow p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4">Position Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="positionDistChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass card-glow p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold mb-4">Top Candidates</h3>
+                    <div id="topCandidates" class="space-y-3 mt-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Election -->
+        <div id="emptyState" class="glass card-glow p-12 rounded-2xl text-center animate-in">
+            <p class="text-xl opacity-75">Select an election to view analytics</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api'; // Update with your backend URL
+        let currentElection = null;
+        let charts = {};
+
+        async function loadAllElections() {
+            try {
+                const res = await fetch(`${API_BASE}/elections`);
+                const elections = await res.json();
+                
+                const select = document.getElementById('electionSelect');
+                select.innerHTML = '<option value="">Select Election</option>';
+                elections.forEach(e => {
+                    const option = document.createElement('option');
+                    option.value = e.election_id;
+                    option.textContent = `${e.title} (ID: ${e.election_id})`;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error loading elections:', err);
+            }
+        }
+
+        async function syncAndLoad() {
+            const select = document.getElementById('electionSelect');
+            const electionId = select.value;
+            
+            if (!electionId) {
+                alert('Please select an election');
+                return;
+            }
+
+            try {
+                // Sync from blockchain
+                await fetch(`${API_BASE}/sync/${electionId}`, { method: 'POST' });
+                
+                // Load election data
+                const res = await fetch(`${API_BASE}/elections/${electionId}`);
+                currentElection = await res.json();
+                
+                // Load analytics
+                const analyticsRes = await fetch(`${API_BASE}/analytics/${electionId}`);
+                const analytics = await analyticsRes.json();
+                
+                renderDashboard(currentElection, analytics);
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Failed to load election');
+            }
+        }
+
+        function renderDashboard(election, analytics) {
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('metricsSection').classList.remove('hidden');
+            document.getElementById('detailsSection').classList.remove('hidden');
+            document.getElementById('chartsSection').classList.remove('hidden');
+
+            // Update metrics
+            document.getElementById('electionTitle').textContent = election.title;
+            document.getElementById('totalVoters').textContent = election.total_registered_voters;
+            document.getElementById('votesCast').textContent = election.total_votes_cast;
+            document.getElementById('participationRate').textContent = `${analytics.participationRate}%`;
+            document.getElementById('status').textContent = ['Active', 'Completed', 'Cancelled'][election.status];
+            document.getElementById('description').textContent = election.description || 'N/A';
+            document.getElementById('location').textContent = election.location || 'N/A';
+            document.getElementById('creator').textContent = election.creator;
+            document.getElementById('startTime').textContent = new Date(election.start_time * 1000).toLocaleDateString();
+            document.getElementById('endTime').textContent = new Date(election.end_time * 1000).toLocaleDateString();
+
+            // Charts
+            renderVoteGrowthChart(analytics.voteHistory);
+            renderParticipationChart(election);
+            renderPositionCharts(election.positions);
+            renderPositionDistChart(analytics.positionStats);
+            renderTopCandidates(election.positions);
+        }
+
+        function renderVoteGrowthChart(voteHistory) {
+            const ctx = document.getElementById('voteGrowthChart').getContext('2d');
+            if (charts.voteGrowth) charts.voteGrowth.destroy();
+            
+            charts.voteGrowth = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: voteHistory.map(v => new Date(v.timestamp * 1000).toLocaleTimeString()),
+                    datasets: [{
+                        label: 'Cumulative Votes',
+                        data: voteHistory.map(v => v.vote_count),
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ec4899'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderParticipationChart(election) {
+            const ctx = document.getElementById('participationChart').getContext('2d');
+            if (charts.participation) charts.participation.destroy();
+            
+            const participated = election.total_votes_cast;
+            const notParticipated = election.total_registered_voters - election.total_votes_cast;
+            
+            charts.participation = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Participated', 'Not Participated'],
+                    datasets: [{
+                        data: [participated, notParticipated],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderColor: '#1e293b',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function renderPositionCharts(positions) {
+            const container = document.getElementById('positionsContainer');
+            container.innerHTML = '';
+            
+            positions.forEach((pos, idx) => {
+                const div = document.createElement('div');
+                div.innerHTML = `<div class="chart-container"><canvas id="posChart${idx}"></canvas></div>`;
+                container.appendChild(div);
+                
+                const ctx = document.getElementById(`posChart${idx}`).getContext('2d');
+                const ctx2d = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: pos.candidates.map(c => c.name),
+                        datasets: [{
+                            label: pos.title,
+                            data: pos.candidates.map(c => c.votes),
+                            backgroundColor: ['#a855f7', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'],
+                            borderRadius: 6,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true } }
+                    }
+                });
+                charts[`pos${idx}`] = ctx2d;
+            });
+        }
+
+        function renderPositionDistChart(positionStats) {
+            const ctx = document.getElementById('positionDistChart').getContext('2d');
+            if (charts.positionDist) charts.positionDist.destroy();
+            
+            charts.positionDist = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: positionStats.map(p => p.title),
+                    datasets: [{
+                        data: positionStats.map(p => p.total_votes || 0),
+                        backgroundColor: ['#a855f7', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'],
+                        borderColor: '#1e293b',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function renderTopCandidates(positions) {
+            const container = document.getElementById('topCandidates');
+            const allCandidates = positions
+                .flatMap(p => p.candidates.map(c => ({ ...c, position: p.title })))
+                .sort((a, b) => b.votes - a.votes)
+                .slice(0, 5);
+            
+            container.innerHTML = allCandidates.map((c, i) => `
+                <div class="flex justify-between items-center pb-2 border-b border-white/10">
+                    <span>${i + 1}. ${c.name}</span>
+                    <span class="font-bold text-purple-400">${c.votes} votes</span>
+                </div>
+            `).join('');
+        }
+
+        function searchElections() {
+            // Implement search functionality
+        }
+
+        // Initialize
+        window.addEventListener('load', loadAllElections);
+    </script>
+</body>
+</html>
