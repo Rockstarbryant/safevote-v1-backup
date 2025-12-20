@@ -1,5 +1,5 @@
-// FILE: election-backend/server.js
-// SafeVote Results Backend - PostgreSQL (Supabase/Render Ready)
+// election-backend/server.js
+// SafeVote Results Backend - PostgreSQL Only (Supabase/Render)
 
 const express = require('express');
 const { Pool } = require('pg');
@@ -16,28 +16,32 @@ let dbPool;
 
 async function connectDB() {
   if (!process.env.DATABASE_URL) {
-    console.error('❌ DATABASE_URL not set');
+    console.error('❌ No DATABASE_URL set');
     process.exit(1);
   }
 
   try {
     dbPool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 10,
+      idleTimeoutMillis: 30000
     });
 
     await dbPool.query('SELECT 1');
-    console.log('✅ PostgreSQL connected successfully');
+    console.log('✅ Connected to PostgreSQL (Supabase)');
   } catch (err) {
     console.error('❌ Database connection failed:', err.message);
     process.exit(1);
   }
 }
 
+// Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', database: 'connected' });
+  res.json({ status: 'OK', database: 'PostgreSQL connected' });
 });
 
+// List all elections
 app.get('/api/elections', async (req, res) => {
   try {
     const { rows } = await dbPool.query(`
@@ -49,38 +53,35 @@ app.get('/api/elections', async (req, res) => {
         start_time AS "startTime",
         end_time AS "endTime",
         total_voters AS "totalVoters",
-        created_at AS "createdAt",
         positions
       FROM elections 
       ORDER BY created_at DESC
     `);
 
-    const elections = rows.map(election => ({
-      id: election.id,
-      title: election.title || 'Untitled Election',
-      description: election.description || '',
-      location: election.location || 'Global',
-      startTime: election.startTime,
-      endTime: election.endTime,
-      totalVoters: election.totalVoters,
-      createdAt: election.createdAt,
-      totalVotesCast: 0, // placeholder - calculate from votes table
+    const elections = rows.map(row => ({
+      id: row.id,
+      title: row.title || 'Untitled',
+      description: row.description || '',
+      location: row.location || 'Global',
+      startTime: row.startTime,
+      endTime: row.endTime,
+      totalVoters: row.totalVoters,
+      totalVotesCast: 0,
       participationRate: 0,
-      positions: election.positions || [],
+      positions: row.positions || [],
       votesByChain: []
     }));
 
     res.json(elections);
   } catch (err) {
-    console.error('Error fetching elections:', err);
+    console.error('Error:', err);
     res.status(500).json({ error: 'Failed to load elections' });
   }
 });
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log('🚀 SAFEVOTE RESULTS BACKEND LIVE');
-    console.log(`🌐 http://0.0.0.0:${PORT}`);
-    console.log('🗄️  Database: PostgreSQL (Supabase)');
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Results backend live on port ${PORT}`);
+    console.log(`🌐 /api/elections`);
   });
 });
