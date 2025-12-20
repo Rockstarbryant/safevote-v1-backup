@@ -12,6 +12,7 @@
     "dotenv": "^16.6.1",
     "ethers": "^5.7.2",
     "express": "^4.22.1",
+     "pg": "^8.11.3",
     "express-rate-limit": "^7.5.1",
     "helmet": "^7.2.0",
     "keccak256": "^1.0.6",
