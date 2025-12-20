@@ -1,8 +1,8 @@
 // FILE: election-backend/server.js
-// SafeVote Multi-Chain Results Backend (Database-Driven)
+// SafeVote Multi-Chain Results Backend (PostgreSQL - Supabase/Render Ready)
 
 const express = require('express');
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -13,19 +13,23 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Database connection
-let db;
+// PostgreSQL pool
+let dbPool;
+
 async function connectDB() {
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ DATABASE_URL not set');
+    process.exit(1);
+  }
+
   try {
-    db = await mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME || 'safevote_tracker',
-      waitForConnections: true,
-      connectionLimit: 10
+    dbPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
-    console.log('✅ Database connected');
+
+    await dbPool.query('SELECT 1');
+    console.log('✅ PostgreSQL connected successfully');
   } catch (err) {
     console.error('❌ Database connection failed:', err.message);
     process.exit(1);
@@ -40,34 +44,36 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    database: db ? 'connected' : 'disconnected'
+    database: 'connected'
   });
 });
 
 // Get all elections with basic stats
 app.get('/api/elections', async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const { rows } = await dbPool.query(`
       SELECT 
-        election_id AS uuid,
+        election_id AS id,
         title,
         description,
-        start_time AS startTime,
-        end_time AS endTime,
-        total_voters AS totalVoters,
-        created_at AS createdAt
+        location,
+        start_time AS "startTime",
+        end_time AS "endTime",
+        total_voters AS "totalVoters",
+        created_at AS "createdAt",
+        positions
       FROM elections 
       ORDER BY created_at DESC
     `);
 
     // Add vote counts per chain
     const elections = await Promise.all(rows.map(async (election) => {
-      const [chainVotes] = await db.query(`
-        SELECT chain_id, COUNT(*) as votesCast 
+      const { rows: chainVotes } = await dbPool.query(`
+        SELECT chain_id, COUNT(*) as "votesCast" 
         FROM votes 
-        WHERE election_id = ? 
+        WHERE election_id = $1 
         GROUP BY chain_id
-      `, [election.uuid]);
+      `, [election.id]);
 
       const totalVotes = chainVotes.reduce((sum, c) => sum + parseInt(c.votesCast), 0);
       const participation = election.totalVoters > 0 
@@ -75,9 +81,17 @@ app.get('/api/elections', async (req, res) => {
         : 0;
 
       return {
-        ...election,
+        id: election.id,
+        title: election.title || 'Untitled Election',
+        description: election.description || '',
+        location: election.location || 'Global',
+        startTime: election.startTime,
+        endTime: election.endTime,
+        totalVoters: election.totalVoters,
+        createdAt: election.createdAt,
         totalVotesCast: totalVotes,
         participationRate: parseFloat(participation),
+        positions: election.positions || [],
         votesByChain: chainVotes.map(c => ({
           chainId: c.chain_id,
           name: getChainName(c.chain_id),
@@ -89,23 +103,22 @@ app.get('/api/elections', async (req, res) => {
     res.json(elections);
   } catch (err) {
     console.error('Error fetching elections:', err);
-    res.status(500).json({ error: 'Failed to load elections' });
+    res.status(500).json({ error: 'Failed to load elections', details: err.message });
   }
 });
 
-// Get detailed results for one election (multi-chain)
+// Get detailed results for one election
 app.get('/api/elections/:uuid/results', async (req, res) => {
   const { uuid } = req.params;
 
   try {
-    // Check cache
     if (resultsCache.has(uuid)) {
       return res.json(resultsCache.get(uuid));
     }
 
-    const [electionRows] = await db.query(`
+    const { rows: electionRows } = await dbPool.query(`
       SELECT title, description, start_time, end_time, total_voters, positions
-      FROM elections WHERE election_id = ?
+      FROM elections WHERE election_id = $1
     `, [uuid]);
 
     if (electionRows.length === 0) {
@@ -113,13 +126,12 @@ app.get('/api/elections/:uuid/results', async (req, res) => {
     }
 
     const election = electionRows[0];
-    const positions = election.positions ? JSON.parse(election.positions) : [];
+    const positions = election.positions || [];
 
-    // Get votes per chain
-    const [chainVotes] = await db.query(`
+    const { rows: chainVotes } = await dbPool.query(`
       SELECT chain_id, COUNT(*) as count 
       FROM votes 
-      WHERE election_id = ? 
+      WHERE election_id = $1 
       GROUP BY chain_id
     `, [uuid]);
 
@@ -128,8 +140,6 @@ app.get('/api/elections/:uuid/results', async (req, res) => {
       ? ((totalVotes / election.total_voters) * 100).toFixed(2) 
       : 0;
 
-    // For now, since votes are anonymous, we show only totals per chain
-    // In future, you can add on-chain tally sync if needed
     const results = {
       uuid,
       title: election.title,
@@ -142,7 +152,7 @@ app.get('/api/elections/:uuid/results', async (req, res) => {
       status: election.end_time < Math.floor(Date.now() / 1000) ? 'Completed' : 'Active',
       positions: positions.map(p => ({
         title: p.title,
-        candidates: p.candidates,
+        candidates: p.candidates || [],
         maxSelections: p.maxSelections || 1
       })),
       votesByChain: chainVotes.map(c => ({
@@ -153,14 +163,13 @@ app.get('/api/elections/:uuid/results', async (req, res) => {
       }))
     };
 
-    // Cache for 30 seconds
     resultsCache.set(uuid, results);
     setTimeout(() => resultsCache.delete(uuid), 30000);
 
     res.json(results);
   } catch (err) {
     console.error('Results error:', err);
-    res.status(500).json({ error: 'Failed to load results' });
+    res.status(500).json({ error: 'Failed to load results', details: err.message });
   }
 });
 
@@ -182,9 +191,10 @@ connectDB().then(() => {
     console.log('\n═══════════════════════════════════════');
     console.log('🚀 SAFEVOTE RESULTS BACKEND LIVE');
     console.log('═══════════════════════════════════════');
-    console.log(`🌐 http://localhost:${PORT}`);
+    console.log(`🌐 http://0.0.0.0:${PORT}`);
     console.log(`📊 /api/elections - List all elections`);
     console.log(`📈 /api/elections/{uuid}/results - Detailed results`);
+    console.log('🗄️  Database: PostgreSQL (Supabase)');
     console.log('═══════════════════════════════════════\n');
   });
 });

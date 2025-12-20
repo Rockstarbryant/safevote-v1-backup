@@ -43,56 +43,72 @@ const ReviewPage = () => {
   }, [voterKey, merkleProof, delegateTo, votes, currentElection, electionId, navigate, addSecurityWarning]);
 
   const handleSubmitVote = async () => {
-    if (!confirmSubmit) {
-      setError('Please confirm your vote.');
-      return;
-    }
+  if (!confirmSubmit) {
+    setError('Please confirm your vote before submitting.');
+    return;
+  }
 
-    setSubmitting(true);
-    setError(null);
+  setSubmitting(true);
+  setError(null);
 
-    try {
-       // === PRE-CHECK: Has this key already been used? ===
+  try {
+    // === PRE-CHECK: Has this key already been used? ===
     const alreadyVoted = await votingService.hasVoted(electionId, voterKey);
     if (alreadyVoted) {
-      setError('You have already voted in this election. Thank you!');
+      setError('You have already voted in this election. Thank you for participating!');
       setSubmitting(false);
       return;
     }
-      // Get on-chain election ID
-      const response = await fetch(`http://localhost:3001/api/elections/${electionId}/onchain-id`);
-      if (!response.ok) {
-        throw new Error('Failed to get on-chain election ID');
-      }
-      const { onChainElectionId } = await response.json();
 
-      const formattedVotes = currentElection.positions.map((_, i) => votes[i] || []);
-
-      const result = await votingService.castVote(
-        onChainElectionId,
-        voterKey,
-        merkleProof,
-        formattedVotes,
-        delegateTo || '0x0000000000000000000000000000000000000000'
-      );
-
-      if (!result.success) {
-        throw new Error(result.error || 'Transaction failed');
-      }
-
-      navigate(`/confirmation/${electionId}`, {
-        state: {
-          transactionHash: result.transactionHash,
-          blockNumber: result.blockNumber
-        }
-      });
-    } catch (err) {
-      console.error('Vote submission error:', err);
-      setError(err.message || 'Failed to submit vote');
-    } finally {
-      setSubmitting(false);
+    // Get on-chain election ID
+    const response = await fetch(`http://localhost:3001/api/elections/${electionId}/onchain-id`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Failed to get on-chain election ID: ${response.status} ${errText}`);
     }
-  };
+    const { onChainElectionId } = await response.json();
+
+    const formattedVotes = currentElection.positions.map((_, i) => votes[i] || []);
+
+    const result = await votingService.castVote(
+      onChainElectionId,
+      voterKey,
+      merkleProof,
+      formattedVotes,
+      delegateTo || '0x0000000000000000000000000000000000000000'
+    );
+
+    if (!result.success) {
+      // Better error handling for common cases
+      let userMessage = 'Transaction failed. Please try again.';
+      if (result.error?.includes('Key used')) {
+        userMessage = 'This voter key has already been used.';
+      } else if (result.error?.includes('user rejected')) {
+        userMessage = 'You rejected the transaction.';
+      } else if (result.error?.includes('insufficient funds')) {
+        userMessage = 'Insufficient funds for gas fees.';
+      } else if (result.error?.includes('gas')) {
+        userMessage = 'Gas estimation failed. Try increasing gas limit.';
+      }
+      throw new Error(userMessage);
+    }
+
+    navigate(`/confirmation/${electionId}`, {
+      state: {
+        transactionHash: result.transactionHash,
+        blockNumber: result.blockNumber
+      }
+    });
+  } catch (err) {
+    console.error('Vote submission error:', err);
+    // Show user-friendly message instead of raw RPC error
+    setError(err.message.includes('RPC') || err.message.includes('reverted')
+      ? 'Transaction failed on the blockchain. Common reasons: key already used or network issue.'
+      : err.message || 'Failed to submit vote. Please try again.');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleBack = () => {
     navigate(`/vote/${electionId}`);

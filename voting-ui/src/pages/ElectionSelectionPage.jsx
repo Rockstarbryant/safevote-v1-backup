@@ -9,7 +9,7 @@ const ElectionSelectionPage = () => {
   const [filter, setFilter] = useState('active');
   const navigate = useNavigate();
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchElections();
@@ -21,7 +21,7 @@ const ElectionSelectionPage = () => {
       setError(null);
 
       // Fetch from backend using UUIDs
-      const response = await fetch(`${API_URL}/api/elections/all`);
+      const response = await fetch(`${process.env.REACT_APP_RESULTS_API}/elections`);
       if (!response.ok) throw new Error('Failed to load elections');
 
       let allElections = await response.json();
@@ -49,7 +49,8 @@ const ElectionSelectionPage = () => {
   };
 
   const handleElectionSelect = (election) => {
-    navigate(`/verify/${election.id}`); // id = UUID from backend
+  console.log('Election object:', election); // ← Add this to see the object
+  navigate(`/verify/${election.uuid}`);  // ← Use election.uuid (the UUID)
   };
 
   const getStatusBadge = (election) => {
@@ -160,12 +161,11 @@ const ElectionSelectionPage = () => {
                 )}
               </div>
 
-              <button
-                onClick={() => handleElectionSelect(election)}
-                className="btn btn-primary btn-large"
-              >
-                Vote Now →
-              </button>
+             <button
+  onClick={() => handleElectionSelect(election)}
+  className="btn btn-primary btn-large">
+  Vote Now →
+  </button>
             </div>
           ))}
         </div>
