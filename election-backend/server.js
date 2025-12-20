@@ -1,351 +1,190 @@
 // FILE: election-backend/server.js
-// SafeVote React-Compatible Backend
+// SafeVote Multi-Chain Results Backend (Database-Driven)
 
 const express = require('express');
-const { ethers } = require('ethers');
+const mysql = require('mysql2/promise');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// ============ MIDDLEWARE ============
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type']
-}));
+// Middleware
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// ============ CONFIGURATION ============
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0xfa84a89D170084675b7ECb110a883fD47757916c';
-const PROVIDER_URL = process.env.PROVIDER_URL || 'https://arb-sepolia.g.alchemy.com/v2/Q2yshQ_-U-fUSkWeuebk_R18kGpxebkN';
-const PORT = process.env.PORT || 3001;
-
-const CONTRACT_ABI = require('./CONTRACT_ABI.js');
-
-console.log('\n═══════════════════════════════════════');
-console.log('🚀 SAFEVOTE BACKEND - REACT EDITION');
-console.log('═══════════════════════════════════════');
-console.log(`📍 Contract: ${CONTRACT_ADDRESS}`);
-console.log(`🌐 Provider: ${PROVIDER_URL}`);
-console.log(`🔌 Port: ${PORT}`);
-console.log('═══════════════════════════════════════\n');
-
-// ============ ETHEREUM SETUP ============
-let provider;
-let contract;
-
-async function initializeProvider() {
+// Database connection
+let db;
+async function connectDB() {
   try {
-    provider = new ethers.JsonRpcProvider(PROVIDER_URL);
-    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-    
-    const network = await provider.getNetwork();
-    console.log(`✅ Connected to ${network.name} (Chain ID: ${network.chainId})`);
-    return true;
-  } catch (error) {
-    console.error('❌ Blockchain connection error:', error.message);
-    return false;
+    db = await mysql.createPool({
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME || 'safevote_tracker',
+      waitForConnections: true,
+      connectionLimit: 10
+    });
+    console.log('✅ Database connected');
+  } catch (err) {
+    console.error('❌ Database connection failed:', err.message);
+    process.exit(1);
   }
 }
 
-// ============ IN-MEMORY CACHE (For React) ============
-const electionCache = new Map();
-const electionsIndex = [];
-
-// ============ API ROUTES ============
+// Cache
+const resultsCache = new Map();
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Backend is running!',
-    connected: contract ? true : false 
+    timestamp: new Date().toISOString(),
+    database: db ? 'connected' : 'disconnected'
   });
 });
 
-// Get all elections (for dropdown)
+// Get all elections with basic stats
 app.get('/api/elections', async (req, res) => {
   try {
-    // If we have cached elections, return them
-    if (electionsIndex.length > 0) {
-      const elections = electionsIndex.map(id => electionCache.get(id)).filter(Boolean);
-      console.log(`📊 Returning ${elections.length} cached elections`);
-      return res.json(elections);
-    }
+    const [rows] = await db.query(`
+      SELECT 
+        election_id AS uuid,
+        title,
+        description,
+        start_time AS startTime,
+        end_time AS endTime,
+        total_voters AS totalVoters,
+        created_at AS createdAt
+      FROM elections 
+      ORDER BY created_at DESC
+    `);
 
-    // Try to fetch from blockchain
-    if (!contract) {
-      console.warn('⚠️  Contract not initialized, returning empty list');
-      return res.json([]);
-    }
+    // Add vote counts per chain
+    const elections = await Promise.all(rows.map(async (election) => {
+      const [chainVotes] = await db.query(`
+        SELECT chain_id, COUNT(*) as votesCast 
+        FROM votes 
+        WHERE election_id = ? 
+        GROUP BY chain_id
+      `, [election.uuid]);
 
-    console.log(`📊 Attempting to load elections from blockchain...`);
+      const totalVotes = chainVotes.reduce((sum, c) => sum + parseInt(c.votesCast), 0);
+      const participation = election.totalVoters > 0 
+        ? ((totalVotes / election.totalVoters) * 100).toFixed(1) 
+        : 0;
 
-    const elections = [];
-    
-    // Try to load elections 0-100 (adjust range if you have more)
-    // Your new election is ID 2, so we need to check a wider range
-    for (let i = 0; i < 100; i++) {
-      try {
-        const election = await contract.getElection(i);
-        
-        // Skip if title is empty
-        if (!election.title || election.title.trim() === '') {
-          continue;
-        }
+      return {
+        ...election,
+        totalVotesCast: totalVotes,
+        participationRate: parseFloat(participation),
+        votesByChain: chainVotes.map(c => ({
+          chainId: c.chain_id,
+          name: getChainName(c.chain_id),
+          votes: parseInt(c.votesCast)
+        }))
+      };
+    }));
 
-        const electionData = {
-          election_id: i,
-          title: election.title,
-          description: election.description,
-          location: election.location,
-          creator: election.creator,
-          start_time: Number(election.startTime),
-          end_time: Number(election.endTime),
-          total_registered_voters: Number(election.totalRegisteredVoters),
-          total_votes_cast: Number(election.totalVotesCast),
-          status: Number(election.status),
-          allow_anonymous: election.allowAnonymous,
-          allow_delegation: election.allowDelegation,
-          contract_address: CONTRACT_ADDRESS
-        };
-        
-        // Cache it
-        electionCache.set(i, electionData);
-        electionsIndex.push(i);
-        elections.push(electionData);
-        
-        console.log(`✅ Loaded election ${i}: ${election.title}`);
-      } catch (error) {
-        // Election doesn't exist, continue to next ID
-        continue;
-      }
-    }
-
-    console.log(`✅ Found ${elections.length} elections on blockchain`);
     res.json(elections);
-
-  } catch (error) {
-    console.error('Error fetching elections:', error.message);
-    res.status(500).json({ error: error.message, elections: [] });
+  } catch (err) {
+    console.error('Error fetching elections:', err);
+    res.status(500).json({ error: 'Failed to load elections' });
   }
 });
 
-// Get single election by ID
-app.get('/api/elections/:electionId', async (req, res) => {
+// Get detailed results for one election (multi-chain)
+app.get('/api/elections/:uuid/results', async (req, res) => {
+  const { uuid } = req.params;
+
   try {
-    const { electionId } = req.params;
-    const id = parseInt(electionId);
-
-    if (!contract) {
-      return res.status(503).json({ error: 'Contract not initialized' });
+    // Check cache
+    if (resultsCache.has(uuid)) {
+      return res.json(resultsCache.get(uuid));
     }
 
-    console.log(`📖 Fetching election ${id}...`);
+    const [electionRows] = await db.query(`
+      SELECT title, description, start_time, end_time, total_voters, positions
+      FROM elections WHERE election_id = ?
+    `, [uuid]);
 
-    const election = await contract.getElection(id);
-    const positions = election.positions || [];
-    const results = [];
-
-    // Get results for each position
-    for (let i = 0; i < positions.length; i++) {
-      try {
-        const posResults = await contract.getElectionResults(id, i);
-        results.push({
-          position_index: i,
-          title: positions[i].title,
-          max_selections: Number(positions[i].maxSelections),
-          candidates: positions[i].candidates.map((name, idx) => ({
-            name: name,
-            votes: Number(posResults.votesCast[idx]) || 0
-          }))
-        });
-      } catch (error) {
-        console.warn(`⚠️  Could not get results for position ${i}`);
-      }
+    if (electionRows.length === 0) {
+      return res.status(404).json({ error: 'Election not found' });
     }
 
-    const electionData = {
-      election_id: id,
-      title: election.title,
-      description: election.description,
-      location: election.location,
-      creator: election.creator,
-      start_time: Number(election.startTime),
-      end_time: Number(election.endTime),
-      created_at: Number(election.createdAt),
-      total_registered_voters: Number(election.totalRegisteredVoters),
-      total_votes_cast: Number(election.totalVotesCast),
-      status: Number(election.status),
-      allow_anonymous: election.allowAnonymous,
-      allow_delegation: election.allowDelegation,
-      contract_address: CONTRACT_ADDRESS,
-      positions: results
-    };
+    const election = electionRows[0];
+    const positions = election.positions ? JSON.parse(election.positions) : [];
 
-    // Cache it
-    electionCache.set(id, electionData);
-    if (!electionsIndex.includes(id)) {
-      electionsIndex.push(id);
-    }
+    // Get votes per chain
+    const [chainVotes] = await db.query(`
+      SELECT chain_id, COUNT(*) as count 
+      FROM votes 
+      WHERE election_id = ? 
+      GROUP BY chain_id
+    `, [uuid]);
 
-    console.log(`✅ Successfully fetched election ${id}`);
-    res.json(electionData);
-
-  } catch (error) {
-    console.error('Error fetching election:', error.message);
-    res.status(404).json({ error: error.message });
-  }
-});
-
-// Get analytics for an election
-app.get('/api/analytics/:electionId', async (req, res) => {
-  try {
-    const { electionId } = req.params;
-    const id = parseInt(electionId);
-
-    if (!contract) {
-      return res.status(503).json({ error: 'Contract not initialized' });
-    }
-
-    const election = await contract.getElection(id);
-    
-    const totalVoters = Number(election.totalRegisteredVoters);
-    const votesCast = Number(election.totalVotesCast);
-    const participationRate = totalVoters > 0 
-      ? ((votesCast / totalVoters) * 100).toFixed(2)
+    const totalVotes = chainVotes.reduce((sum, c) => sum + parseInt(c.count), 0);
+    const participation = election.total_voters > 0 
+      ? ((totalVotes / election.total_voters) * 100).toFixed(2) 
       : 0;
 
-    res.json({
-      election_id: id,
-      total_registered_voters: totalVoters,
-      total_votes_cast: votesCast,
-      participation_rate: parseFloat(participationRate),
-      status: Number(election.status),
-      start_time: Number(election.startTime),
-      end_time: Number(election.endTime)
-    });
-
-  } catch (error) {
-    console.error('Error fetching analytics:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Sync specific election (fetch and cache)
-app.post('/api/sync/:electionId', async (req, res) => {
-  try {
-    const { electionId } = req.params;
-    const id = parseInt(electionId);
-
-    if (!contract) {
-      return res.status(503).json({ error: 'Contract not initialized' });
-    }
-
-    console.log(`🔄 Syncing election ${id}...`);
-
-    const election = await contract.getElection(id);
-    const positions = election.positions || [];
-
-    // Get results for each position
-    const results = [];
-    for (let i = 0; i < positions.length; i++) {
-      try {
-        const posResults = await contract.getElectionResults(id, i);
-        results.push({
-          position_index: i,
-          title: positions[i].title,
-          max_selections: Number(positions[i].maxSelections),
-          candidates: positions[i].candidates.map((name, idx) => ({
-            name: name,
-            votes: Number(posResults.votesCast[idx]) || 0
-          }))
-        });
-      } catch (error) {
-        console.warn(`⚠️  Could not sync position ${i}`);
-      }
-    }
-
-    const electionData = {
-      election_id: id,
+    // For now, since votes are anonymous, we show only totals per chain
+    // In future, you can add on-chain tally sync if needed
+    const results = {
+      uuid,
       title: election.title,
       description: election.description,
-      location: election.location,
-      creator: election.creator,
-      start_time: Number(election.startTime),
-      end_time: Number(election.endTime),
-      created_at: Number(election.createdAt),
-      total_registered_voters: Number(election.totalRegisteredVoters),
-      total_votes_cast: Number(election.totalVotesCast),
-      status: Number(election.status),
-      allow_anonymous: election.allowAnonymous,
-      allow_delegation: election.allowDelegation,
-      contract_address: CONTRACT_ADDRESS,
-      positions: results
+      startTime: election.start_time,
+      endTime: election.end_time,
+      totalRegistered: election.total_voters,
+      totalVotesCast: totalVotes,
+      participationRate: parseFloat(participation),
+      status: election.end_time < Math.floor(Date.now() / 1000) ? 'Completed' : 'Active',
+      positions: positions.map(p => ({
+        title: p.title,
+        candidates: p.candidates,
+        maxSelections: p.maxSelections || 1
+      })),
+      votesByChain: chainVotes.map(c => ({
+        chainId: c.chain_id,
+        chainName: getChainName(c.chain_id),
+        votesCast: parseInt(c.count),
+        percentage: totalVotes > 0 ? ((c.count / totalVotes) * 100).toFixed(1) : 0
+      }))
     };
 
-    // Cache it
-    electionCache.set(id, electionData);
-    if (!electionsIndex.includes(id)) {
-      electionsIndex.push(id);
-    }
+    // Cache for 30 seconds
+    resultsCache.set(uuid, results);
+    setTimeout(() => resultsCache.delete(uuid), 30000);
 
-    console.log(`✅ Synced election ${id}`);
-    res.json({ success: true, election: electionData });
-
-  } catch (error) {
-    console.error('Error syncing election:', error.message);
-    res.status(500).json({ error: error.message });
+    res.json(results);
+  } catch (err) {
+    console.error('Results error:', err);
+    res.status(500).json({ error: 'Failed to load results' });
   }
 });
 
-// Get merkle root
-app.post('/api/merkle', async (req, res) => {
-  try {
-    const { electionId, address } = req.body;
-
-    if (!electionId || !address) {
-      return res.status(400).json({ error: 'Missing electionId or address' });
-    }
-
-    if (!contract) {
-      return res.status(503).json({ error: 'Contract not initialized' });
-    }
-
-    const merkleRoot = await contract.merkleRoots(electionId, address);
-    res.json({ merkleRoot });
-
-  } catch (error) {
-    console.error('Error fetching merkle:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ============ ERROR HANDLER ============
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error', message: err.message });
-});
-
-// ============ START SERVER ============
-async function startServer() {
-  const isConnected = await initializeProvider();
-
-  if (!isConnected) {
-    console.warn('⚠️  Warning: Could not connect to blockchain. API will work with cached data only.');
-  }
-
-  app.listen(PORT, () => {
-    console.log('\n═══════════════════════════════════════');
-    console.log('✅ BACKEND READY FOR REACT');
-    console.log('═══════════════════════════════════════');
-    console.log(`🌐 Health: http://localhost:${PORT}/health`);
-    console.log(`📊 Elections: http://localhost:${PORT}/api/elections`);
-    console.log('═══════════════════════════════════════\n');
-  });
+// Helper: Chain names
+function getChainName(chainId) {
+  const names = {
+    421614: 'Arbitrum Sepolia',
+    11155111: 'Ethereum Sepolia',
+    84532: 'Base Sepolia',
+    97: 'BNB Testnet',
+    80001: 'Polygon Mumbai'
+  };
+  return names[chainId] || `Chain ${chainId}`;
 }
 
-startServer();
-
-module.exports = app;
+// Start server
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log('\n═══════════════════════════════════════');
+    console.log('🚀 SAFEVOTE RESULTS BACKEND LIVE');
+    console.log('═══════════════════════════════════════');
+    console.log(`🌐 http://localhost:${PORT}`);
+    console.log(`📊 /api/elections - List all elections`);
+    console.log(`📈 /api/elections/{uuid}/results - Detailed results`);
+    console.log('═══════════════════════════════════════\n');
+  });
+});

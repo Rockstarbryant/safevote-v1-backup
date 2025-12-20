@@ -52,6 +52,14 @@ const ReviewPage = () => {
     setError(null);
 
     try {
+       // === PRE-CHECK: Has this key already been used? ===
+    const alreadyVoted = await votingService.hasVoted(electionId, voterKey);
+    if (alreadyVoted) {
+      setError('You have already voted in this election. Thank you!');
+      setSubmitting(false);
+      return;
+    }
+      // Get on-chain election ID
       const response = await fetch(`http://localhost:3001/api/elections/${electionId}/onchain-id`);
       if (!response.ok) {
         throw new Error('Failed to get on-chain election ID');

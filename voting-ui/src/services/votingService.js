@@ -88,6 +88,28 @@ export const getElection = async (electionId) => {
   }
 };
 
+// Check if this voter has already voted in this election (using key hash)
+export const hasVoted = async (electionId, voterKey) => {
+  try {
+    if (!contract) await initializeProvider();
+
+    // The contract uses keccak256(electionId, voterKey) as the key hash
+    const keyHash = ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(
+        ['uint256', 'bytes32'],
+        [electionId, voterKey]
+      )
+    );
+
+    const used = await contract.usedVoterKeys(electionId, keyHash);
+    return used;
+  } catch (error) {
+    console.error('Error checking vote status:', error);
+    // On error, assume not voted (safe default)
+    return false;
+  }
+};
+
 // Cast vote
 export const castVote = async (electionId, voterKey, merkleProof, votes, delegateTo) => {
   try {
@@ -105,6 +127,29 @@ export const castVote = async (electionId, voterKey, merkleProof, votes, delegat
     
     const receipt = await tx.wait();
     
+    // === SUCCESS: Record vote in backend database ===
+    try {
+      const currentAddress = await signer.getAddress();
+      const chainId = (await provider.getNetwork()).chainId;
+
+      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/votes/record`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          electionId: electionId,           // UUID
+          voterAddress: currentAddress,
+          chainId: chainId,
+          voterKey: voterKey,
+          txHash: receipt.transactionHash,
+          blockNumber: receipt.blockNumber
+        })
+      });
+      console.log('Vote recorded in backend database');
+    } catch (recordErr) {
+      console.warn('Failed to record vote in DB (vote is still on-chain):', recordErr);
+      // Don't fail the whole vote — on-chain is what matters
+    }
+
     return {
       success: true,
       transactionHash: receipt.transactionHash,
@@ -114,22 +159,8 @@ export const castVote = async (electionId, voterKey, merkleProof, votes, delegat
     console.error('Error casting vote:', error);
     return {
       success: false,
-      error: error.message
+      error: error.message || 'Transaction failed or was rejected'
     };
-  }
-};
-
-// Check if voter key is used
-export const isVoterKeyUsed = async (electionId, voterKey) => {
-  try {
-    if (!contract) await initializeProvider();
-    const keyHash = ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(['uint256', 'bytes32'], [electionId, voterKey])
-    );
-    return await contract.usedVoterKeys(electionId, keyHash);
-  } catch (error) {
-    console.error('Error checking voter key:', error);
-    return false;
   }
 };
 
@@ -192,7 +223,7 @@ const votingService = {
   getTotalElections,
   getElection,
   castVote,
-  isVoterKeyUsed,
+  hasVoted,
   getElectionResults,
   delegateVote
 };
