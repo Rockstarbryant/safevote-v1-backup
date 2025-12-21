@@ -445,63 +445,6 @@ app.get('/api/elections/:electionId/keys/export', async (req, res) => {
 });
 
 
-app.get('/api/elections/uuid/:uuid', async (req, res) => {
-    if (!dbPool) {
-        return res.status(503).json({ 
-            error: 'Database not available'
-        });
-    }
-
-    try {
-        const { uuid } = req.params;
-
-        const { rows } = await dbPool.query(
-            `SELECT 
-                uuid,
-                title,
-                description,
-                location,
-                creator,
-                merkle_root AS merkleRoot,
-                start_time AS startTime,
-                end_time AS endTime,
-                total_voters AS totalVoters,
-                is_public AS isPublic,
-                allow_anonymous AS allowAnonymous,
-                allow_delegation AS allowDelegation,
-                positions,
-                voter_addresses AS voterAddresses,
-                created_at AS createdAt
-             FROM elections 
-             WHERE uuid = $1`,
-            [uuid]
-        );
-
-        if (rows.length === 0) {
-            return res.status(404).json({
-                error: 'Election not found'
-            });
-        }
-
-        const election = rows[0];
-        election.positions = election.positions 
-            ? JSON.parse(election.positions) 
-            : [];
-        election.voterAddresses = election.voteraddresses || [];
-
-        console.log(`✅ Retrieved election: ${uuid}`);
-
-        res.json(election);
-
-    } catch (error) {
-        console.error('❌ Get election error:', error.message);
-        res.status(500).json({
-            error: 'Failed to retrieve election',
-            message: error.message
-        });
-    }
-});
-
 // ============================================
 // START SERVER
 // ============================================
