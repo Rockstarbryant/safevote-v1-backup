@@ -72,28 +72,7 @@ class VoterKeyGenerator {
                      WHERE uuid = $2`,
                     [merkleRoot, electionId]
                 );
-
-                // 2. Insert voter keys into voter_keys table
-                /*
-                for (const mapping of voterKeyMappings) {
-                    await client.query(
-                        `INSERT INTO voter_keys 
-                         (election_uuid, voter_id, voter_address, voter_key, key_hash)
-                         VALUES ($1, $2, $3, $4, $5)
-                         ON CONFLICT (election_uuid, voter_address) 
-                         DO UPDATE SET 
-                           voter_key = EXCLUDED.voter_key,
-                           key_hash = EXCLUDED.key_hash`,
-                        [
-                            mapping.election_uuid,
-                            mapping.voter_id,
-                            mapping.voter_address,
-                            mapping.voter_key,
-                            mapping.key_hash
-                        ]
-                    );
-                } */
-
+                
                 await client.query('COMMIT');
 
                 console.log(`✅ Generated merkle root for election ${electionId}`);
