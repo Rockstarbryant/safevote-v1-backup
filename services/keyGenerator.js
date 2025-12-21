@@ -74,6 +74,7 @@ class VoterKeyGenerator {
                 );
 
                 // 2. Insert voter keys into voter_keys table
+                /*
                 for (const mapping of voterKeyMappings) {
                     await client.query(
                         `INSERT INTO voter_keys 
@@ -91,7 +92,7 @@ class VoterKeyGenerator {
                             mapping.key_hash
                         ]
                     );
-                }
+                } */
 
                 await client.query('COMMIT');
 
