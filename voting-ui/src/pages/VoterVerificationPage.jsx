@@ -6,7 +6,7 @@ import { useWallet } from '../hooks/useWallet';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SecurityWarning from '../components/security/SecurityWarning';
 
-const VoterVerificationPage = () => {
+  const VoterVerificationPage = () => {
   const { electionId } = useParams();
   const navigate = useNavigate();
   const { setCurrentElection, setVoterKey, setMerkleProof, setIsVerified, setWalletAddress } = useVoting();
@@ -20,7 +20,8 @@ const VoterVerificationPage = () => {
   const [verificationStatus, setVerificationStatus] = useState('');
 
   // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  const API_URL = process.env.REACT_APP_KEYGEN_API || 'http://localhost:3001';
+  const KEYGEN_API = process.env.REACT_APP_KEYGEN_API || 'http://localhost:3001';
+  const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:5000';
 
   useEffect(() => {
     if (electionId) {
@@ -40,7 +41,8 @@ const VoterVerificationPage = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_URL}/api/elections/uuid/${electionId}`);
+     // const response = await fetch(`${API_URL}/api/elections/uuid/${electionId}`);
+      const response = await fetch(`${BACKEND_API}/api/elections/${electionId}`);
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error || 'Election not found');
@@ -75,7 +77,8 @@ const VoterVerificationPage = () => {
       setVerifying(true);
       setError(null);
 
-      const response = await fetch(`${API_URL}/api/elections/${electionId}/keys/${address}`);
+    //  const response = await fetch(`${API_URL}/api/elections/${electionId}/keys/${address}`);
+      const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/keys/${address}`);
 
       if (!response.ok) {
         if (response.status === 403) {
