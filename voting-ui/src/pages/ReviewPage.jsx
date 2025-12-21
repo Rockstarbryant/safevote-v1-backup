@@ -61,7 +61,9 @@ const ReviewPage = () => {
     }
 
     // Get on-chain election ID
-    const response = await fetch(`http://localhost:3001/api/elections/${electionId}/onchain-id`);
+    // const response = await fetch(`http://localhost:3001/api/elections/${electionId}/onchain-id`);
+    const KEYGEN_API = process.env.REACT_APP_KEYGEN_API || 'http://localhost:3001';
+    const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/onchain-id`);
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Failed to get on-chain election ID: ${response.status} ${errText}`);

@@ -19,7 +19,8 @@ const VoterVerificationPage = () => {
   const [error, setError] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState('');
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  const API_URL = process.env.REACT_APP_KEYGEN_API || 'http://localhost:3001';
 
   useEffect(() => {
     if (electionId) {
