@@ -9,7 +9,9 @@ const ElectionSelectionPage = () => {
   const [filter, setFilter] = useState('active');
   const navigate = useNavigate();
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // ✅ FIX 1: Use correct API endpoint
+  // UUID is critical for merkle proof generation - do NOT use numeric IDs
+  const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:5000';
 
   useEffect(() => {
     fetchElections();
@@ -20,44 +22,97 @@ const ElectionSelectionPage = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch from backend using UUIDs
-      const response = await fetch(`${process.env.REACT_APP_RESULTS_API}/elections`);
-      if (!response.ok) throw new Error('Failed to load elections');
+      console.log(`📡 Fetching from: ${BACKEND_API}/api/elections`);
+
+      // ✅ FIX 2: Correct API URL (was using RESULTS_API which doesn't exist)
+      const response = await fetch(`${BACKEND_API}/api/elections`);
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
 
       let allElections = await response.json();
+      console.log(`✅ Fetched ${allElections.length} elections from backend`, allElections);
+
+      // ✅ FIX 3: Handle empty response
+      if (!Array.isArray(allElections)) {
+        console.warn('⚠️ API returned non-array response:', allElections);
+        allElections = [];
+      }
 
       // Filter client-side
       const now = Math.floor(Date.now() / 1000);
       let filtered = allElections;
 
       if (filter === 'active') {
-        filtered = allElections.filter(e => 
-          e.startTime <= now && e.endTime >= now
-        );
+        // Only show elections that are currently active
+        filtered = allElections.filter(e => {
+          const startOk = e.startTime && e.startTime <= now;
+          const endOk = e.endTime && e.endTime >= now;
+          return startOk && endOk;
+        });
+        console.log(`🔍 Filtered to ${filtered.length} active elections`);
       } else if (filter === 'completed') {
-        filtered = allElections.filter(e => e.endTime < now);
+        filtered = allElections.filter(e => e.endTime && e.endTime < now);
+        console.log(`🔍 Filtered to ${filtered.length} completed elections`);
+      } else if (filter === 'upcoming') {
+        filtered = allElections.filter(e => e.startTime && e.startTime > now);
+        console.log(`🔍 Filtered to ${filtered.length} upcoming elections`);
       }
       // 'all' shows everything
 
       setElections(filtered);
+
+      // ✅ FIX 4: Show helpful message if no elections match filter
+      if (filtered.length === 0 && allElections.length > 0) {
+        console.warn(`⚠️ No ${filter} elections. Total in DB: ${allElections.length}`);
+      }
     } catch (err) {
-      setError('Failed to load elections from server.');
-      console.error(err);
+      console.error('❌ Fetch error:', err);
+      setError(`Failed to load elections: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleElectionSelect = (election) => {
-  console.log('Election object:', election); // ← Add this to see the object
-  navigate(`/verify/${election.uuid}`);  // ← Use election.uuid (the UUID)
+    console.log('🗳️ Selected election:', election);
+    // Use election.uuid (critical for merkle proof verification)
+    navigate(`/verify/${election.uuid}`);
   };
 
   const getStatusBadge = (election) => {
     const now = Math.floor(Date.now() / 1000);
-    if (election.startTime > now) return <span className="status-badge badge-upcoming">Upcoming</span>;
-    if (election.endTime < now) return <span className="status-badge badge-completed">Completed</span>;
+    
+    // ✅ FIX 5: Handle missing timestamps
+    if (!election.startTime || !election.endTime) {
+      return <span className="status-badge badge-inactive">Invalid</span>;
+    }
+
+    if (election.startTime > now) {
+      return <span className="status-badge badge-upcoming">Upcoming</span>;
+    }
+    if (election.endTime < now) {
+      return <span className="status-badge badge-completed">Completed</span>;
+    }
     return <span className="status-badge badge-active">Active</span>;
+  };
+
+  const formatDate = (timestamp) => {
+    // ✅ FIX 6: Handle both Unix timestamps and ISO strings
+    if (!timestamp) return 'N/A';
+    
+    let date;
+    if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else if (typeof timestamp === 'number') {
+      // Check if it's a Unix timestamp (seconds) or milliseconds
+      date = new Date(timestamp * (timestamp > 10000000000 ? 1 : 1000));
+    } else {
+      return 'N/A';
+    }
+
+    return date.toLocaleString();
   };
 
   if (loading) {
@@ -96,6 +151,12 @@ const ElectionSelectionPage = () => {
           Completed
         </button>
         <button 
+          className={filter === 'upcoming' ? 'tab-active' : 'tab'}
+          onClick={() => setFilter('upcoming')}
+        >
+          Upcoming
+        </button>
+        <button 
           className={filter === 'all' ? 'tab-active' : 'tab'}
           onClick={() => setFilter('all')}
         >
@@ -107,19 +168,26 @@ const ElectionSelectionPage = () => {
         <div className="empty-state">
           <div className="empty-icon">📭</div>
           <h3>No elections found</h3>
-          <p>No {filter} elections available at the moment.</p>
+          <p>
+            {filter === 'all' 
+              ? 'No elections in the database yet.' 
+              : `No ${filter} elections available at the moment.`}
+          </p>
+          <button onClick={fetchElections} className="btn btn-secondary" style={{ marginTop: '1rem' }}>
+            🔄 Refresh
+          </button>
         </div>
       ) : (
         <div className="elections-grid">
           {elections.map(election => (
-            <div key={election.id} className="election-card">
+            <div key={election.uuid} className="election-card">
               <div className="election-header">
                 <h3>{election.title || 'Untitled Election'}</h3>
                 {getStatusBadge(election)}
               </div>
 
               <p className="election-description">
-                {election.description || 'No description'}
+                {election.description || 'No description provided'}
               </p>
 
               <div className="election-meta">
@@ -129,15 +197,11 @@ const ElectionSelectionPage = () => {
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">🗓️ Start:</span>
-                  <span className="meta-value">
-                    {new Date(election.startTime * 1000).toLocaleString()}
-                  </span>
+                  <span className="meta-value">{formatDate(election.startTime)}</span>
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">⏰ End:</span>
-                  <span className="meta-value">
-                    {new Date(election.endTime * 1000).toLocaleString()}
-                  </span>
+                  <span className="meta-value">{formatDate(election.endTime)}</span>
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">👥 Voters:</span>
@@ -145,7 +209,9 @@ const ElectionSelectionPage = () => {
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">🎯 Positions:</span>
-                  <span className="meta-value">{election.positions?.length || 0}</span>
+                  <span className="meta-value">
+                    {Array.isArray(election.positions) ? election.positions.length : 0}
+                  </span>
                 </div>
               </div>
 
@@ -161,11 +227,12 @@ const ElectionSelectionPage = () => {
                 )}
               </div>
 
-             <button
-  onClick={() => handleElectionSelect(election)}
-  className="btn btn-primary btn-large">
-  Vote Now →
-  </button>
+              <button
+                onClick={() => handleElectionSelect(election)}
+                className="btn btn-primary btn-large"
+              >
+                Vote Now →
+              </button>
             </div>
           ))}
         </div>

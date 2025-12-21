@@ -642,7 +642,9 @@ generateUUID() {
           title: p.title || 'Untitled Position',
           candidates: p.candidates.filter(c => c.trim()),
           maxSelections: 1
-        }))
+        })),
+        merkleRoot: this.merkleRoot,  // ← Add this if not already
+        voterAddresses: voterAddresses  
       })
     });
 
@@ -957,7 +959,7 @@ try {
   console.warn(`Sync failed for chain ${chainId}:`, syncErr);
 }
 
-          console.log(`✅ Election deployed on chain ${chainId} with ID ${electionId}`);
+          console.log(`✅ Election deployed on chain ${chainId} with ID ${this.electionUUID}`);
         } catch (error) {
           console.error(`❌ Deployment failed on chain ${chainId}:`, error);
           deploymentResults.push({

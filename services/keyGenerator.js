@@ -1,4 +1,4 @@
-// services/keyGenerator.js
+// services/keyGenerator.js - PostgreSQL with voter_keys table
 const { ethers } = require('ethers');
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -6,179 +6,367 @@ const crypto = require('crypto');
 
 class VoterKeyGenerator {
     constructor(dbPool) {
-        this.db = dbPool;                    // MySQL pool
-        this.inMemoryTrees = new Map();      // Keep trees in memory for fast proofs
+        this.db = dbPool;  // PostgreSQL Pool (pg library)
+        this.inMemoryTrees = new Map();  // Cache merkle trees for fast proof generation
     }
 
+    /**
+     * Generate voter keys and merkle root for an election
+     * Stores keys in voter_keys table and merkle root in elections table
+     */
     async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
-        // Check if already generated
-        const existing = await this.getStoredMerkleRoot(electionId);
-        if (existing) {
-            throw new Error(`Keys already generated for election ${electionId}`);
-        }
-
-        const keys = [];
-        const voterMapping = [];
-
-        for (let i = 0; i < numVoters; i++) {
-            const voterId = crypto.randomBytes(16).toString('hex');
-            const key = ethers.utils.id(`${electionId}-${voterId}-${Date.now()}-${i}`);
-            
-            const address = voterAddresses[i] || ethers.constants.AddressZero;
-
-            const entry = {
-                election_id: electionId,
-                voter_id: voterId,
-                address: address.toLowerCase(),
-                key: key,
-                key_hash: keccak256(key).toString('hex')
-            };
-
-            keys.push(key);
-            voterMapping.push(entry);
-        }
-
-        const leaves = keys.map(key => keccak256(key));
-        const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-        const merkleRoot = tree.getHexRoot();
-
-        // === Persist to MySQL ===
         try {
-            await this.db.query('START TRANSACTION');
+            // Check if keys already generated
+            const existing = await this.getStoredMerkleRoot(electionId);
+            if (existing) {
+                throw new Error(`Keys already generated for election ${electionId}`);
+            }
 
-            // Store merkle root
-            await this.db.query(
-                `INSERT INTO elections (election_id, merkle_root, total_voters, created_at)
-                 VALUES (?, ?, ?, NOW())
-                 ON DUPLICATE KEY UPDATE merkle_root = VALUES(merkle_root)`,
-                [electionId, merkleRoot, numVoters]
-            );
+            if (!Array.isArray(voterAddresses) || voterAddresses.length === 0) {
+                throw new Error('voterAddresses must be a non-empty array');
+            }
 
-            // Store all voter keys (batch insert for performance)
-            const values = voterMapping.map(v => [
-                v.election_id,
-                v.voter_id,
-                v.address,
-                v.key,
-                v.key_hash
-            ]);
+            if (voterAddresses.length !== numVoters) {
+                throw new Error(`Address count (${voterAddresses.length}) doesn't match numVoters (${numVoters})`);
+            }
 
-            await this.db.query(
-                `INSERT INTO voter_keys 
-                 (election_id, voter_id, voter_address, voter_key, key_hash)
-                 VALUES ?`,
-                [values]
-            );
+            const keys = [];
+            const voterKeyMappings = [];
+            const normalizedAddresses = voterAddresses.map(addr => addr.toLowerCase());
 
-            await this.db.query('COMMIT');
+            // Generate unique key for each voter
+            for (let i = 0; i < numVoters; i++) {
+                const voterId = crypto.randomBytes(16).toString('hex');
+                const voterKey = ethers.utils.id(
+                    `${electionId}-${voterId}-${Date.now()}-${i}`
+                );
+                const keyHash = keccak256(voterKey).toString('hex');
 
-            // Cache tree in memory for fast proof generation
-            this.inMemoryTrees.set(electionId, { tree, voterMapping });
+                keys.push(voterKey);
+                
+                voterKeyMappings.push({
+                    election_uuid: electionId,
+                    voter_id: voterId,
+                    voter_address: normalizedAddresses[i],
+                    voter_key: voterKey,
+                    key_hash: keyHash
+                });
+            }
 
-            return {
-                merkleRoot,
-                totalKeys: keys.length
-            };
+            // Build merkle tree from keys
+            const leaves = keys.map(key => keccak256(key));
+            const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+            const merkleRoot = tree.getHexRoot();
+
+            // ============================================
+            // TRANSACTION: Store everything atomically
+            // ============================================
+            const client = await this.db.connect();
+            try {
+                await client.query('BEGIN');
+
+                // 1. Update elections table with merkle root
+                await client.query(
+                    `UPDATE elections 
+                     SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP
+                     WHERE uuid = $2`,
+                    [merkleRoot, electionId]
+                );
+
+                // 2. Insert voter keys into voter_keys table
+                for (const mapping of voterKeyMappings) {
+                    await client.query(
+                        `INSERT INTO voter_keys 
+                         (election_uuid, voter_id, voter_address, voter_key, key_hash)
+                         VALUES ($1, $2, $3, $4, $5)
+                         ON CONFLICT (election_uuid, voter_address) 
+                         DO UPDATE SET 
+                           voter_key = EXCLUDED.voter_key,
+                           key_hash = EXCLUDED.key_hash`,
+                        [
+                            mapping.election_uuid,
+                            mapping.voter_id,
+                            mapping.voter_address,
+                            mapping.voter_key,
+                            mapping.key_hash
+                        ]
+                    );
+                }
+
+                await client.query('COMMIT');
+
+                console.log(`✅ Generated merkle root for election ${electionId}`);
+                console.log(`   Root: ${merkleRoot}`);
+                console.log(`   Total voters: ${numVoters}`);
+                console.log(`   Voter keys stored in database`);
+
+                // Cache tree in memory for proof generation
+                this.inMemoryTrees.set(electionId, {
+                    tree,
+                    keys,
+                    addresses: normalizedAddresses,
+                    merkleRoot
+                });
+
+                return {
+                    merkleRoot,
+                    totalKeys: keys.length
+                };
+
+            } catch (error) {
+                await client.query('ROLLBACK');
+                throw error;
+            } finally {
+                client.release();
+            }
+
         } catch (error) {
-            await this.db.query('ROLLBACK');
+            console.error('❌ Error generating voter keys:', error.message);
             throw error;
         }
     }
 
-    // Load tree from DB into memory if needed
+    /**
+     * Load merkle tree into memory from stored keys
+     */
     async loadTreeIntoMemory(electionId) {
-        if (this.inMemoryTrees.has(electionId)) return;
+        // Already cached?
+        if (this.inMemoryTrees.has(electionId)) {
+            return this.inMemoryTrees.get(electionId);
+        }
 
-        const [rows] = await this.db.query(
-            `SELECT voter_key FROM voter_keys 
-             WHERE election_id = ? 
-             ORDER BY id ASC`,
-            [electionId]
-        );
+        try {
+            // Fetch all voter keys for this election
+            const { rows } = await this.db.query(
+                `SELECT voter_key, voter_address 
+                 FROM voter_keys 
+                 WHERE election_uuid = $1
+                 ORDER BY id ASC`,
+                [electionId]
+            );
 
-        if (rows.length === 0) return null;
+            if (rows.length === 0) {
+                throw new Error(`No voter keys found for election ${electionId}`);
+            }
 
-        const keys = rows.map(r => r.voter_key);
-        const leaves = keys.map(k => keccak256(k));
-        const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+            // Extract keys and addresses in order
+            const keys = rows.map(row => row.voter_key);
+            const addresses = rows.map(row => row.voter_address.toLowerCase());
 
-        this.inMemoryTrees.set(electionId, { tree, keys });
+            // Rebuild merkle tree from stored keys
+            const leaves = keys.map(k => keccak256(k));
+            const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+            const merkleRoot = tree.getHexRoot();
+
+            // Cache it
+            const treeData = {
+                tree,
+                keys,
+                addresses,
+                merkleRoot
+            };
+
+            this.inMemoryTrees.set(electionId, treeData);
+            console.log(`✅ Loaded ${keys.length} keys into memory for election ${electionId}`);
+            
+            return treeData;
+
+        } catch (error) {
+            console.error('❌ Error loading tree into memory:', error.message);
+            throw error;
+        }
     }
 
-    async getMerkleProof(electionId, voterKey) {
-        await this.loadTreeIntoMemory(electionId);
+    /**
+     * Generate merkle proof for a specific voter
+     */
+    async getMerkleProof(electionId, voterAddress) {
+        try {
+            const treeData = await this.loadTreeIntoMemory(electionId);
 
-        const data = this.inMemoryTrees.get(electionId);
-        if (!data) throw new Error('Election keys not found');
+            const normalizedAddress = voterAddress.toLowerCase();
+            const voterIndex = treeData.addresses.findIndex(
+                addr => addr === normalizedAddress
+            );
 
-        const leaf = keccak256(voterKey);
-        return data.tree.getHexProof(leaf);
+            if (voterIndex === -1) {
+                throw new Error(`Voter ${voterAddress} not found in election ${electionId}`);
+            }
+
+            const key = treeData.keys[voterIndex];
+            const leaf = keccak256(key);
+            const proof = treeData.tree.getHexProof(leaf);
+
+            console.log(`✅ Generated merkle proof for ${voterAddress}`);
+
+            return proof;
+
+        } catch (error) {
+            console.error('❌ Error generating merkle proof:', error.message);
+            throw error;
+        }
     }
 
+    /**
+     * Get voter data including merkle proof and voter key
+     * Called by: voting-ui to get proof before submitting vote
+     */
     async getVoterData(electionId, voterAddress) {
-        const [rows] = await this.db.query(
-            `SELECT voter_id, voter_key, key_hash 
-             FROM voter_keys 
-             WHERE election_id = ? AND voter_address = ? 
-             LIMIT 1`,
-            [electionId, voterAddress.toLowerCase()]
-        );
+        try {
+            const normalizedAddress = voterAddress.toLowerCase();
 
-        if (rows.length === 0) return null;
+            // Fetch voter key from database
+            const { rows } = await this.db.query(
+                `SELECT voter_id, voter_key, key_hash 
+                 FROM voter_keys 
+                 WHERE election_uuid = $1 AND voter_address = $2
+                 LIMIT 1`,
+                [electionId, normalizedAddress]
+            );
 
-        const voter = rows[0];
-        const proof = await this.getMerkleProof(electionId, voter.voter_key);
+            if (rows.length === 0) {
+                return null;  // Voter not eligible
+            }
 
-        return {
-            voterId: voter.voter_id,
-            address: voterAddress,
-            key: voter.voter_key,
-            keyHash: voter.key_hash,
-            merkleProof: proof
-        };
+            const voter = rows[0];
+
+            // Get merkle root from elections table
+            const { rows: electionRows } = await this.db.query(
+                `SELECT merkle_root FROM elections WHERE uuid = $1`,
+                [electionId]
+            );
+
+            if (electionRows.length === 0) {
+                throw new Error(`Election ${electionId} not found`);
+            }
+
+            const merkleRoot = electionRows[0].merkle_root;
+
+            // Generate proof
+            const proof = await this.getMerkleProof(electionId, voterAddress);
+
+            return {
+                voterAddress: normalizedAddress,
+                voterId: voter.voter_id,
+                voterKey: voter.voter_key,
+                keyHash: voter.key_hash,
+                merkleProof: proof,
+                merkleRoot: merkleRoot,
+                eligible: true
+            };
+
+        } catch (error) {
+            console.error('❌ Error getting voter data:', error.message);
+            return null;
+        }
     }
 
+    /**
+     * Get stored merkle root for an election
+     */
     async getStoredMerkleRoot(electionId) {
-        const [rows] = await this.db.query(
-            `SELECT merkle_root FROM elections WHERE election_id = ?`,
-            [electionId]
-        );
-        return rows.length > 0 ? rows[0].merkle_root : null;
+        try {
+            const { rows } = await this.db.query(
+                `SELECT merkle_root FROM elections WHERE uuid = $1`,
+                [electionId]
+            );
+            return rows.length > 0 ? rows[0].merkle_root : null;
+        } catch (error) {
+            console.error('❌ Error fetching merkle root:', error.message);
+            return null;
+        }
     }
 
-    // Fixed: No need to pass database anymore
+    /**
+     * Check if voter has already voted on any chain
+     * Prevents cross-chain double voting
+     */
     async hasVotedAnyChain(electionId, voterAddress) {
-        const [rows] = await this.db.query(
-            `SELECT 1 FROM votes 
-             WHERE election_id = ? AND voter_address = ? 
-             LIMIT 1`,
-            [electionId, voterAddress.toLowerCase()]
-        );
-        return rows.length > 0;
+        try {
+            const { rows } = await this.db.query(
+                `SELECT 1 FROM votes 
+                 WHERE election_uuid = $1 AND voter_address = $2 
+                 LIMIT 1`,
+                [electionId, voterAddress.toLowerCase()]
+            );
+            return rows.length > 0;
+        } catch (error) {
+            console.error('❌ Error checking vote status:', error.message);
+            return false;
+        }
     }
 
-    async recordVote(electionId, voterAddress, chainId, txHash, keyHash = 'pending') {
-        await this.db.query(
-            `INSERT INTO votes 
-             (election_id, voter_address, voter_key_hash, chain_id, tx_hash, voted_at)
-             VALUES (?, ?, ?, ?, ?, NOW())
-             ON DUPLICATE KEY UPDATE tx_hash = VALUES(tx_hash)`,
-            [electionId, voterAddress.toLowerCase(), keyHash, chainId, txHash]
-        );
+    /**
+     * Record a vote after successful blockchain transaction
+     */
+    async recordVote(electionId, voterAddress, chainId, txHash, voterKeyHash = null) {
+        try {
+            await this.db.query(
+                `INSERT INTO votes 
+                 (election_uuid, voter_address, chain_id, tx_hash)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (election_uuid, voter_address, chain_id) 
+                 DO UPDATE SET 
+                   tx_hash = EXCLUDED.tx_hash,
+                   timestamp = CURRENT_TIMESTAMP`,
+                [electionId, voterAddress.toLowerCase(), chainId, txHash]
+            );
+
+            console.log(`✅ Vote recorded: ${voterAddress} on chain ${chainId}`);
+        } catch (error) {
+            console.error('❌ Error recording vote:', error.message);
+            throw error;
+        }
     }
 
-    // Optional: Export all keys (for backup or frontend distribution)
-    async exportKeys(electionId) {
-        const root = await this.getStoredMerkleRoot(electionId);
-        if (!root) throw new Error('Election not found');
+    /**
+     * Mark voter key as distributed (optional tracking)
+     */
+    async markKeyDistributed(electionId, voterAddress) {
+        try {
+            await this.db.query(
+                `UPDATE voter_keys 
+                 SET distributed = TRUE, distributed_at = CURRENT_TIMESTAMP
+                 WHERE election_uuid = $1 AND voter_address = $2`,
+                [electionId, voterAddress.toLowerCase()]
+            );
 
-        const [keys] = await this.db.query(
-            `SELECT voter_id, voter_address AS address, voter_key AS key 
-             FROM voter_keys WHERE election_id = ?`,
-            [electionId]
-        );
+            console.log(`✅ Marked key distributed for ${voterAddress}`);
+        } catch (error) {
+            console.error('❌ Error marking key distributed:', error.message);
+        }
+    }
 
-        return { electionId, merkleRoot: root, totalKeys: keys.length, keys };
+    /**
+     * Get all voter keys for an election (for admin/export)
+     */
+    async getAllVoterKeys(electionId) {
+        try {
+            const { rows } = await this.db.query(
+                `SELECT voter_id, voter_address, voter_key, key_hash, distributed
+                 FROM voter_keys 
+                 WHERE election_uuid = $1
+                 ORDER BY id ASC`,
+                [electionId]
+            );
+
+            return {
+                electionId,
+                totalVoters: rows.length,
+                voters: rows
+            };
+        } catch (error) {
+            console.error('❌ Error fetching voter keys:', error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Clear tree from memory (for testing/cleanup)
+     */
+    clearMemoryCache(electionId) {
+        this.inMemoryTrees.delete(electionId);
+        console.log(`🧹 Cleared cache for election ${electionId}`);
     }
 }
 
