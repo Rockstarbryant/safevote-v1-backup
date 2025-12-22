@@ -41,7 +41,7 @@ class VoterKeyGenerator {
         keys.push(voterKey);
 
         voterKeyMappings.push({
-          election_uuid: electionId,
+          uuid: electionId,
           voter_id: voterId,
           voter_address: normalizedAddresses[i],
           voter_key: voterKey,
@@ -69,10 +69,10 @@ class VoterKeyGenerator {
         for (const mapping of voterKeyMappings) {
           await client.query(
             `INSERT INTO voter_keys 
-             (election_uuid, voter_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
+             (uuid, voter_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
             [
-              mapping.election_uuid,
+              mapping.uuid,
               mapping.voter_id,
               mapping.voter_address,
               mapping.voter_key,
@@ -278,7 +278,7 @@ class VoterKeyGenerator {
     try {
       const { rows } = await this.db.query(
         `SELECT 1 FROM votes 
-                 WHERE election_uuid = $1 AND voter_address = $2 
+                 WHERE uuid = $1 AND voter_address = $2 
                  LIMIT 1`,
         [electionId, voterAddress.toLowerCase()]
       );
@@ -296,9 +296,9 @@ class VoterKeyGenerator {
     try {
       await this.db.query(
         `INSERT INTO votes 
-                 (election_uuid, voter_address, chain_id, tx_hash)
+                 (uuid, voter_address, chain_id, tx_hash)
                  VALUES ($1, $2, $3, $4)
-                 ON CONFLICT (election_uuid, voter_address, chain_id) 
+                 ON CONFLICT (uuid, voter_address, chain_id) 
                  DO UPDATE SET 
                    tx_hash = EXCLUDED.tx_hash,
                    timestamp = CURRENT_TIMESTAMP`,
@@ -320,7 +320,7 @@ class VoterKeyGenerator {
       await this.db.query(
         `UPDATE voter_keys 
                  SET distributed = TRUE, distributed_at = CURRENT_TIMESTAMP
-                 WHERE election_uuid = $1 AND voter_address = $2`,
+                 WHERE uuid = $1 AND voter_address = $2`,
         [electionId, voterAddress.toLowerCase()]
       );
 
@@ -338,7 +338,7 @@ class VoterKeyGenerator {
       const { rows } = await this.db.query(
         `SELECT voter_id, voter_address, voter_key, key_hash, distributed
                  FROM voter_keys 
-                 WHERE election_uuid = $1
+                 WHERE uuid = $1
                  ORDER BY id ASC`,
         [electionId]
       );
