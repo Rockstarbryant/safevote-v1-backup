@@ -110,52 +110,54 @@ class VoterKeyGenerator {
      * Load merkle tree into memory from stored keys
      */
     async loadTreeIntoMemory(electionId) {
-        // Already cached?
-        if (this.inMemoryTrees.has(electionId)) {
-            return this.inMemoryTrees.get(electionId);
-        }
+  if (this.inMemoryTrees.has(electionId)) {
+    return this.inMemoryTrees.get(electionId);
+  }
 
-        try {
-            // Fetch all voter keys for this election
-            const { rows } = await this.db.query(
-                `SELECT voter_key, voter_address 
-                 FROM voter_keys 
-                 WHERE election_uuid = $1
-                 ORDER BY id ASC`,
-                [electionId]
-            );
+  try {
+    // Fetch election with voter addresses instead
+    const { rows } = await this.db.query(
+      `SELECT voter_addresses FROM elections WHERE uuid = $1`,
+      [electionId]
+    );
 
-            if (rows.length === 0) {
-                throw new Error(`No voter keys found for election ${electionId}`);
-            }
-
-            // Extract keys and addresses in order
-            const keys = rows.map(row => row.voter_key);
-            const addresses = rows.map(row => row.voter_address.toLowerCase());
-
-            // Rebuild merkle tree from stored keys
-            const leaves = keys.map(k => keccak256(k));
-            const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-            const merkleRoot = tree.getHexRoot();
-
-            // Cache it
-            const treeData = {
-                tree,
-                keys,
-                addresses,
-                merkleRoot
-            };
-
-            this.inMemoryTrees.set(electionId, treeData);
-            console.log(`✅ Loaded ${keys.length} keys into memory for election ${electionId}`);
-            
-            return treeData;
-
-        } catch (error) {
-            console.error('❌ Error loading tree into memory:', error.message);
-            throw error;
-        }
+    if (rows.length === 0) {
+      throw new Error(`Election ${electionId} not found`);
     }
+
+    const addresses = rows[0].voter_addresses || [];
+    if (!Array.isArray(addresses)) {
+      addresses = JSON.parse(addresses);
+    }
+
+    if (addresses.length === 0) {
+      throw new Error(`No voter addresses found for election ${electionId}`);
+    }
+
+    // Regenerate keys from addresses
+    const keys = addresses.map((addr, i) =>
+      ethers.utils.id(`${electionId}-${addr}-${i}`)
+    );
+
+    const leaves = keys.map(k => keccak256(k));
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+    const merkleRoot = tree.getHexRoot();
+
+    const treeData = {
+      tree,
+      keys,
+      addresses: addresses.map(a => String(a).toLowerCase()),
+      merkleRoot
+    };
+
+    this.inMemoryTrees.set(electionId, treeData);
+    return treeData;
+
+  } catch (error) {
+    console.error('❌ Error loading tree into memory:', error.message);
+    throw error;
+  }
+}
 
     /**
      * Generate merkle proof for a specific voter
