@@ -325,49 +325,30 @@ app.post('/api/elections/create', async (req, res) => {
 // SYNC CHAIN DEPLOYMENT
 // Called by: electionconductor.js (frontend)
 // ============================================
-app.post('/api/elections/sync-chain', async (req, res) => {
-  if (!dbPool) {
-    return res.status(503).json({
-      error: 'Database not available',
-    });
+// Sync chain deployment details to database
+app.post('/api/elections/sync-deployment', async (req, res) => {
+  const { electionId, chainId, onChainElectionId, txHash } = req.body;
+
+  if (!electionId || !chainId || !onChainElectionId || !txHash) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    const { electionId, chainId, onChainElectionId, txHash } = req.body;
-
-    if (!electionId || !chainId || !onChainElectionId) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-        required: ['electionId', 'chainId', 'onChainElectionId'],
-      });
-    }
-
-    console.log(`⛓️  Syncing deployment: ${electionId} on chain ${chainId}`);
-
-    // Insert or update chain deployment
     await dbPool.query(
-      `INSERT INTO chain_deployments 
-             (election_uuid, chain_id, on_chain_election_id, tx_hash)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (election_uuid, chain_id) DO UPDATE SET
-               on_chain_election_id = EXCLUDED.on_chain_election_id,
-               tx_hash = EXCLUDED.tx_hash,
-               deployed_at = CURRENT_TIMESTAMP`,
-      [electionId, chainId, onChainElectionId, txHash || '']
+      `INSERT INTO election_chains (election_id, chain_id, on_chain_election_id, tx_hash, deployed_at)
+       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+       ON CONFLICT (election_id, chain_id) DO UPDATE
+       SET on_chain_election_id = EXCLUDED.on_chain_election_id,
+           tx_hash = EXCLUDED.tx_hash,
+           deployed_at = CURRENT_TIMESTAMP`,
+      [electionId, chainId, onChainElectionId, txHash]
     );
 
-    console.log(`✅ Chain deployment synced`);
-
-    res.json({
-      success: true,
-      message: 'Chain deployment synced successfully',
-    });
-  } catch (error) {
-    console.error('❌ Sync chain error:', error.message);
-    res.status(500).json({
-      error: 'Failed to sync chain deployment',
-      message: error.message,
-    });
+    console.log(`✅ Synced deployment: ${electionId} on chain ${chainId}`);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Sync deployment error:', err.message);
+    res.status(500).json({ error: 'Failed to sync deployment' });
   }
 });
 
