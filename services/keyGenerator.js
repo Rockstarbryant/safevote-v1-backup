@@ -69,11 +69,10 @@ class VoterKeyGenerator {
         for (const mapping of voterKeyMappings) {
           await client.query(
             `INSERT INTO voter_keys 
-             (election_id, voter_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
+             (election_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
             [
               mapping.election_id,
-              mapping.voter_id,
               mapping.voter_address,
               mapping.voter_key,
               mapping.key_hash,
@@ -336,9 +335,9 @@ class VoterKeyGenerator {
   async getAllVoterKeys(electionId) {
     try {
       const { rows } = await this.db.query(
-        `SELECT voter_id, voter_address, voter_key, key_hash, distributed
+        `SELECT voter_address, voter_key, key_hash, distributed
                  FROM voter_keys 
-                 WHERE uuid = $1
+                 WHERE election_id = $1
                  ORDER BY id ASC`,
         [electionId]
       );
