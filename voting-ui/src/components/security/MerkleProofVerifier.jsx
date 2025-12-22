@@ -7,10 +7,7 @@ const MerkleProofVerifier = ({ voterKey, proof, root }) => {
     <div className="merkle-verifier">
       <div className="verifier-header">
         <h4>🔐 Cryptographic Verification</h4>
-        <button 
-          onClick={() => setShowDetails(!showDetails)}
-          className="details-toggle"
-        >
+        <button onClick={() => setShowDetails(!showDetails)} className="details-toggle">
           {showDetails ? 'Hide Details' : 'Show Details'}
         </button>
       </div>
@@ -87,9 +84,8 @@ const MerkleProofVerifier = ({ voterKey, proof, root }) => {
           </div>
 
           <div className="security-guarantee">
-            <strong>Security Guarantee:</strong> This cryptographic proof is 
-            mathematically impossible to forge without knowing a valid voter key 
-            from the authorized list.
+            <strong>Security Guarantee:</strong> This cryptographic proof is mathematically
+            impossible to forge without knowing a valid voter key from the authorized list.
           </div>
         </div>
       )}

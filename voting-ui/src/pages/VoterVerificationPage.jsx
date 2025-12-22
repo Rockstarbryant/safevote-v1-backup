@@ -6,10 +6,11 @@ import { useWallet } from '../hooks/useWallet';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SecurityWarning from '../components/security/SecurityWarning';
 
-  const VoterVerificationPage = () => {
+const VoterVerificationPage = () => {
   const { electionId } = useParams();
   const navigate = useNavigate();
-  const { setCurrentElection, setVoterKey, setMerkleProof, setIsVerified, setWalletAddress } = useVoting();
+  const { setCurrentElection, setVoterKey, setMerkleProof, setIsVerified, setWalletAddress } =
+    useVoting();
   const { addSecurityWarning } = useSecurity();
   const { address, connectWallet, isConnecting } = useWallet();
 
@@ -41,7 +42,7 @@ import SecurityWarning from '../components/security/SecurityWarning';
       setLoading(true);
       setError(null);
 
-     // const response = await fetch(`${API_URL}/api/elections/uuid/${electionId}`);
+      // const response = await fetch(`${API_URL}/api/elections/uuid/${electionId}`);
       const response = await fetch(`${BACKEND_API}/api/elections/${electionId}`);
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
@@ -77,7 +78,7 @@ import SecurityWarning from '../components/security/SecurityWarning';
       setVerifying(true);
       setError(null);
 
-    //  const response = await fetch(`${API_URL}/api/elections/${electionId}/keys/${address}`);
+      //  const response = await fetch(`${API_URL}/api/elections/${electionId}/keys/${address}`);
       const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/keys/${address}`);
 
       if (!response.ok) {
@@ -97,7 +98,7 @@ import SecurityWarning from '../components/security/SecurityWarning';
 
       const data = await response.json();
 
-      if (!data.success || !data.key || !data.merkleProof) {
+      if (!data.success || !data.merkleProof) {
         throw new Error('Invalid verification data received');
       }
 
@@ -145,8 +146,8 @@ import SecurityWarning from '../components/security/SecurityWarning';
             <p className="error-description">
               Make sure you're using the correct voting link shared by the election organizer.
             </p>
-            <button 
-              onClick={() => navigate('/elections')} 
+            <button
+              onClick={() => navigate('/elections')}
               className="verification-btn verification-btn-primary"
             >
               ← Back to Elections
@@ -160,7 +161,6 @@ import SecurityWarning from '../components/security/SecurityWarning';
   return (
     <div className="verification-page">
       <div className="verification-container">
-        
         {/* Header Card */}
         <div className="verification-header-card">
           <div className="verification-header-content">
@@ -185,7 +185,9 @@ import SecurityWarning from '../components/security/SecurityWarning';
 
           {!address ? (
             <div className="step-content">
-              <p className="step-description">Connect your wallet to verify your voting eligibility</p>
+              <p className="step-description">
+                Connect your wallet to verify your voting eligibility
+              </p>
               <button
                 onClick={handleConnectWallet}
                 disabled={isConnecting}
@@ -199,7 +201,9 @@ import SecurityWarning from '../components/security/SecurityWarning';
               <span className="success-check">✓</span>
               <div className="success-content">
                 <p className="success-label">Wallet Connected</p>
-                <code className="success-address">{address.substring(0, 6)}...{address.substring(38)}</code>
+                <code className="success-address">
+                  {address.substring(0, 6)}...{address.substring(38)}
+                </code>
               </div>
             </div>
           )}
@@ -242,8 +246,12 @@ import SecurityWarning from '../components/security/SecurityWarning';
                 <span className="alert-icon">⚠️</span>
                 <div className="alert-content">
                   <h4 className="alert-title">Not Eligible</h4>
-                  <p className="alert-message">Your wallet address is not on the approved voter list.</p>
-                  <p className="alert-sub">Please contact the election organizer if you believe this is a mistake.</p>
+                  <p className="alert-message">
+                    Your wallet address is not on the approved voter list.
+                  </p>
+                  <p className="alert-sub">
+                    Please contact the election organizer if you believe this is a mistake.
+                  </p>
                 </div>
               </div>
             )}
@@ -260,10 +268,7 @@ import SecurityWarning from '../components/security/SecurityWarning';
 
       {/* Footer */}
       <div className="verification-footer">
-        <button 
-          onClick={() => navigate('/elections')} 
-          className="verification-footer-link"
-        >
+        <button onClick={() => navigate('/elections')} className="verification-footer-link">
           ← Back to Elections
         </button>
       </div>

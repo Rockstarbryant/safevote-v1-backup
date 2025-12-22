@@ -43,15 +43,9 @@ export default function CandidateCard({
         <p className="candidate-number">Candidate #{index + 1}</p>
       </div>
 
-      {isSelected && (
-        <div className="selection-indicator">✓ Selected</div>
-      )}
+      {isSelected && <div className="selection-indicator">✓ Selected</div>}
 
-      {isDisabled && (
-        <div className="disabled-indicator">
-          Max {maxSelections} selected
-        </div>
-      )}
+      {isDisabled && <div className="disabled-indicator">Max {maxSelections} selected</div>}
     </div>
   );
 }

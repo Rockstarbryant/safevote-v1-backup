@@ -12,8 +12,8 @@ export const generateProof = async (voterKey, merkleRoot) => {
       },
       body: JSON.stringify({
         voterKey,
-        merkleRoot
-      })
+        merkleRoot,
+      }),
     });
 
     if (!response.ok) {
@@ -34,19 +34,15 @@ export const generateProof = async (voterKey, merkleRoot) => {
 export const verifyProof = (voterKey, proof, root) => {
   try {
     let computedHash = ethers.utils.keccak256(voterKey);
-    
+
     for (const proofElement of proof) {
       if (computedHash < proofElement) {
-        computedHash = ethers.utils.keccak256(
-          ethers.utils.concat([computedHash, proofElement])
-        );
+        computedHash = ethers.utils.keccak256(ethers.utils.concat([computedHash, proofElement]));
       } else {
-        computedHash = ethers.utils.keccak256(
-          ethers.utils.concat([proofElement, computedHash])
-        );
+        computedHash = ethers.utils.keccak256(ethers.utils.concat([proofElement, computedHash]));
       }
     }
-    
+
     return computedHash === root;
   } catch (error) {
     console.error('Error verifying Merkle proof:', error);
@@ -61,7 +57,7 @@ export const generateVoterKey = () => {
 
 // Format proof for contract
 export const formatProofForContract = (proof) => {
-  return proof.map(p => {
+  return proof.map((p) => {
     if (typeof p === 'string' && !p.startsWith('0x')) {
       return '0x' + p;
     }
@@ -82,7 +78,7 @@ const merkleService = {
   generateVoterKey,
   formatProofForContract,
   generateMerkleProof,
-  verifyMerkleProof
+  verifyMerkleProof,
 };
 
 export default merkleService;

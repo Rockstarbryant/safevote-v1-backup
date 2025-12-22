@@ -53,49 +53,55 @@ export const useVotingState = () => {
   /**
    * Load results for a position
    */
-  const loadResults = useCallback(async (positionIndex) => {
-    try {
-      if (!electionId) return;
+  const loadResults = useCallback(
+    async (positionIndex) => {
+      try {
+        if (!electionId) return;
 
-      const positionResults = await getElectionResults(electionId, positionIndex);
-      setResults(prev => ({
-        ...prev,
-        [positionIndex]: positionResults,
-      }));
-    } catch (err) {
-      console.error('Failed to load results:', err);
-    }
-  }, [electionId]);
+        const positionResults = await getElectionResults(electionId, positionIndex);
+        setResults((prev) => ({
+          ...prev,
+          [positionIndex]: positionResults,
+        }));
+      } catch (err) {
+        console.error('Failed to load results:', err);
+      }
+    },
+    [electionId]
+  );
 
   /**
    * Update vote for a position
    */
-  const updateVote = useCallback((positionIndex, candidateIndex) => {
-    setVotes(prev => {
-      const newVotes = { ...prev };
-      const positionVotes = newVotes[positionIndex] || [];
-      const maxSelections = positions[positionIndex]?.max_selections || 1;
+  const updateVote = useCallback(
+    (positionIndex, candidateIndex) => {
+      setVotes((prev) => {
+        const newVotes = { ...prev };
+        const positionVotes = newVotes[positionIndex] || [];
+        const maxSelections = positions[positionIndex]?.max_selections || 1;
 
-      // If already selected, remove it
-      if (positionVotes.includes(candidateIndex)) {
-        newVotes[positionIndex] = positionVotes.filter(idx => idx !== candidateIndex);
-      } else if (positionVotes.length < maxSelections) {
-        // Add if under max
-        newVotes[positionIndex] = [...positionVotes, candidateIndex];
-      } else {
-        // Replace last if at max
-        newVotes[positionIndex] = [...positionVotes.slice(0, -1), candidateIndex];
-      }
+        // If already selected, remove it
+        if (positionVotes.includes(candidateIndex)) {
+          newVotes[positionIndex] = positionVotes.filter((idx) => idx !== candidateIndex);
+        } else if (positionVotes.length < maxSelections) {
+          // Add if under max
+          newVotes[positionIndex] = [...positionVotes, candidateIndex];
+        } else {
+          // Replace last if at max
+          newVotes[positionIndex] = [...positionVotes.slice(0, -1), candidateIndex];
+        }
 
-      return newVotes;
-    });
-  }, [positions]);
+        return newVotes;
+      });
+    },
+    [positions]
+  );
 
   /**
    * Clear votes for a position
    */
   const clearPositionVotes = useCallback((positionIndex) => {
-    setVotes(prev => ({
+    setVotes((prev) => ({
       ...prev,
       [positionIndex]: [],
     }));
@@ -115,16 +121,22 @@ export const useVotingState = () => {
   /**
    * Check if a candidate is selected
    */
-  const isSelected = useCallback((positionIndex, candidateIndex) => {
-    return votes[positionIndex]?.includes(candidateIndex) || false;
-  }, [votes]);
+  const isSelected = useCallback(
+    (positionIndex, candidateIndex) => {
+      return votes[positionIndex]?.includes(candidateIndex) || false;
+    },
+    [votes]
+  );
 
   /**
    * Get votes for a position
    */
-  const getPositionVotes = useCallback((positionIndex) => {
-    return votes[positionIndex] || [];
-  }, [votes]);
+  const getPositionVotes = useCallback(
+    (positionIndex) => {
+      return votes[positionIndex] || [];
+    },
+    [votes]
+  );
 
   /**
    * Get all votes as array

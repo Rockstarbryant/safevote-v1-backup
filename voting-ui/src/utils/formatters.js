@@ -20,7 +20,7 @@ export const formatDate = (timestamp) => {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
@@ -40,13 +40,13 @@ export const formatPercentage = (value, total) => {
 export const formatTimeRemaining = (endTime) => {
   const now = Date.now() / 1000;
   const remaining = endTime - now;
-  
+
   if (remaining <= 0) return 'Ended';
-  
+
   const days = Math.floor(remaining / 86400);
   const hours = Math.floor((remaining % 86400) / 3600);
   const minutes = Math.floor((remaining % 3600) / 60);
-  
+
   if (days > 0) return `${days}d ${hours}h remaining`;
   if (hours > 0) return `${hours}h ${minutes}m remaining`;
   return `${minutes}m remaining`;
@@ -81,7 +81,7 @@ const formatters = {
   formatTimeRemaining,
   formatVoteCount,
   formatTxHash,
-  formatVoterKey
+  formatVoterKey,
 };
 
 export default formatters;

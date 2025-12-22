@@ -13,7 +13,7 @@ export const initializeProvider = async () => {
   try {
     if (window.ethereum) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
+      await provider.send('eth_requestAccounts', []);
       signer = provider.getSigner();
       contract = new ethers.Contract(CONTRACT_ADDRESS, SAFE_VOTE_V2_ABI, signer);
       return true;
@@ -63,7 +63,7 @@ export const getElection = async (electionId) => {
   try {
     if (!contract) await initializeProvider();
     const election = await contract.getElection(electionId);
-    
+
     return {
       electionId: election.electionId_.toNumber(),
       creator: election.creator,
@@ -80,7 +80,7 @@ export const getElection = async (electionId) => {
       allowAnonymous: election.allowAnonymous,
       allowDelegation: election.allowDelegation,
       status: election.status,
-      positions: election.positions
+      positions: election.positions,
     };
   } catch (error) {
     console.error('Error getting election:', error);
@@ -95,10 +95,7 @@ export const hasVoted = async (electionId, voterKey) => {
 
     // The contract uses keccak256(electionId, voterKey) as the key hash
     const keyHash = ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(
-        ['uint256', 'bytes32'],
-        [electionId, voterKey]
-      )
+      ethers.utils.defaultAbiCoder.encode(['uint256', 'bytes32'], [electionId, voterKey])
     );
 
     const used = await contract.usedVoterKeys(electionId, keyHash);
@@ -114,19 +111,13 @@ export const hasVoted = async (electionId, voterKey) => {
 export const castVote = async (electionId, voterKey, merkleProof, votes, delegateTo) => {
   try {
     if (!contract) await initializeProvider();
-    
+
     const delegateAddress = delegateTo || ethers.constants.AddressZero;
-    
-    const tx = await contract.vote(
-      electionId,
-      voterKey,
-      merkleProof,
-      votes,
-      delegateAddress
-    );
-    
+
+    const tx = await contract.vote(electionId, voterKey, merkleProof, votes, delegateAddress);
+
     const receipt = await tx.wait();
-    
+
     // === SUCCESS: Record vote in backend database ===
     try {
       const currentAddress = await signer.getAddress();
@@ -136,13 +127,13 @@ export const castVote = async (electionId, voterKey, merkleProof, votes, delegat
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          electionId: electionId,           // UUID
+          electionId: electionId, // UUID
           voterAddress: currentAddress,
           chainId: chainId,
           voterKey: voterKey,
           txHash: receipt.transactionHash,
-          blockNumber: receipt.blockNumber
-        })
+          blockNumber: receipt.blockNumber,
+        }),
       });
       console.log('Vote recorded in backend database');
     } catch (recordErr) {
@@ -153,13 +144,13 @@ export const castVote = async (electionId, voterKey, merkleProof, votes, delegat
     return {
       success: true,
       transactionHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber
+      blockNumber: receipt.blockNumber,
     };
   } catch (error) {
     console.error('Error casting vote:', error);
     return {
       success: false,
-      error: error.message || 'Transaction failed or was rejected'
+      error: error.message || 'Transaction failed or was rejected',
     };
   }
 };
@@ -169,10 +160,10 @@ export const getElectionResults = async (electionId, positionIndex) => {
   try {
     if (!contract) await initializeProvider();
     const results = await contract.getElectionResults(electionId, positionIndex);
-    
+
     return {
       candidates: results.candidates,
-      votesCast: results.votesCast.map(v => v.toNumber())
+      votesCast: results.votesCast.map((v) => v.toNumber()),
     };
   } catch (error) {
     console.error('Error getting results:', error);
@@ -184,26 +175,20 @@ export const getElectionResults = async (electionId, positionIndex) => {
 export const delegateVote = async (electionId, delegateAddress) => {
   try {
     if (!contract) await initializeProvider();
-    
-    const tx = await contract.vote(
-      electionId,
-      ethers.constants.HashZero,
-      [],
-      [],
-      delegateAddress
-    );
-    
+
+    const tx = await contract.vote(electionId, ethers.constants.HashZero, [], [], delegateAddress);
+
     const receipt = await tx.wait();
-    
+
     return {
       success: true,
-      transactionHash: receipt.transactionHash
+      transactionHash: receipt.transactionHash,
     };
   } catch (error) {
     console.error('Error delegating vote:', error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };
@@ -225,7 +210,7 @@ const votingService = {
   castVote,
   hasVoted,
   getElectionResults,
-  delegateVote
+  delegateVote,
 };
 
 export default votingService;

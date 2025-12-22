@@ -14,17 +14,15 @@ export default function AnonymousToggle({ enabled, onChange }) {
       </div>
 
       <label className="toggle-switch">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => onChange(e.target.checked)}
-        />
+        <input type="checkbox" checked={enabled} onChange={(e) => onChange(e.target.checked)} />
         <span className="toggle-slider"></span>
       </label>
 
       <div className="toggle-info">
         {enabled ? (
-          <p className="info-text success">✓ Anonymous mode enabled - Your vote will be recorded without your address</p>
+          <p className="info-text success">
+            ✓ Anonymous mode enabled - Your vote will be recorded without your address
+          </p>
         ) : (
           <p className="info-text warning">⚠ Your vote will be linked to your wallet address</p>
         )}

@@ -17,9 +17,7 @@ const VotingPage = () => {
     <div className="page-container voting-page">
       <div className="hero-section">
         <h1>🗳️ SafeVote</h1>
-        <p className="hero-subtitle">
-          Secure, Transparent, Blockchain-Powered Voting
-        </p>
+        <p className="hero-subtitle">Secure, Transparent, Blockchain-Powered Voting</p>
       </div>
 
       <div className="features-grid">
@@ -51,7 +49,7 @@ const VotingPage = () => {
       <div className="quick-vote-section">
         <h2>Quick Vote Access</h2>
         <p>Have an election ID? Enter it here to vote directly</p>
-        
+
         <div className="quick-vote-input">
           <input
             type="number"
@@ -69,11 +67,8 @@ const VotingPage = () => {
       <div className="cta-section">
         <h2>Ready to Vote?</h2>
         <p>Browse available elections and participate in democratic governance</p>
-        
-        <button 
-          onClick={() => navigate('/elections')}
-          className="btn-primary btn-large"
-        >
+
+        <button onClick={() => navigate('/elections')} className="btn-primary btn-large">
           Browse Elections →
         </button>
       </div>

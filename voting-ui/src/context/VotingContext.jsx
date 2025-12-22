@@ -87,14 +87,14 @@ export const VotingProvider = ({ children }) => {
   }, [delegateTo]);
 
   const updateVote = (positionIndex, candidateIndices) => {
-    setVotes(prev => ({
+    setVotes((prev) => ({
       ...prev,
-      [positionIndex]: candidateIndices
+      [positionIndex]: candidateIndices,
     }));
   };
 
   const clearVote = (positionIndex) => {
-    setVotes(prev => {
+    setVotes((prev) => {
       const newVotes = { ...prev };
       delete newVotes[positionIndex];
       return newVotes;
@@ -131,14 +131,10 @@ export const VotingProvider = ({ children }) => {
     setDelegateTo,
     walletAddress,
     setWalletAddress,
-    resetVoting
+    resetVoting,
   };
 
-  return (
-    <VotingContext.Provider value={value}>
-      {children}
-    </VotingContext.Provider>
-  );
+  return <VotingContext.Provider value={value}>{children}</VotingContext.Provider>;
 };
 
 export default VotingContext;

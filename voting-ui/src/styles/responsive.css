@@ -469,7 +469,7 @@
 /* High Contrast Mode */
 @media (prefers-contrast: high) {
   :root {
-    --primary-color: #0000FF;
+    --primary-color: #0000ff;
     --border-color: #000000;
     --text-secondary: #000000;
   }
@@ -495,15 +495,15 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #111827;
-    --card-bg: #1F2937;
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
+    --card-bg: #1f2937;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
     --border-color: #374151;
   }
 
   .input-field {
     background: #374151;
-    color: #F9FAFB;
+    color: #f9fafb;
   }
 
   .election-card:hover {

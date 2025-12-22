@@ -6,7 +6,7 @@ const VotingBooth = ({
   positionIndex,
   selectedCandidates = [],
   onVoteChange,
-  maxSelections = 1
+  maxSelections = 1,
 }) => {
   const handleCandidateClick = (candidateIndex) => {
     const isCurrentlySelected = selectedCandidates.includes(candidateIndex);
@@ -23,9 +23,8 @@ const VotingBooth = ({
     onVoteChange(candidateIndex, shouldSelect);
   };
 
-  const selectionProgress = maxSelections > 0 
-    ? (selectedCandidates.length / maxSelections) * 100 
-    : 0;
+  const selectionProgress =
+    maxSelections > 0 ? (selectedCandidates.length / maxSelections) * 100 : 0;
 
   return (
     <div className="voting-booth">
@@ -33,7 +32,8 @@ const VotingBooth = ({
         <div className="header-content">
           <h3>Select Your Candidate(s)</h3>
           <p className="selection-instruction">
-            You can select up to {maxSelections} candidate{maxSelections > 1 ? 's' : ''} for this position
+            You can select up to {maxSelections} candidate{maxSelections > 1 ? 's' : ''} for this
+            position
           </p>
         </div>
         <div className="selection-counter">
@@ -63,7 +63,7 @@ const VotingBooth = ({
               candidate={candidate}
               index={idx}
               isSelected={isSelected}
-              onSelect={() => handleCandidateClick(idx)}  // ← Important: pass function, not values
+              onSelect={() => handleCandidateClick(idx)} // ← Important: pass function, not values
               disabled={isDisabled}
             />
           );
@@ -82,9 +82,7 @@ const VotingBooth = ({
       {selectedCandidates.length === 0 && (
         <div className="no-selection-notice">
           <span className="notice-icon">👆</span>
-          <span className="notice-text">
-            Please select at least one candidate to continue
-          </span>
+          <span className="notice-text">Please select at least one candidate to continue</span>
         </div>
       )}
     </div>

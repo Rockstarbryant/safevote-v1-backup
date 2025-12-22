@@ -15,15 +15,18 @@ export const SecurityProvider = ({ children }) => {
   const [rateLimitInfo, setRateLimitInfo] = useState({
     requests: 0,
     windowStart: Date.now(),
-    isBlocked: false
+    isBlocked: false,
   });
 
   const addSecurityWarning = (warning) => {
-    setSecurityWarnings(prev => [...prev, {
-      id: Date.now(),
-      message: warning,
-      timestamp: new Date().toISOString()
-    }]);
+    setSecurityWarnings((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        message: warning,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
   };
 
   const clearSecurityWarnings = () => {
@@ -31,10 +34,10 @@ export const SecurityProvider = ({ children }) => {
   };
 
   const updateRateLimit = (requests) => {
-    setRateLimitInfo(prev => ({
+    setRateLimitInfo((prev) => ({
       ...prev,
       requests,
-      isBlocked: requests >= 10
+      isBlocked: requests >= 10,
     }));
   };
 
@@ -42,7 +45,7 @@ export const SecurityProvider = ({ children }) => {
     setRateLimitInfo({
       requests: 0,
       windowStart: Date.now(),
-      isBlocked: false
+      isBlocked: false,
     });
   };
 
@@ -52,12 +55,8 @@ export const SecurityProvider = ({ children }) => {
     clearSecurityWarnings,
     rateLimitInfo,
     updateRateLimit,
-    resetRateLimit
+    resetRateLimit,
   };
 
-  return (
-    <SecurityContext.Provider value={value}>
-      {children}
-    </SecurityContext.Provider>
-  );
+  return <SecurityContext.Provider value={value}>{children}</SecurityContext.Provider>;
 };

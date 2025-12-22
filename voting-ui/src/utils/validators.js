@@ -57,16 +57,9 @@ export const validateDelegationInput = (delegateAddress) => {
  * Validate election object
  */
 export const validateElectionObject = (election) => {
-  const required = [
-    'election_id',
-    'title',
-    'positions',
-    'start_time',
-    'end_time',
-    'status',
-  ];
+  const required = ['election_id', 'title', 'positions', 'start_time', 'end_time', 'status'];
 
-  const missing = required.filter(field => !(field in election));
+  const missing = required.filter((field) => !(field in election));
 
   return {
     valid: missing.length === 0,

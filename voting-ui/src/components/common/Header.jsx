@@ -11,7 +11,7 @@ export default function Header({ account }) {
     <header className="app-header">
       <div className="header-container">
         <div className="header-left">
-          <h1 className="app-title">🗳️ SafeVote</h1>
+          <h1 className="app-title">🗳️ BlockBallot</h1>
           <p className="app-subtitle">Secure & Transparent Blockchain Voting</p>
         </div>
 

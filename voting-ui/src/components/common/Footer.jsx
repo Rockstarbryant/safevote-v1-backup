@@ -9,8 +9,11 @@ const Footer = () => {
     <footer className="app-footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h4>SafeVote</h4>
-          <p>Secure blockchain-powered voting platform</p>
+          <h4>BlockBallot</h4>
+          <p>
+            BlockBallot uses blockchain to finalize votes, while a backend coordinates voter </p>
+          <p>  participation to ensure one-vote-per-election across multiple chains.
+          </p>
           <p className="footer-tagline">Making democracy transparent and accessible</p>
         </div>
 
@@ -28,20 +31,12 @@ const Footer = () => {
               </button>
             </li>
             <li>
-              <a 
-                href="https://sepolia.arbiscan.io" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
+              <a href="https://sepolia.arbiscan.io" target="_blank" rel="noopener noreferrer">
                 Block Explorer ↗
               </a>
             </li>
             <li>
-              <a 
-                href="https://docs.arbitrum.io" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
+              <a href="https://docs.arbitrum.io" target="_blank" rel="noopener noreferrer">
                 Arbitrum Docs ↗
               </a>
             </li>
@@ -51,8 +46,8 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Security</h4>
           <ul className="footer-features">
-            <li>🔒 End-to-end encrypted</li>
-            <li>⛓️ Blockchain verified</li>
+            <li>🔒 End-to-end verifiable voting</li>
+            <li>⛓️ Tamper-resistant, blockchain-finalized voting</li>
             <li>🛡️ Merkle proof secured</li>
             <li>🔐 Anonymous voting option</li>
           </ul>
@@ -72,7 +67,7 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <div className="footer-bottom-content">
-          <p>&copy; {currentYear} SafeVote. All rights reserved.</p>
+          <p>&copy; {currentYear} BlockBallot. All rights reserved.</p>
           <div className="footer-legal">
             <button onClick={() => alert('Privacy Policy')} className="footer-link-button">
               Privacy Policy
@@ -88,7 +83,7 @@ const Footer = () => {
           </div>
         </div>
         <p className="footer-disclaimer">
-          Votes are cryptographically secured and permanently recorded on the blockchain
+          BlockBallot supports multichain deployment when required, but single-chain elections offer the strongest guarantees
         </p>
       </div>
     </footer>

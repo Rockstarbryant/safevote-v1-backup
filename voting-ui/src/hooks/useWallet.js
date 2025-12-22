@@ -8,7 +8,7 @@ export const useWallet = () => {
 
   useEffect(() => {
     checkIfWalletIsConnected();
-    
+
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', () => window.location.reload());
@@ -25,8 +25,8 @@ export const useWallet = () => {
     try {
       if (!window.ethereum) return;
 
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_accounts' 
+      const accounts = await window.ethereum.request({
+        method: 'eth_accounts',
       });
 
       if (accounts.length > 0) {
@@ -57,7 +57,7 @@ export const useWallet = () => {
 
       await initializeProvider();
       const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
+        method: 'eth_requestAccounts',
       });
 
       setAddress(accounts[0]);
@@ -79,7 +79,7 @@ export const useWallet = () => {
     isConnecting,
     error,
     connectWallet,
-    disconnectWallet
+    disconnectWallet,
   };
 };
 

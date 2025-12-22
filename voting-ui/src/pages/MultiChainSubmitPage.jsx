@@ -21,20 +21,20 @@ const MultiChainSubmitPage = () => {
     if (!currentElection || !provider) return;
 
     // Get current wallet chain
-    provider.getNetwork().then(net => setCurrentChainId(net.chainId));
+    provider.getNetwork().then((net) => setCurrentChainId(net.chainId));
 
     // Get deployed chains from backend
     fetch(`http://localhost:3001/api/elections/${electionId}/chains`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.chains && data.chains.length > 0) {
           setChains(data.chains);
           // Auto-select current chain if available
-          const current = data.chains.find(c => c.chainId === net.chainId);
+          const current = data.chains.find((c) => c.chainId === net.chainId);
           if (current) setSelectedChain(current);
         }
       })
-      .catch(err => console.error('Failed to load chains', err));
+      .catch((err) => console.error('Failed to load chains', err));
   }, [currentElection, provider, electionId]);
 
   const handleSubmit = async () => {
@@ -66,14 +66,16 @@ const MultiChainSubmitPage = () => {
       }
 
       // Get on-chain election ID for this chain
-      const res = await fetch(`http://localhost:3001/api/elections/${electionId}/chain/${selectedChain.chainId}`);
+      const res = await fetch(
+        `http://localhost:3001/api/elections/${electionId}/chain/${selectedChain.chainId}`
+      );
       const { onChainElectionId } = await res.json();
 
       // Format votes
       const formattedVotes = currentElection.positions.map((_, i) => votes[i] || []);
 
       const result = await votingService.castVote(
-        onChainElectionId,  // numeric ID for this chain
+        onChainElectionId, // numeric ID for this chain
         voterKey,
         merkleProof,
         formattedVotes
@@ -85,8 +87,8 @@ const MultiChainSubmitPage = () => {
         state: {
           transactionHash: result.transactionHash,
           chainName: selectedChain.name,
-          chainId: selectedChain.chainId
-        }
+          chainId: selectedChain.chainId,
+        },
       });
     } catch (err) {
       setError(err.message || 'Vote submission failed');
@@ -103,9 +105,7 @@ const MultiChainSubmitPage = () => {
     <div className="page-container min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 py-12 px-6">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">
-            🌐 Choose Blockchain
-          </h1>
+          <h1 className="text-5xl font-bold text-white mb-4">🌐 Choose Blockchain</h1>
           <p className="text-2xl text-purple-200">
             This election is live on multiple chains. Select where to submit your vote.
           </p>
@@ -117,27 +117,22 @@ const MultiChainSubmitPage = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {chains.map(chain => (
+            {chains.map((chain) => (
               <div
                 key={chain.chainId}
                 onClick={() => setSelectedChain(chain)}
                 className={`glass card-glow p-8 rounded-2xl cursor-pointer transition-all duration-300
-                  ${selectedChain?.chainId === chain.chainId 
-                    ? 'ring-4 ring-purple-400 shadow-2xl scale-105' 
-                    : 'hover:scale-105'
+                  ${
+                    selectedChain?.chainId === chain.chainId
+                      ? 'ring-4 ring-purple-400 shadow-2xl scale-105'
+                      : 'hover:scale-105'
                   }`}
               >
                 <div className="text-center">
                   <div className="text-6xl mb-4">{chain.icon}</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    {chain.name}
-                  </h3>
-                  <p className="text-purple-300 mb-4">
-                    Chain ID: {chain.chainId}
-                  </p>
-                  <p className="text-sm text-gray-300">
-                    {chain.votesCast || 0} votes cast
-                  </p>
+                  <h3 className="text-2xl font-bold text-white mb-2">{chain.name}</h3>
+                  <p className="text-purple-300 mb-4">Chain ID: {chain.chainId}</p>
+                  <p className="text-sm text-gray-300">{chain.votesCast || 0} votes cast</p>
                   {currentChainId === chain.chainId && (
                     <p className="mt-4 text-green-400 font-bold">Currently Connected</p>
                   )}
@@ -159,15 +154,14 @@ const MultiChainSubmitPage = () => {
             disabled={!selectedChain || submitting}
             className="px-12 py-6 text-3xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl shadow-2xl transform hover:scale-105 transition disabled:opacity-60"
           >
-            {submitting ? 'Submitting Vote...' : `Submit on ${selectedChain?.name || 'Selected Chain'} →`}
+            {submitting
+              ? 'Submitting Vote...'
+              : `Submit on ${selectedChain?.name || 'Selected Chain'} →`}
           </button>
         </div>
 
         <div className="text-center mt-12">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-purple-300 hover:text-white text-lg"
-          >
+          <button onClick={() => navigate(-1)} className="text-purple-300 hover:text-white text-lg">
             ← Back to Review
           </button>
         </div>

@@ -40,7 +40,9 @@ export default function DelegationModal({ onDelegate, onClose }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>🤝 Delegate Your Vote</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="modal-body">
@@ -55,9 +57,7 @@ export default function DelegationModal({ onDelegate, onClose }) {
             disabled={loading}
           />
 
-          {error && (
-            <p className="error-message">❌ {error}</p>
-          )}
+          {error && <p className="error-message">❌ {error}</p>}
 
           <div className="delegation-info">
             <p>ℹ️ By delegating, you authorize this address to vote on your behalf.</p>
@@ -66,11 +66,7 @@ export default function DelegationModal({ onDelegate, onClose }) {
         </div>
 
         <div className="modal-footer">
-          <button
-            className="btn btn-secondary"
-            onClick={onClose}
-            disabled={loading}
-          >
+          <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
             Cancel
           </button>
           <button

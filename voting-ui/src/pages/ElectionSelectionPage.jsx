@@ -26,7 +26,7 @@ const ElectionSelectionPage = () => {
 
       // ✅ FIX 2: Correct API URL (was using RESULTS_API which doesn't exist)
       const response = await fetch(`${BACKEND_API}/api/elections`);
-      
+
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}: ${response.statusText}`);
       }
@@ -46,17 +46,17 @@ const ElectionSelectionPage = () => {
 
       if (filter === 'active') {
         // Only show elections that are currently active
-        filtered = allElections.filter(e => {
+        filtered = allElections.filter((e) => {
           const startOk = e.startTime && e.startTime <= now;
           const endOk = e.endTime && e.endTime >= now;
           return startOk && endOk;
         });
         console.log(`🔍 Filtered to ${filtered.length} active elections`);
       } else if (filter === 'completed') {
-        filtered = allElections.filter(e => e.endTime && e.endTime < now);
+        filtered = allElections.filter((e) => e.endTime && e.endTime < now);
         console.log(`🔍 Filtered to ${filtered.length} completed elections`);
       } else if (filter === 'upcoming') {
-        filtered = allElections.filter(e => e.startTime && e.startTime > now);
+        filtered = allElections.filter((e) => e.startTime && e.startTime > now);
         console.log(`🔍 Filtered to ${filtered.length} upcoming elections`);
       }
       // 'all' shows everything
@@ -83,7 +83,7 @@ const ElectionSelectionPage = () => {
 
   const getStatusBadge = (election) => {
     const now = Math.floor(Date.now() / 1000);
-    
+
     // ✅ FIX 5: Handle missing timestamps
     if (!election.startTime || !election.endTime) {
       return <span className="status-badge badge-inactive">Invalid</span>;
@@ -101,7 +101,7 @@ const ElectionSelectionPage = () => {
   const formatDate = (timestamp) => {
     // ✅ FIX 6: Handle both Unix timestamps and ISO strings
     if (!timestamp) return 'N/A';
-    
+
     let date;
     if (typeof timestamp === 'string') {
       date = new Date(timestamp);
@@ -127,36 +127,38 @@ const ElectionSelectionPage = () => {
     <div className="page-container election-selection-page">
       <div className="page-header">
         <h1>🗳️ Available Elections</h1>
-        <p>Select an election to view details or cast your vote</p>
+        <p>Select an election to cast your vote</p>
       </div>
 
       {error && (
         <div className="alert alert-error">
           <span>⚠️ {error}</span>
-          <button onClick={fetchElections} className="btn-text">Retry</button>
+          <button onClick={fetchElections} className="btn-text">
+            Retry
+          </button>
         </div>
       )}
 
       <div className="filter-tabs">
-        <button 
+        <button
           className={filter === 'active' ? 'tab-active' : 'tab'}
           onClick={() => setFilter('active')}
         >
           Active
         </button>
-        <button 
+        <button
           className={filter === 'completed' ? 'tab-active' : 'tab'}
           onClick={() => setFilter('completed')}
         >
           Completed
         </button>
-        <button 
+        <button
           className={filter === 'upcoming' ? 'tab-active' : 'tab'}
           onClick={() => setFilter('upcoming')}
         >
           Upcoming
         </button>
-        <button 
+        <button
           className={filter === 'all' ? 'tab-active' : 'tab'}
           onClick={() => setFilter('all')}
         >
@@ -169,17 +171,21 @@ const ElectionSelectionPage = () => {
           <div className="empty-icon">📭</div>
           <h3>No elections found</h3>
           <p>
-            {filter === 'all' 
-              ? 'No elections in the database yet.' 
+            {filter === 'all'
+              ? 'No elections in the database yet.'
               : `No ${filter} elections available at the moment.`}
           </p>
-          <button onClick={fetchElections} className="btn btn-secondary" style={{ marginTop: '1rem' }}>
+          <button
+            onClick={fetchElections}
+            className="btn btn-secondary"
+            style={{ marginTop: '1rem' }}
+          >
             🔄 Refresh
           </button>
         </div>
       ) : (
         <div className="elections-grid">
-          {elections.map(election => (
+          {elections.map((election) => (
             <div key={election.uuid} className="election-card">
               <div className="election-header">
                 <h3>{election.title || 'Untitled Election'}</h3>
@@ -216,15 +222,9 @@ const ElectionSelectionPage = () => {
               </div>
 
               <div className="election-features">
-                {election.allowAnonymous && (
-                  <span className="feature-badge">🔒 Anonymous</span>
-                )}
-                {election.allowDelegation && (
-                  <span className="feature-badge">🤝 Delegation</span>
-                )}
-                {election.isPublic && (
-                  <span className="feature-badge">🌐 Public Results</span>
-                )}
+                {election.allowAnonymous && <span className="feature-badge">🔒 Anonymous</span>}
+                {election.allowDelegation && <span className="feature-badge">🤝 Delegation</span>}
+                {election.isPublic && <span className="feature-badge">🌐 Public Results</span>}
               </div>
 
               <button

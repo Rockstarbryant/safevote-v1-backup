@@ -53,14 +53,9 @@ const ConfirmationPage = () => {
               style={{
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 3}s`,
-                backgroundColor: [
-                  '#667eea',
-                  '#764ba2',
-                  '#f093fb',
-                  '#4facfe',
-                  '#00f2fe',
-                  '#10B981'
-                ][Math.floor(Math.random() * 6)]
+                backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#10B981'][
+                  Math.floor(Math.random() * 6)
+                ],
               }}
             ></div>
           ))}
@@ -68,14 +63,11 @@ const ConfirmationPage = () => {
       )}
 
       <div className="confirmation-container">
-        
         {/* Success Card */}
         <div className="confirmation-success-card">
           <div className="success-icon">✓</div>
           <h1 className="success-title">Vote Successfully Submitted!</h1>
-          <p className="success-subtitle">
-            Your vote has been securely recorded on the blockchain
-          </p>
+          <p className="success-subtitle">Your vote has been securely recorded on the blockchain</p>
           <div className="success-badge">
             <SecurityBadge />
           </div>
@@ -109,7 +101,9 @@ const ConfirmationPage = () => {
 
           <div className="detail-item">
             <span className="detail-label">Block Number</span>
-            <p className="detail-value">{blockNumber ? formatters.formatNumber(blockNumber) : 'Pending'}</p>
+            <p className="detail-value">
+              {blockNumber ? formatters.formatNumber(blockNumber) : 'Pending'}
+            </p>
           </div>
 
           <div className="detail-item">
@@ -119,9 +113,7 @@ const ConfirmationPage = () => {
 
           <div className="detail-item">
             <span className="detail-label">Vote Type</span>
-            <p className="detail-value vote-type">
-              {isAnonymous ? '🔒 Anonymous' : '👤 Public'}
-            </p>
+            <p className="detail-value vote-type">{isAnonymous ? '🔒 Anonymous' : '👤 Public'}</p>
           </div>
         </div>
 
@@ -163,7 +155,9 @@ const ConfirmationPage = () => {
         {/* Share Card */}
         <div className="confirmation-share-card">
           <h4 className="share-title">📢 Share Your Participation</h4>
-          <p className="share-subtitle">Let others know you voted (without revealing your choices)</p>
+          <p className="share-subtitle">
+            Let others know you voted (without revealing your choices)
+          </p>
           <button
             onClick={handleCopyMessage}
             className="confirmation-btn confirmation-btn-secondary"
@@ -180,21 +174,15 @@ const ConfirmationPage = () => {
           >
             🔍 View Transaction
           </button>
-          <button
-            onClick={handleFinish}
-            className="confirmation-btn confirmation-btn-primary"
-          >
+          <button onClick={handleFinish} className="confirmation-btn confirmation-btn-primary">
             ← Back to Elections
           </button>
         </div>
 
         {/* Footer */}
         <div className="confirmation-footer">
-          <p className="footer-message">
-            Thank you for participating in democratic governance! 🎉
-          </p>
+          <p className="footer-message">Thank you for participating in democratic governance! 🎉</p>
         </div>
-
       </div>
     </div>
   );
