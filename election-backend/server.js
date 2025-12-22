@@ -22,7 +22,7 @@ async function connectDB() {
   try {
     dbPool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     });
 
     // Test connection
@@ -94,7 +94,7 @@ app.get('/', (req, res) => {
   res.json({
     status: 'OK',
     service: 'SafeVote Results Backend',
-    database: 'PostgreSQL connected'
+    database: 'PostgreSQL connected',
   });
 });
 
@@ -124,8 +124,8 @@ app.get('/api/elections', async (req, res) => {
 
     console.log(`✅ Fetched ${rows.length} elections from database`);
 
-    const elections = rows.map(row => ({
-      uuid: row.uuid,  // ← UUID is the primary identifier for merkle proofs
+    const elections = rows.map((row) => ({
+      uuid: row.uuid, // ← UUID is the primary identifier for merkle proofs
       title: row.title || 'Untitled Election',
       description: row.description || '',
       location: row.location || 'Global',
@@ -139,7 +139,7 @@ app.get('/api/elections', async (req, res) => {
       createdAt: row.createdAt,
       positions: row.positions || [],
       totalVotesCast: 0,
-      participationRate: 0
+      participationRate: 0,
     }));
 
     res.json(elections);
@@ -155,9 +155,12 @@ app.get('/api/elections', async (req, res) => {
 app.get('/api/elections/:uuid', async (req, res) => {
   try {
     const { uuid } = req.params;
-    const { rows } = await dbPool.query(`
+    const { rows } = await dbPool.query(
+      `
       SELECT * FROM elections WHERE uuid = $1
-    `, [uuid]);
+    `,
+      [uuid]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Election not found' });
@@ -165,7 +168,7 @@ app.get('/api/elections/:uuid', async (req, res) => {
 
     const row = rows[0];
     res.json({
-      uuid: row.uuid,  // ← UUID for merkle proof
+      uuid: row.uuid, // ← UUID for merkle proof
       title: row.title,
       description: row.description,
       location: row.location,
@@ -179,7 +182,7 @@ app.get('/api/elections/:uuid', async (req, res) => {
       merkleRoot: row.merkle_root,
       positions: row.positions,
       voterAddresses: row.voter_addresses,
-      createdAt: row.created_at
+      createdAt: row.created_at,
     });
   } catch (err) {
     console.error('❌ Error fetching election:', err.message);
@@ -193,7 +196,7 @@ app.get('/api/elections/:uuid', async (req, res) => {
 app.post('/api/elections/create', async (req, res) => {
   try {
     const {
-      electionId,  // ← This is the UUID from electionconductor.js
+      electionId, // ← This is the UUID from electionconductor.js
       title,
       description,
       location,
@@ -206,19 +209,20 @@ app.post('/api/elections/create', async (req, res) => {
       allowDelegation,
       merkleRoot,
       positions,
-      voterAddresses
+      voterAddresses,
     } = req.body;
 
     // Validate required fields
     if (!electionId || !title || !startTime || !endTime) {
       return res.status(400).json({
-        error: 'Missing required fields: electionId (UUID), title, startTime, endTime'
+        error: 'Missing required fields: electionId (UUID), title, startTime, endTime',
       });
     }
 
     console.log(`📝 Creating election with UUID: ${electionId}`);
 
-    const { rows } = await dbPool.query(`
+    const { rows } = await dbPool.query(
+      `
       INSERT INTO elections (
         uuid, title, description, location, creator,
         start_time, end_time, total_voters, is_public,
@@ -237,12 +241,24 @@ app.post('/api/elections/create', async (req, res) => {
         voter_addresses = EXCLUDED.voter_addresses,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *
-    `, [
-      electionId, title, description || '', location || '', creator || '',
-      startTime, endTime, totalVoters || 0, isPublic !== false,
-      allowAnonymous || false, allowDelegation || false, merkleRoot || '',
-      JSON.stringify(positions || []), JSON.stringify(voterAddresses || [])
-    ]);
+    `,
+      [
+        electionId,
+        title,
+        description || '',
+        location || '',
+        creator || '',
+        startTime,
+        endTime,
+        totalVoters || 0,
+        isPublic !== false,
+        allowAnonymous || false,
+        allowDelegation || false,
+        merkleRoot || '',
+        JSON.stringify(positions || []),
+        JSON.stringify(voterAddresses || []),
+      ]
+    );
 
     console.log(`✅ Election created/updated with UUID: ${electionId}`);
 
@@ -250,14 +266,35 @@ app.post('/api/elections/create', async (req, res) => {
       success: true,
       message: 'Election created successfully',
       election: {
-        uuid: rows[0].uuid,  // ← Return UUID
+        uuid: rows[0].uuid, // ← Return UUID
         title: rows[0].title,
-        createdAt: rows[0].created_at
-      }
+        createdAt: rows[0].created_at,
+      },
     });
   } catch (err) {
     console.error('❌ Error creating election:', err.message);
     res.status(500).json({ error: 'Failed to create election', details: err.message });
+  }
+});
+
+// Get on-chain election ID (assume first chain or all)
+app.get('/api/elections/:electionId/onchain-id', async (req, res) => {
+  const { electionId } = req.params;
+
+  try {
+    const { rows } = await dbPool.query(
+      `SELECT on_chain_election_id FROM election_chains WHERE election_id = $1 LIMIT 1`,
+      [electionId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'On-chain ID not found for this election' });
+    }
+
+    res.json({ onChainElectionId: rows[0].on_chain_election_id });
+  } catch (err) {
+    console.error('On-chain ID fetch error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch on-chain ID' });
   }
 });
 
@@ -266,7 +303,7 @@ app.post('/api/elections/create', async (req, res) => {
 // ============================================
 // The /api/elections/keys/generate endpoint is called by electionconductor.js
 // in the FRONTEND, NOT here on server.js
-// 
+//
 // Sequence:
 // 1. Frontend (electionconductor.js) receives voter addresses from user
 // 2. Frontend calls /api/elections/keys/generate (this endpoint should be in a separate keygen service)
@@ -285,14 +322,17 @@ app.post('/api/elections/sync-chain', async (req, res) => {
 
     if (!electionId || !chainId || !onChainElectionId) {
       return res.status(400).json({
-        error: 'Missing required fields: electionId (UUID), chainId, onChainElectionId'
+        error: 'Missing required fields: electionId (UUID), chainId, onChainElectionId',
       });
     }
 
-    await dbPool.query(`
+    await dbPool.query(
+      `
       INSERT INTO chain_deployments (election_uuid, chain_id, on_chain_election_id, tx_hash)
       VALUES ($1, $2, $3, $4)
-    `, [electionId, chainId, onChainElectionId, txHash || '']);
+    `,
+      [electionId, chainId, onChainElectionId, txHash || '']
+    );
 
     console.log(`⛓️ Synced chain deployment: ${electionId} on chain ${chainId}`);
 
@@ -306,11 +346,13 @@ app.post('/api/elections/sync-chain', async (req, res) => {
 // ============================================
 // START SERVER
 // ============================================
-connectDB().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 SafeVote Backend running on port ${PORT}`);
+connectDB()
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 SafeVote Backend running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
   });
-}).catch(err => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
