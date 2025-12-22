@@ -69,10 +69,10 @@ class VoterKeyGenerator {
         for (const mapping of voterKeyMappings) {
           await client.query(
             `INSERT INTO voter_keys 
-             (uuid, voter_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
+             (election_id, voter_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
             [
-              mapping.uuid,
+              mapping.election_id,
               mapping.voter_id,
               mapping.voter_address,
               mapping.voter_key,
@@ -278,7 +278,7 @@ class VoterKeyGenerator {
     try {
       const { rows } = await this.db.query(
         `SELECT 1 FROM votes 
-                 WHERE uuid = $1 AND voter_address = $2 
+                 WHERE election_uuid = $1 AND voter_address = $2 
                  LIMIT 1`,
         [electionId, voterAddress.toLowerCase()]
       );
@@ -296,9 +296,9 @@ class VoterKeyGenerator {
     try {
       await this.db.query(
         `INSERT INTO votes 
-                 (uuid, voter_address, chain_id, tx_hash)
+                 (election_uuid, voter_address, chain_id, tx_hash)
                  VALUES ($1, $2, $3, $4)
-                 ON CONFLICT (uuid, voter_address, chain_id) 
+                 ON CONFLICT (election_uuid, voter_address, chain_id) 
                  DO UPDATE SET 
                    tx_hash = EXCLUDED.tx_hash,
                    timestamp = CURRENT_TIMESTAMP`,
