@@ -219,7 +219,7 @@ class VoterKeyGenerator {
 
     // Check if voter is in the list
     const isEligible = voterList.some(addr => 
-      addr.toLowerCase() === normalizedAddress
+    String(addr).trim().toLowerCase() === normalizedAddress
     );
 
     if (!isEligible) {
