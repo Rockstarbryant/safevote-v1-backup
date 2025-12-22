@@ -70,7 +70,7 @@ class VoterKeyGenerator {
           await client.query(
             `INSERT INTO voter_keys 
              (election_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
+             VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
             [
               mapping.election_id,
               mapping.voter_address,
