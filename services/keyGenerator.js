@@ -16,7 +16,6 @@ class VoterKeyGenerator {
    */
   async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
     try {
-      // Check if keys already generated
       const existing = await this.getStoredMerkleRoot(electionId);
       if (existing) {
         throw new Error(`Keys already generated for election ${electionId}`);
@@ -27,16 +26,13 @@ class VoterKeyGenerator {
       }
 
       if (voterAddresses.length !== numVoters) {
-        throw new Error(
-          `Address count (${voterAddresses.length}) doesn't match numVoters (${numVoters})`
-        );
+        throw new Error(`Address count (${voterAddresses.length}) doesn't match numVoters (${numVoters})`);
       }
 
       const keys = [];
       const voterKeyMappings = [];
-      const normalizedAddresses = voterAddresses.map((addr) => addr.toLowerCase());
+      const normalizedAddresses = voterAddresses.map(addr => addr.toLowerCase());
 
-      // Generate unique key for each voter
       for (let i = 0; i < numVoters; i++) {
         const voterId = crypto.randomBytes(16).toString('hex');
         const voterKey = ethers.utils.id(`${electionId}-${voterId}-${Date.now()}-${i}`);
@@ -50,37 +46,48 @@ class VoterKeyGenerator {
           voter_address: normalizedAddresses[i],
           voter_key: voterKey,
           key_hash: keyHash,
+          proof: '[]', // or generate real proof
+          distributed: false
         });
       }
 
-      // Build merkle tree from keys
-      const leaves = keys.map((key) => keccak256(key));
+      const leaves = keys.map(key => keccak256(key));
       const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
       const merkleRoot = tree.getHexRoot();
 
-      // ============================================
-      // TRANSACTION: Store everything atomically
-      // ============================================
       const client = await this.db.connect();
       try {
         await client.query('BEGIN');
 
-        // 1. Update elections table with merkle root
+        // Update elections with merkle root
         await client.query(
-          `UPDATE elections 
-                     SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP
-                     WHERE uuid = $2`,
+          `UPDATE elections SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP WHERE uuid = $2`,
           [merkleRoot, electionId]
         );
 
+        // INSERT voter keys
+        for (const mapping of voterKeyMappings) {
+          await client.query(
+            `INSERT INTO voter_keys 
+             (election_uuid, voter_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
+            [
+              mapping.election_uuid,
+              mapping.voter_id,
+              mapping.voter_address,
+              mapping.voter_key,
+              mapping.key_hash,
+              mapping.proof,
+              mapping.distributed
+            ]
+          );
+        }
+
         await client.query('COMMIT');
 
-        console.log(`✅ Generated merkle root for election ${electionId}`);
-        console.log(`   Root: ${merkleRoot}`);
-        console.log(`   Total voters: ${numVoters}`);
-        console.log(`   Voter keys stored in database`);
+        console.log(`Generated and stored ${numVoters} voter keys for election ${electionId}`);
+        console.log(`Merkle Root: ${merkleRoot}`);
 
-        // Cache tree in memory for proof generation
         this.inMemoryTrees.set(electionId, {
           tree,
           keys,
@@ -88,10 +95,7 @@ class VoterKeyGenerator {
           merkleRoot,
         });
 
-        return {
-          merkleRoot,
-          totalKeys: keys.length,
-        };
+        return { merkleRoot, totalKeys: keys.length };
       } catch (error) {
         await client.query('ROLLBACK');
         throw error;
@@ -99,10 +103,11 @@ class VoterKeyGenerator {
         client.release();
       }
     } catch (error) {
-      console.error('❌ Error generating voter keys:', error.message);
+      console.error('Error generating voter keys:', error.message);
       throw error;
     }
   }
+
 
   /**
    * Load merkle tree into memory from stored keys
