@@ -191,71 +191,56 @@ class VoterKeyGenerator {
      * Get voter data including merkle proof and voter key
      * Called by: voting-ui to get proof before submitting vote
      */
-    async getVoterData(electionId, voterAddress) {
-        try {
-            const normalizedAddress = voterAddress.toLowerCase();
+   async getVoterData(electionId, voterAddress) {
+  try {
+    const normalizedAddress = voterAddress.toLowerCase();
 
-            // Fetch voter key from database
-            const { rows } = await this.db.query(
-                `SELECT voter_id, voter_key, key_hash 
-                 FROM voter_keys 
-                 WHERE election_uuid = $1 AND voter_address = $2
-                 LIMIT 1`,
-                [electionId, normalizedAddress]
-            );
+    // Fetch election and check if voter is in voter_addresses list
+    const { rows } = await this.db.query(
+      `SELECT voter_addresses, merkle_root FROM elections WHERE uuid = $1`,
+      [electionId]
+    );
 
-            if (rows.length === 0) {
-                return null;  // Voter not eligible
-            }
-
-            const voter = rows[0];
-
-            // Get merkle root from elections table
-            const { rows: electionRows } = await this.db.query(
-                `SELECT merkle_root FROM elections WHERE uuid = $1`,
-                [electionId]
-            );
-
-            if (electionRows.length === 0) {
-                throw new Error(`Election ${electionId} not found`);
-            }
-
-            const merkleRoot = electionRows[0].merkle_root;
-
-            // Generate proof
-            const proof = await this.getMerkleProof(electionId, voterAddress);
-
-            return {
-                voterAddress: normalizedAddress,
-                voterId: voter.voter_id,
-                voterKey: voter.voter_key,
-                keyHash: voter.key_hash,
-                merkleProof: proof,
-                merkleRoot: merkleRoot,
-                eligible: true
-            };
-
-        } catch (error) {
-            console.error('❌ Error getting voter data:', error.message);
-            return null;
-        }
+    if (rows.length === 0) {
+      return null;
     }
 
-    /**
-     * Get stored merkle root for an election
-     */
-    async getStoredMerkleRoot(electionId) {
-        try {
-            const { rows } = await this.db.query(
-                `SELECT merkle_root FROM elections WHERE uuid = $1`,
-                [electionId]
-            );
-            return rows.length > 0 ? rows[0].merkle_root : null;
-        } catch (error) {
-            console.error('❌ Error fetching merkle root:', error.message);
-            return null;
-        }
+    const election = rows[0];
+    
+    // Parse voter_addresses JSON array
+    let voterList = [];
+    if (election.voter_addresses) {
+      if (typeof election.voter_addresses === 'string') {
+        voterList = JSON.parse(election.voter_addresses);
+      } else {
+        voterList = election.voter_addresses;
+      }
     }
+
+    // Check if voter is in the list
+    const isEligible = voterList.some(addr => 
+      addr.toLowerCase() === normalizedAddress
+    );
+
+    if (!isEligible) {
+      return null;  // Voter not eligible
+    }
+
+    // Generate proof
+    const proof = await this.getMerkleProof(electionId, voterAddress);
+
+    return {
+      voterAddress: normalizedAddress,
+      merkleProof: proof,
+      merkleRoot: election.merkle_root,
+      eligible: true
+    };
+
+  } catch (error) {
+    console.error('❌ Error getting voter data:', error.message);
+    return null;
+  }
+}
 
     /**
      * Check if voter has already voted on any chain
