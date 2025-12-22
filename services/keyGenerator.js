@@ -191,23 +191,23 @@ class VoterKeyGenerator {
      * Get voter data including merkle proof and voter key
      * Called by: voting-ui to get proof before submitting vote
      */
-   async getVoterData(electionId, voterAddress) {
+  async getVoterData(electionId, voterAddress) {
   try {
     const normalizedAddress = voterAddress.toLowerCase();
 
-    // Fetch election and check if voter is in voter_addresses list
     const { rows } = await this.db.query(
       `SELECT voter_addresses, merkle_root FROM elections WHERE uuid = $1`,
       [electionId]
     );
 
     if (rows.length === 0) {
+      console.log(`❌ Election ${electionId} not found`);
       return null;
     }
 
     const election = rows[0];
     
-    // Parse voter_addresses JSON array
+    // Parse voter_addresses
     let voterList = [];
     if (election.voter_addresses) {
       if (typeof election.voter_addresses === 'string') {
@@ -217,16 +217,23 @@ class VoterKeyGenerator {
       }
     }
 
+    console.log(`📋 Voter list:`, voterList);
+    console.log(`🔍 Looking for:`, normalizedAddress);
+
     // Check if voter is in the list
-    const isEligible = voterList.some(addr => 
-    String(addr).trim().toLowerCase() === normalizedAddress
-    );
+    const isEligible = voterList.some(addr => {
+      const normalized = String(addr).trim().toLowerCase();
+      console.log(`   Comparing: "${normalized}" === "${normalizedAddress}"`);
+      return normalized === normalizedAddress;
+    });
 
     if (!isEligible) {
-      return null;  // Voter not eligible
+      console.log(`❌ Voter ${normalizedAddress} NOT ELIGIBLE`);
+      return null;
     }
 
-    // Generate proof
+    console.log(`✅ Voter ${normalizedAddress} IS ELIGIBLE`);
+
     const proof = await this.getMerkleProof(electionId, voterAddress);
 
     return {
