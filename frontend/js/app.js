@@ -376,38 +376,38 @@ const App = {
  */
 
 // Go to Election Conductor
-window.goToElectionConductor = function() {
-    // Save current state if needed
-    sessionStorage.setItem('previousPage', window.location.href);
-    window.location.href = './election-conductor.html';
+window.goToElectionConductor = function () {
+  // Save current state if needed
+  sessionStorage.setItem('previousPage', window.location.href);
+  window.location.href = './election-conductor.html';
 };
 
 // Go to Election Dashboard
-window.goToElectionDashboard = function() {
-    sessionStorage.setItem('previousPage', window.location.href);
-    window.location.href = './election-dashboard.html';
+window.goToElectionDashboard = function () {
+  sessionStorage.setItem('previousPage', window.location.href);
+  window.location.href = './election-dashboard.html';
 };
 
 // Go to specific election dashboard
-window.viewElection = function(electionId) {
-    sessionStorage.setItem('selectedElectionId', electionId);
-    sessionStorage.setItem('previousPage', window.location.href);
-    window.location.href = `./election-dashboard.html?electionId=${electionId}`;
+window.viewElection = function (electionId) {
+  sessionStorage.setItem('selectedElectionId', electionId);
+  sessionStorage.setItem('previousPage', window.location.href);
+  window.location.href = `./election-dashboard.html?electionId=${electionId}`;
 };
 
 // Go back to homepage
-window.goToHome = function() {
-    window.location.href = './index.html';
+window.goToHome = function () {
+  window.location.href = './index.html';
 };
 
 // Go back to previous page
-window.goBack = function() {
-    const previousPage = sessionStorage.getItem('previousPage');
-    if (previousPage) {
-        window.location.href = previousPage;
-    } else {
-        window.location.href = './index.html';
-    }
+window.goBack = function () {
+  const previousPage = sessionStorage.getItem('previousPage');
+  if (previousPage) {
+    window.location.href = previousPage;
+  } else {
+    window.location.href = './index.html';
+  }
 };
 
 // Initialize app when DOM is ready

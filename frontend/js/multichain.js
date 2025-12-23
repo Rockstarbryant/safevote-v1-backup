@@ -2,18 +2,18 @@
 
 // Multichain Configuration
 window.CHAIN_CONFIG = {
-  11155111: { name: "Ethereum Sepolia", proxy: "0xd8bFdD7f2bb39D5D78a4Bb1D9D2f70968C63e8F3" },
-  84532: { name: "Base Sepolia", proxy: "0xC724408090C739daD30f5a9d6756DB0d56e060be" },
-  421614: { name: "Arbitrum Sepolia", proxy: "0xfa84a89D170084675b7ECb110a883fD47757916c" },
-  97: { name: "BNB Testnet", proxy: "0x38290e4834FFc92065B921E092BCD0b5D65aD4A0" },
-  1328: { name: "Sei Testnet", proxy: "0x74774C664826c6d5583D0feA0D636205a6986dAc" },
+  11155111: { name: 'Ethereum Sepolia', proxy: '0xd8bFdD7f2bb39D5D78a4Bb1D9D2f70968C63e8F3' },
+  84532: { name: 'Base Sepolia', proxy: '0xC724408090C739daD30f5a9d6756DB0d56e060be' },
+  421614: { name: 'Arbitrum Sepolia', proxy: '0xfa84a89D170084675b7ECb110a883fD47757916c' },
+  97: { name: 'BNB Testnet', proxy: '0x38290e4834FFc92065B921E092BCD0b5D65aD4A0' },
+  1328: { name: 'Sei Testnet', proxy: '0x74774C664826c6d5583D0feA0D636205a6986dAc' },
 };
 
 // Global contract address
 window.CONTRACT_ADDRESS = null;
 
 // Global helper functions
-window.updateContractForChain = function(chainId) {
+window.updateContractForChain = function (chainId) {
   chainId = parseInt(chainId, 10);
   const config = window.CHAIN_CONFIG[chainId];
   if (config) {
@@ -25,7 +25,7 @@ window.updateContractForChain = function(chainId) {
   }
 };
 
-window.syncNetworkSwitcher = function() {
+window.syncNetworkSwitcher = function () {
   const switcher = document.getElementById('networkSwitcher');
   if (switcher && window.ethereum) {
     switcher.value = parseInt(window.ethereum.chainId, 16);
@@ -50,9 +50,9 @@ if (window.ethereum) {
 
     // Reload for fresh state on new chain
     // Small delay to ensure localStorage clear completes
-  setTimeout(() => {
-    location.reload();
-  }, 300); // 300ms is plenty — guarantees write completion
+    setTimeout(() => {
+      location.reload();
+    }, 300); // 300ms is plenty — guarantees write completion
   });
 
   // Initial load

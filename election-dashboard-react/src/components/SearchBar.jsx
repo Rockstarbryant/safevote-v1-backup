@@ -22,11 +22,12 @@ export default function SearchBar({ onSearch }) {
   // Handle search input
   const handleSearch = (value) => {
     setSearchTerm(value);
-    
+
     if (value.length > 0) {
-      const filtered = allElections.filter(e =>
-        e.title.toLowerCase().includes(value.toLowerCase()) ||
-        e.election_id.toString().includes(value)
+      const filtered = allElections.filter(
+        (e) =>
+          e.title.toLowerCase().includes(value.toLowerCase()) ||
+          e.election_id.toString().includes(value)
       );
       setSuggestions(filtered);
     } else {

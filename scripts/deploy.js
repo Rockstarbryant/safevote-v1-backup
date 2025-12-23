@@ -25,12 +25,13 @@ async function main() {
   const proxy = await upgrades.deployProxy(SafeVoteV2, [], {
     initializer: 'initialize',
     kind: 'uups',
-     unsafeAllow: ['delegatecall', 'external-library-linking', 'constructor'],
+    unsafeAllow: ['delegatecall', 'external-library-linking', 'constructor'],
   });
 
-  if ([84532, 421614, 97].includes(chainId)) {  // Base, Arb, BNB testnets
-  redeployOptions.unsafeAllow = ['delegatecall'];
-}
+  if ([84532, 421614, 97].includes(chainId)) {
+    // Base, Arb, BNB testnets
+    redeployOptions.unsafeAllow = ['delegatecall'];
+  }
 
   await proxy.waitForDeployment();
   const proxyAddress = await proxy.getAddress();

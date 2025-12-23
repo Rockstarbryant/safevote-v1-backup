@@ -55,11 +55,15 @@ export const Contract = {
 
       // Get current network
       const network = await this.provider.getNetwork();
-      updateContractForChain(network.chainId);  // Now global
+      updateContractForChain(network.chainId); // Now global
 
       // Re-create contract instance with new address
-      this.contract = new ethers.Contract(window.CONTRACT_ADDRESS || CONTRACT_ADDRESS, SAFE_VOTE_V2_ABI, this.signer);
-      
+      this.contract = new ethers.Contract(
+        window.CONTRACT_ADDRESS || CONTRACT_ADDRESS,
+        SAFE_VOTE_V2_ABI,
+        this.signer
+      );
+
       if (!window.CONTRACT_ADDRESS && !CONTRACT_ADDRESS) {
         Utils.showNotification('Unsupported network — no contract deployed here yet', 'warning');
         return;
@@ -68,7 +72,9 @@ export const Contract = {
       // Update UI
       document.getElementById('connectWallet').classList.add('hidden');
       document.getElementById('accountInfo').classList.remove('hidden');
-      document.getElementById('accountAddress').textContent = Utils.formatAddress(this.currentAccount);
+      document.getElementById('accountAddress').textContent = Utils.formatAddress(
+        this.currentAccount
+      );
 
       // Sync network switcher dropdown
       syncNetworkSwitcher();
@@ -83,7 +89,10 @@ export const Contract = {
       await this.loadPublicOrgs();
 
       Utils.hideLoading();
-      Utils.showNotification(`Wallet connected on ${CHAIN_CONFIG[network.chainId]?.name || 'Unknown Network'}!`, 'success');
+      Utils.showNotification(
+        `Wallet connected on ${CHAIN_CONFIG[network.chainId]?.name || 'Unknown Network'}!`,
+        'success'
+      );
 
       const refreshBtn = document.getElementById('refreshDataBtn');
       if (refreshBtn) refreshBtn.classList.remove('hidden');
@@ -110,7 +119,10 @@ export const Contract = {
       });
     } catch (switchError) {
       if (switchError.code === 4902) {
-        Utils.showNotification('This network is not added to your wallet. Add it manually.', 'error');
+        Utils.showNotification(
+          'This network is not added to your wallet. Add it manually.',
+          'error'
+        );
       } else {
         console.error('Network switch error:', switchError);
         Utils.showNotification('Failed to switch network', 'error');
@@ -131,12 +143,15 @@ export const Contract = {
     });
 
     // Poll events
-    this.contract.on('PollCreated', (_pollId, orgId, _creator, question, _pollType, _endTime, _timestamp) => {
-      if (UI.currentOrgId && orgId.toString() === UI.currentOrgId.toString()) {
-        Utils.showNotification(`New poll: ${question}`, 'info');
-        this.loadOrgPolls(UI.currentOrgId);
+    this.contract.on(
+      'PollCreated',
+      (_pollId, orgId, _creator, question, _pollType, _endTime, _timestamp) => {
+        if (UI.currentOrgId && orgId.toString() === UI.currentOrgId.toString()) {
+          Utils.showNotification(`New poll: ${question}`, 'info');
+          this.loadOrgPolls(UI.currentOrgId);
+        }
       }
-    });
+    );
 
     // Vote events - Fixed: Use 'VoteCast' (original event name in merged ABI)
     this.contract.on('VoteCast', (_pollId, orgId) => {
@@ -242,7 +257,7 @@ export const Contract = {
       const orgs = await ImmutableLoader.loadOrganizations(this.contract, publicOrgIds);
       UI.displayOrganizations(publicOrgIds, orgs);
 
-      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.btn-filter').forEach((btn) => btn.classList.remove('active'));
       document.getElementById('filterPublic')?.classList.add('active');
     } catch (error) {
       console.error('Error loading public orgs:', error);
@@ -304,9 +319,10 @@ export const Contract = {
     try {
       Utils.showLoading(`Adding ${addresses.length} member(s)...`);
 
-      const tx = addresses.length === 1
-        ? await this.contract.addMember(UI.currentOrgId, addresses[0])
-        : await this.contract.batchAddMembers(UI.currentOrgId, addresses);
+      const tx =
+        addresses.length === 1
+          ? await this.contract.addMember(UI.currentOrgId, addresses[0])
+          : await this.contract.batchAddMembers(UI.currentOrgId, addresses);
 
       await tx.wait();
 
@@ -317,7 +333,10 @@ export const Contract = {
       await this.loadOrgMembers(UI.currentOrgId);
     } catch (error) {
       console.error('Add members error:', error);
-      Utils.showNotification('You need to be a member of this organization to add members', 'error');
+      Utils.showNotification(
+        'You need to be a member of this organization to add members',
+        'error'
+      );
     } finally {
       Utils.hideLoading();
     }
@@ -455,7 +474,8 @@ export const Contract = {
           console.warn(`Organization ${orgId} does not exist`);
           const container = document.getElementById('membersList');
           if (container) {
-            container.innerHTML = '<p class="text-white opacity-70 text-center py-8">Organization not found</p>';
+            container.innerHTML =
+              '<p class="text-white opacity-70 text-center py-8">Organization not found</p>';
           }
           return;
         }
@@ -497,7 +517,7 @@ export const Contract = {
 
         const leaveBtn = document.getElementById('leaveOrgBtn');
         if (leaveBtn) {
-          const isMember = membersData.some(m => m.address.toLowerCase() === currentUser);
+          const isMember = membersData.some((m) => m.address.toLowerCase() === currentUser);
           if (isMember && !isAdmin) {
             leaveBtn.classList.remove('hidden');
           } else {
@@ -506,16 +526,18 @@ export const Contract = {
         }
 
         if (membersData.length === 0) {
-          container.innerHTML = '<p class="text-white opacity-70 text-center py-8">No members yet</p>';
+          container.innerHTML =
+            '<p class="text-white opacity-70 text-center py-8">No members yet</p>';
           return;
         }
 
-        container.innerHTML = membersData.map(m => {
-          const addr = m.address.toLowerCase();
-          const isCurrentUser = addr === currentUser;
-          const votesCast = Utils.bigNumberToNumber(m.info[2]);
+        container.innerHTML = membersData
+          .map((m) => {
+            const addr = m.address.toLowerCase();
+            const isCurrentUser = addr === currentUser;
+            const votesCast = Utils.bigNumberToNumber(m.info[2]);
 
-          return `
+            return `
             <div class="glass rounded-xl p-5 flex items-center justify-between hover:bg-white hover:bg-opacity-10 transition">
               <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
@@ -523,20 +545,31 @@ export const Contract = {
                 </div>
                 <div>
                   <p class="font-mono text-purple-300">${Utils.formatAddress(m.address)}</p>
-                  <p class="text-sm text-gray-400">${votesCast} vote${votesCast !== 1 ? 's' : ''} cast</p>
-                  ${isAdmin ? '<span class="text-xs text-yellow-400"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}
+                  <p class="text-sm text-gray-400">${votesCast} vote${
+              votesCast !== 1 ? 's' : ''
+            } cast</p>
+                  ${
+                    isAdmin
+                      ? '<span class="text-xs text-yellow-400"><i class="fas fa-crown mr-1"></i>Admin</span>'
+                      : ''
+                  }
                   ${isCurrentUser ? '<span class="text-xs text-green-400">You</span>' : ''}
                 </div>
               </div>
-              ${isAdmin && !isCurrentUser ? `
+              ${
+                isAdmin && !isCurrentUser
+                  ? `
                 <button onclick="window.Contract.removeMember(${orgId}, '${m.address}')" 
                         class="text-red-400 hover:text-red-300 transition text-xl" title="Remove member">
                   <i class="fas fa-user-times"></i>
                 </button>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
           `;
-        }).join('');
+          })
+          .join('');
       }
     } catch (error) {
       console.error('Error loading members:', error);
@@ -547,7 +580,8 @@ export const Contract = {
   async loadOrgSettings(orgId) {
     try {
       const org = await this.contract.getOrganization(orgId);
-      const isAdmin = this.currentAccount && org[2].toLowerCase() === this.currentAccount.toLowerCase();
+      const isAdmin =
+        this.currentAccount && org[2].toLowerCase() === this.currentAccount.toLowerCase();
 
       document.getElementById('orgVisibility').checked = org[3];
 
@@ -620,9 +654,14 @@ export const Contract = {
     const numberOfKeys = parseInt(document.getElementById('votingKeysInput').value);
     const isAnonymous = document.getElementById('anonymousPollInput').checked;
 
-    let options = pollType === 0
-      ? ['Yes', 'No']
-      : document.getElementById('pollOptionsInput').value.split('\n').map(o => o.trim()).filter(o => o);
+    let options =
+      pollType === 0
+        ? ['Yes', 'No']
+        : document
+            .getElementById('pollOptionsInput')
+            .value.split('\n')
+            .map((o) => o.trim())
+            .filter((o) => o);
 
     if (options.length < 2) {
       Utils.showNotification('Please provide at least 2 options', 'error');
@@ -644,7 +683,7 @@ export const Contract = {
       );
 
       const receipt = await tx.wait();
-      const event = receipt.events.find(e => e.event === 'PollCreated');
+      const event = receipt.events.find((e) => e.event === 'PollCreated');
       const pollId = event.args[0];
 
       Utils.showNotification('Poll created successfully!', 'success');
@@ -672,8 +711,8 @@ export const Contract = {
       const tx = await this.contract.generateVotingKeys(pollId);
       const receipt = await tx.wait();
 
-      const keyEvents = receipt.events.filter(e => e.event === 'VotingKeyGenerated');
-      const keys = keyEvents.map(e => e.args.keyHash);
+      const keyEvents = receipt.events.filter((e) => e.event === 'VotingKeyGenerated');
+      const keys = keyEvents.map((e) => e.args.keyHash);
 
       Storage.votingKeys.save(pollId, keys);
       const keysText = keys.map((key, i) => `Key ${i + 1}: ${key}`).join('\n');
@@ -690,7 +729,7 @@ export const Contract = {
 
   async retrieveGeneratedKeys(pollId) {
     // ... unchanged
-     try {
+    try {
       Utils.showLoading('Retrieving voting keys from blockchain...');
 
       const poll = await this.contract.getPoll(pollId);
@@ -733,15 +772,20 @@ export const Contract = {
 
       poll.options.forEach((option, index) => {
         const div = document.createElement('div');
-        div.className = 'flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer';
+        div.className =
+          'flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer';
         div.onclick = () => {
-          document.querySelectorAll('#voteOptionsContainer input').forEach(i => i.checked = false);
+          document
+            .querySelectorAll('#voteOptionsContainer input')
+            .forEach((i) => (i.checked = false));
           document.getElementById(`voteOpt${index}`).checked = true;
         };
 
         div.innerHTML = `
           <input type="radio" name="voteOption" value="${index}" id="voteOpt${index}" class="w-5 h-5 mr-3">
-          <label for="voteOpt${index}" class="text-lg text-gray-800 cursor-pointer flex-1">${Utils.escapeHtml(option)}</label>
+          <label for="voteOpt${index}" class="text-lg text-gray-800 cursor-pointer flex-1">${Utils.escapeHtml(
+          option
+        )}</label>
         `;
 
         container.appendChild(div);
@@ -807,10 +851,10 @@ export const Contract = {
       const msg = error.message.includes('Already voted')
         ? 'You have already voted'
         : error.message.includes('Voting key already used')
-          ? 'This voting key has already been used'
-          : error.message.includes('Not authorized')
-            ? 'You are not authorized to vote'
-            : 'Failed to cast vote';
+        ? 'This voting key has already been used'
+        : error.message.includes('Not authorized')
+        ? 'You are not authorized to vote'
+        : 'Failed to cast vote';
 
       Utils.showNotification(msg, 'error');
     } finally {
@@ -820,7 +864,7 @@ export const Contract = {
 
   async viewPollResults(pollId) {
     // ... unchanged (your beautiful results modal)
-     try {
+    try {
       Utils.showLoading('Loading results...');
 
       // const poll = await this.contract.getPoll(pollId);
@@ -835,10 +879,14 @@ export const Contract = {
                 <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full animate-modal-pop">
                     <div class="p-8">
                         <div class="text-center mb-8">
-                            <h3 class="text-3xl font-bold text-gradient mb-4">${Utils.escapeHtml(poll.question)}</h3>
+                            <h3 class="text-3xl font-bold text-gradient mb-4">${Utils.escapeHtml(
+                              poll.question
+                            )}</h3>
                             <div class="flex flex-wrap justify-center gap-6 text-gray-600">
                                 <span>Total Votes: <span class="font-bold">${results[2].toNumber()}</span></span>
-                                <span>Quorum: <span class="font-bold">${poll.requiredQuorum}%</span></span>
+                                <span>Quorum: <span class="font-bold">${
+                                  poll.requiredQuorum
+                                }%</span></span>
                             </div>
                         </div>
 
@@ -852,13 +900,21 @@ export const Contract = {
                                   votes === Math.max(...results[1].map((v) => v.toNumber()));
 
                                 return `
-                                    <div class="bg-gray-50 rounded-xl p-5 ${isWinner ? 'ring-4 ring-yellow-400' : ''}">
+                                    <div class="bg-gray-50 rounded-xl p-5 ${
+                                      isWinner ? 'ring-4 ring-yellow-400' : ''
+                                    }">
                                         <div class="flex justify-between items-center mb-3">
                                             <span class="text-xl font-bold flex items-center gap-3">
-                                                ${isWinner ? '<i class="fas fa-trophy text-yellow-500"></i>' : ''}
+                                                ${
+                                                  isWinner
+                                                    ? '<i class="fas fa-trophy text-yellow-500"></i>'
+                                                    : ''
+                                                }
                                                 ${Utils.escapeHtml(option)}
                                             </span>
-                                            <span class="text-2xl font-bold">${votes} <span class="text-lg text-gray-600">(${pct.toFixed(1)}%)</span></span>
+                                            <span class="text-2xl font-bold">${votes} <span class="text-lg text-gray-600">(${pct.toFixed(
+                                  1
+                                )}%)</span></span>
                                         </div>
                                         <div class="w-full bg-gray-200 rounded-full h-4">
                                             <div class="bg-gradient-to-r from-purple-600 to-pink-600 h-4 rounded-full" style="width: ${pct}%"></div>
@@ -869,8 +925,12 @@ export const Contract = {
                               .join('')}
                         </div>
 
-                        <div class="text-center p-6 rounded-xl mb-8 ${results[4] ? 'bg-green-50' : 'bg-red-50'}">
-                            <span class="text-3xl font-bold ${results[4] ? 'text-green-700' : 'text-red-700'}">
+                        <div class="text-center p-6 rounded-xl mb-8 ${
+                          results[4] ? 'bg-green-50' : 'bg-red-50'
+                        }">
+                            <span class="text-3xl font-bold ${
+                              results[4] ? 'text-green-700' : 'text-red-700'
+                            }">
                                 ${results[4] ? '✓ Quorum Met' : '✗ Quorum Not Met'}
                             </span>
                         </div>
@@ -908,10 +968,14 @@ export const Contract = {
                 <div class="p-4 space-y-3">
                     <!-- Header -->
                     <div class="text-center">
-                        <h3 class="text-base font-semibold text-gray-900">${Utils.escapeHtml(poll.question)}</h3>
+                        <h3 class="text-base font-semibold text-gray-900">${Utils.escapeHtml(
+                          poll.question
+                        )}</h3>
                         <div class="flex justify-center gap-2 text-gray-500 text-xs mt-1">
                             <span>Total: <span class="font-medium">${totalVotes}</span></span>
-                            <span>Quorum: <span class="font-medium">${poll.requiredQuorum}%</span></span>
+                            <span>Quorum: <span class="font-medium">${
+                              poll.requiredQuorum
+                            }%</span></span>
                         </div>
                     </div>
 
@@ -934,7 +998,9 @@ export const Contract = {
                     <span class="text-xs font-semibold">${voteCount} (${pct.toFixed(1)}%)</span>
                 </div>
                 <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="h-3 ${isWinner ? 'bg-yellow-400' : 'bg-purple-500'} rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    <div class="h-3 ${
+                      isWinner ? 'bg-yellow-400' : 'bg-purple-500'
+                    } rounded-full transition-all duration-500" style="width: ${pct}%"></div>
                 </div>
             </div>
         `;
@@ -944,8 +1010,12 @@ export const Contract = {
                     </div>
 
                     <!-- Quorum Info -->
-                    <div class="text-center p-2 rounded-md ${quorumMet ? 'bg-green-50' : 'bg-red-50'}">
-                        <span class="text-xs font-semibold ${quorumMet ? 'text-green-700' : 'text-red-700'}">
+                    <div class="text-center p-2 rounded-md ${
+                      quorumMet ? 'bg-green-50' : 'bg-red-50'
+                    }">
+                        <span class="text-xs font-semibold ${
+                          quorumMet ? 'text-green-700' : 'text-red-700'
+                        }">
                             ${quorumMet ? '✓ Quorum Met' : '✗ Quorum Not Met'}
                         </span>
                     </div>
@@ -994,7 +1064,9 @@ export const Contract = {
                     <div class="p-8">
                         <div class="text-center mb-8">
                             <h3 class="text-3xl font-bold text-gradient mb-2">Manage Voting Keys</h3>
-                            <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(poll.question)}</p>
+                            <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(
+        poll.question
+      )}</p>
                         </div>
 
                         <p class="text-center text-gray-700 mb-6">
@@ -1012,14 +1084,32 @@ export const Contract = {
                                 return `
                                     <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl ${disabled} cursor-pointer">
                                         <div class="flex items-center gap-4">
-                                            <input type="checkbox" value="${m.addr}" class="authBox w-5 h-5" ${checked} ${!canAuthorize ? 'disabled' : ''}>
+                                            <input type="checkbox" value="${
+                                              m.addr
+                                            }" class="authBox w-5 h-5" ${checked} ${
+                                  !canAuthorize ? 'disabled' : ''
+                                }>
                                             <div>
                                                 <div class="font-mono font-semibold">${short}</div>
-                                                <div class="text-sm text-gray-600">${m.votes} past votes</div>
+                                                <div class="text-sm text-gray-600">${
+                                                  m.votes
+                                                } past votes</div>
                                             </div>
                                         </div>
-                                        <span class="px-3 py-1 rounded-full text-xs font-medium ${m.hasVoted ? 'bg-green-600 text-white' : m.isAuthorized ? 'bg-blue-600 text-white' : 'bg-gray-400 text-white'}">
-                                            ${m.hasVoted ? 'Voted' : m.isAuthorized ? 'Authorized' : 'Pending'}
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                                          m.hasVoted
+                                            ? 'bg-green-600 text-white'
+                                            : m.isAuthorized
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-400 text-white'
+                                        }">
+                                            ${
+                                              m.hasVoted
+                                                ? 'Voted'
+                                                : m.isAuthorized
+                                                ? 'Authorized'
+                                                : 'Pending'
+                                            }
                                         </span>
                                     </label>
                                 `;
@@ -1060,7 +1150,9 @@ export const Contract = {
                 <div class="p-8">
                     <div class="text-center mb-8">
                         <h3 class="text-3xl font-bold text-gradient mb-2">Manage Voting Keys</h3>
-                        <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(poll.question)}</p>
+                        <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(
+      poll.question
+    )}</p>
                     </div>
 
                     <p class="text-center text-gray-700 mb-6">
@@ -1078,14 +1170,32 @@ export const Contract = {
                             return `
                                 <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl ${disabled} cursor-pointer">
                                     <div class="flex items-center gap-4">
-                                        <input type="checkbox" value="${m.addr}" class="authBox w-5 h-5" ${checked} ${!canAuthorize ? 'disabled' : ''}>
+                                        <input type="checkbox" value="${
+                                          m.addr
+                                        }" class="authBox w-5 h-5" ${checked} ${
+                              !canAuthorize ? 'disabled' : ''
+                            }>
                                         <div>
                                             <div class="font-mono font-semibold">${short}</div>
-                                            <div class="text-sm text-gray-600">${m.votes} past votes</div>
+                                            <div class="text-sm text-gray-600">${
+                                              m.votes
+                                            } past votes</div>
                                         </div>
                                     </div>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${m.hasVoted ? 'bg-green-600 text-white' : m.isAuthorized ? 'bg-blue-600 text-white' : 'bg-gray-400 text-white'}">
-                                        ${m.hasVoted ? 'Voted' : m.isAuthorized ? 'Authorized' : 'Pending'}
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                                      m.hasVoted
+                                        ? 'bg-green-600 text-white'
+                                        : m.isAuthorized
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-400 text-white'
+                                    }">
+                                        ${
+                                          m.hasVoted
+                                            ? 'Voted'
+                                            : m.isAuthorized
+                                            ? 'Authorized'
+                                            : 'Pending'
+                                        }
                                     </span>
                                 </label>
                             `;

@@ -189,20 +189,12 @@
           },
           "t_enum(PollStatus)1772": {
             "label": "enum VotingSystem.PollStatus",
-            "members": [
-              "Active",
-              "Completed",
-              "Cancelled"
-            ],
+            "members": ["Active", "Completed", "Cancelled"],
             "numberOfBytes": "1"
           },
           "t_enum(PollType)1768": {
             "label": "enum VotingSystem.PollType",
-            "members": [
-              "YesNo",
-              "MultipleChoice",
-              "RankedVoting"
-            ],
+            "members": ["YesNo", "MultipleChoice", "RankedVoting"],
             "numberOfBytes": "1"
           },
           "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
@@ -735,29 +727,17 @@
           },
           "t_enum(ElectionStatus)3545": {
             "label": "enum SafeVoteV2.ElectionStatus",
-            "members": [
-              "Active",
-              "Completed",
-              "Cancelled"
-            ],
+            "members": ["Active", "Completed", "Cancelled"],
             "numberOfBytes": "1"
           },
           "t_enum(PollStatus)3380": {
             "label": "enum SafeVoteV2.PollStatus",
-            "members": [
-              "Active",
-              "Completed",
-              "Cancelled"
-            ],
+            "members": ["Active", "Completed", "Cancelled"],
             "numberOfBytes": "1"
           },
           "t_enum(PollType)3376": {
             "label": "enum SafeVoteV2.PollType",
-            "members": [
-              "YesNo",
-              "MultipleChoice",
-              "RankedVoting"
-            ],
+            "members": ["YesNo", "MultipleChoice", "RankedVoting"],
             "numberOfBytes": "1"
           },
           "t_mapping(t_address,t_address)": {
@@ -1212,9 +1192,7 @@
           ]
         }
       },
-      "allAddresses": [
-        "0x23B25cAEfac1C25136ca3fF5f1bCc945c59EEA4A"
-      ]
+      "allAddresses": ["0x23B25cAEfac1C25136ca3fF5f1bCc945c59EEA4A"]
     }
   }
 }

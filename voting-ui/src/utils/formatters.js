@@ -6,19 +6,26 @@ export const formatAddress = (address) => {
 
 // Format date/time
 export const formatDateTime = (timestamp) => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp * 1000);
+  if (!timestamp) return 'Invalid Date';
+  const ts = Number(timestamp);
+  if (isNaN(ts)) return 'Invalid Date';
+  const date = new Date(ts * 1000);
+  if (isNaN(date.getTime())) return 'Invalid Date';
   return date.toLocaleString();
 };
 
 // Format date only
 export const formatDate = (timestamp) => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp * 1000);
+  if (!timestamp) return 'Invalid Date';
+  const ts = Number(timestamp);
+  if (isNaN(ts)) return 'Invalid Date';
+  const date = new Date(ts * 1000);
+  if (isNaN(date.getTime())) return 'Invalid Date';
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  }) + ', ' + date.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -38,8 +45,11 @@ export const formatPercentage = (value, total) => {
 
 // Format time remaining
 export const formatTimeRemaining = (endTime) => {
+  if (!endTime) return 'Ended';
+  const ts = Number(endTime);
+  if (isNaN(ts)) return 'Ended';
   const now = Date.now() / 1000;
-  const remaining = endTime - now;
+  const remaining = ts - now;
 
   if (remaining <= 0) return 'Ended';
 

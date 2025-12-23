@@ -25,12 +25,7 @@
 body {
   background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);
   min-height: 100vh;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Glass Morphism Effects */
@@ -448,17 +443,17 @@ button:active {
   }
   /* ============ Election Conductor V2 Styles ============ */
 
-.conductor-wrapper {
+  .conductor-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-}
+  }
 
-.conductor-header {
+  .conductor-header {
     text-align: center;
     margin-bottom: 3rem;
-}
+  }
 
-.conductor-header h1 {
+  .conductor-header h1 {
     font-size: 3rem;
     font-weight: bold;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -466,30 +461,30 @@ button:active {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 1rem;
-}
+  }
 
-.conductor-header p {
+  .conductor-header p {
     font-size: 1.25rem;
     color: rgba(255, 255, 255, 0.8);
-}
+  }
 
-.conductor-steps {
+  .conductor-steps {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 1rem;
     margin-bottom: 3rem;
     flex-wrap: wrap;
-}
+  }
 
-.step-indicator {
+  .step-indicator {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-}
+  }
 
-.step-circle {
+  .step-circle {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
@@ -500,58 +495,58 @@ button:active {
     font-size: 1.25rem;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-}
+  }
 
-.step-indicator.active .step-circle {
+  .step-indicator.active .step-circle {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     transform: scale(1.1);
-}
+  }
 
-.step-indicator.completed .step-circle {
+  .step-indicator.completed .step-circle {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
-}
+  }
 
-.step-indicator.inactive .step-circle {
+  .step-indicator.inactive .step-circle {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.4);
     border-color: rgba(255, 255, 255, 0.2);
-}
+  }
 
-.step-label {
+  .step-label {
     color: white;
     font-size: 0.875rem;
     font-weight: 500;
-}
+  }
 
-.conductor-content {
+  .conductor-content {
     min-height: 500px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 2rem;
-}
+  }
 
-.conductor-nav {
+  .conductor-nav {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-}
+  }
 
-.conductor-nav button {
+  .conductor-nav button {
     flex: 1;
     max-width: 200px;
-}
+  }
 
-.conductor-nav button:disabled {
+  .conductor-nav button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
+  }
 
-/* Chain Selector */
-.chain-selector {
+  /* Chain Selector */
+  .chain-selector {
     display: flex;
     align-items: center;
     padding: 1.5rem;
@@ -561,71 +556,70 @@ button:active {
     transition: all 0.3s ease;
     color: white;
     background: rgba(255, 255, 255, 0.05);
-}
+  }
 
-.chain-selector:hover {
+  .chain-selector:hover {
     border-color: rgba(102, 126, 234, 0.5);
     background: rgba(102, 126, 234, 0.1);
     transform: translateY(-2px);
-}
+  }
 
-.chain-selector.selected {
+  .chain-selector.selected {
     border-color: #667eea;
     background: rgba(102, 126, 234, 0.2);
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
+  }
 
-.chain-selector input[type="checkbox"] {
+  .chain-selector input[type='checkbox'] {
     margin-right: 1rem;
     width: 1.5rem;
     height: 1.5rem;
     cursor: pointer;
-}
+  }
 
-/* Position Editor */
-.position-card {
+  /* Position Editor */
+  .position-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     padding: 1.5rem;
     margin-bottom: 1rem;
-}
+  }
 
-.position-card input,
-.position-card textarea {
+  .position-card input,
+  .position-card textarea {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-}
+  }
 
-.position-card input::placeholder,
-.position-card textarea::placeholder {
+  .position-card input::placeholder,
+  .position-card textarea::placeholder {
     color: rgba(255, 255, 255, 0.4);
-}
+  }
 
-/* Responsive */
-@media (max-width: 768px) {
+  /* Responsive */
+  @media (max-width: 768px) {
     .conductor-header h1 {
-        font-size: 2rem;
+      font-size: 2rem;
     }
-    
-    .conductor-steps {
-        gap: 0.5rem;
-    }
-    
-    .step-circle {
-        width: 2.5rem;
-        height: 2.5rem;
-        font-size: 1rem;
-    }
-    
-    .step-label {
-        font-size: 0.75rem;
-    }
-    
-    .chain-selector {
-        padding: 1rem;
-    }
-}
 
+    .conductor-steps {
+      gap: 0.5rem;
+    }
+
+    .step-circle {
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 1rem;
+    }
+
+    .step-label {
+      font-size: 0.75rem;
+    }
+
+    .chain-selector {
+      padding: 1rem;
+    }
+  }
 }

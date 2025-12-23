@@ -80,16 +80,16 @@ export const Storage = {
   },
 
   orgSettings: {
-  setViewRestricted(orgId, restricted) {
-    const settings = JSON.parse(localStorage.getItem('safevote_org_view_restrictions') || '{}');
-    settings[orgId] = restricted;
-    localStorage.setItem('safevote_org_view_restrictions', JSON.stringify(settings));
+    setViewRestricted(orgId, restricted) {
+      const settings = JSON.parse(localStorage.getItem('safevote_org_view_restrictions') || '{}');
+      settings[orgId] = restricted;
+      localStorage.setItem('safevote_org_view_restrictions', JSON.stringify(settings));
+    },
+    isViewRestricted(orgId) {
+      const settings = JSON.parse(localStorage.getItem('safevote_org_view_restrictions') || '{}');
+      return !!settings[orgId];
+    },
   },
-  isViewRestricted(orgId) {
-    const settings = JSON.parse(localStorage.getItem('safevote_org_view_restrictions') || '{}');
-    return !!settings[orgId];
-  }
-},
 
   /**
    * Comments Management

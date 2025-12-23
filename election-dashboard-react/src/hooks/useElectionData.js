@@ -10,7 +10,7 @@ export const useElectionData = (electionId) => {
   // Load election data
   const loadElection = async (id) => {
     if (!id) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -25,7 +25,6 @@ export const useElectionData = (electionId) => {
       // Get analytics
       const analyticsData = await getAnalytics(id);
       setAnalytics(analyticsData);
-
     } catch (err) {
       setError(err.message);
       console.error('Error loading election:', err);

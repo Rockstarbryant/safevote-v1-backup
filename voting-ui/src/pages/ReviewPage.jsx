@@ -6,6 +6,7 @@ import votingService from '../services/votingService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import VoteReview from '../components/voting/VoteReview';
 import SecurityBadge from '../components/common/SecurityBadge';
+import { ethers } from 'ethers';
 
 const ReviewPage = () => {
   const { electionId } = useParams();
@@ -45,76 +46,63 @@ const ReviewPage = () => {
   ]);
 
   const handleSubmitVote = async () => {
-    if (!confirmSubmit) {
-      setError('Please confirm your vote before submitting.');
+  if (!confirmSubmit) {
+    setError('Please confirm your vote before submitting.');
+    return;
+  }
+
+  setSubmitting(true);
+  setError(null);
+
+  try {
+    // PRE-CHECK: Already voted
+    const alreadyVoted = await votingService.hasVoted(electionId, voterKey);
+    if (alreadyVoted) {
+      setError('You have already voted in this election. Thank you!');
+      setSubmitting(false);
       return;
     }
 
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      // === PRE-CHECK: Has this key already been used? ===
-      const alreadyVoted = await votingService.hasVoted(electionId, voterKey);
-      if (alreadyVoted) {
-        setError('You have already voted in this election. Thank you for participating!');
-        setSubmitting(false);
-        return;
-      }
-
-      // Get on-chain election ID
-      // const response = await fetch(`http://localhost:3001/api/elections/${electionId}/onchain-id`);
-      const KEYGEN_API = process.env.REACT_APP_KEYGEN_API || 'http://localhost:3001';
-      const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/onchain-id`);
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Failed to get on-chain election ID: ${response.status} ${errText}`);
-      }
-      const { onChainElectionId } = await response.json();
-
-      const formattedVotes = currentElection.positions.map((_, i) => votes[i] || []);
-
-      const result = await votingService.castVote(
-        onChainElectionId,
-        voterKey,
-        merkleProof,
-        formattedVotes,
-        delegateTo || '0x0000000000000000000000000000000000000000'
-      );
-
-      if (!result.success) {
-        // Better error handling for common cases
-        let userMessage = 'Transaction failed. Please try again.';
-        if (result.error?.includes('Key used')) {
-          userMessage = 'This voter key has already been used.';
-        } else if (result.error?.includes('user rejected')) {
-          userMessage = 'You rejected the transaction.';
-        } else if (result.error?.includes('insufficient funds')) {
-          userMessage = 'Insufficient funds for gas fees.';
-        } else if (result.error?.includes('gas')) {
-          userMessage = 'Gas estimation failed. Try increasing gas limit.';
-        }
-        throw new Error(userMessage);
-      }
-
-      navigate(`/confirmation/${electionId}`, {
-        state: {
-          transactionHash: result.transactionHash,
-          blockNumber: result.blockNumber,
-        },
-      });
-    } catch (err) {
-      console.error('Vote submission error:', err);
-      // Show user-friendly message instead of raw RPC error
-      setError(
-        err.message.includes('RPC') || err.message.includes('reverted')
-          ? 'Transaction failed on the blockchain. Common reasons: key already used or network issue.'
-          : err.message || 'Failed to submit vote. Please try again.'
-      );
-    } finally {
-      setSubmitting(false);
+    // Get on-chain election ID
+    const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:3001';
+    const response = await fetch(`${BACKEND_API}/api/election_chains/${electionId}/on_chain_election_id`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Failed to get on-chain ID: ${response.status} ${errText}`);
     }
-  };
+    const { onChainElectionId } = await response.json();
+
+    // Format votes as BigNumber (required by contract)
+    const formattedVotes = currentElection.positions.map((_, i) => {
+      const selection = votes[i] || [];
+      return selection.map(idx => ethers.BigNumber.from(idx));
+    });
+
+    const result = await votingService.castVote(
+      onChainElectionId,  // ← use on-chain ID
+      voterKey,
+      merkleProof,
+      formattedVotes,
+      delegateTo || '0x0000000000000000000000000000000000000000'
+    );
+
+    if (!result.success) {
+      throw new Error(result.error || 'Transaction failed');
+    }
+
+    navigate(`/confirmation/${electionId}`, {
+      state: {
+        transactionHash: result.transactionHash,
+        blockNumber: result.blockNumber
+      }
+    });
+  } catch (err) {
+    console.error('Vote error:', err);
+    setError(err.message || 'Vote submission failed');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleBack = () => {
     navigate(`/vote/${electionId}`);
@@ -220,8 +208,8 @@ const ReviewPage = () => {
             <div className="setting-item">
               <span className="setting-label">Voter Key</span>
               <code className="setting-key">
-                {voterKey.substring(0, 10)}...{voterKey.substring(58)}
-              </code>
+                {voterKey?.substring(0, 6)}...{voterKey?.substring(38)}
+            </code>
             </div>
           </div>
         </div>

@@ -1,8 +1,8 @@
 require('@nomicfoundation/hardhat-verify');
 require('@nomicfoundation/hardhat-toolbox');
 require('@openzeppelin/hardhat-upgrades');
-require("hardhat-abi-exporter");
-require("hardhat-deploy");
+require('hardhat-abi-exporter');
+require('hardhat-deploy');
 require('dotenv').config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -37,7 +37,7 @@ module.exports = {
       chainId: 421614,
     },
     bnbTestnet: {
-      url:  'https://data-seed-prebsc-1-s1.binance.org:8545',
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 97,
     },
@@ -59,38 +59,38 @@ module.exports = {
     },
     customChains: [
       {
-        network: "baseSepolia",
+        network: 'baseSepolia',
         chainId: 84532,
         urls: {
-          apiURL: "https://api.etherscan.io/v2/api",
-          browserURL: "https://sepolia.basescan.org"
-        }
+          apiURL: 'https://api.etherscan.io/v2/api',
+          browserURL: 'https://sepolia.basescan.org',
+        },
       },
       {
-        network: "arbitrumSepolia",
+        network: 'arbitrumSepolia',
         chainId: 421614,
         urls: {
-          apiURL: "https://api.etherscan.io/v2/api",
-          browserURL: "https://sepolia.arbiscan.io"
-        }
+          apiURL: 'https://api.etherscan.io/v2/api',
+          browserURL: 'https://sepolia.arbiscan.io',
+        },
       },
       {
-        network: "bnbTestnet",
+        network: 'bnbTestnet',
         chainId: 97,
         urls: {
-          apiURL: "https://api.etherscan.io/v2/api",
-          browserURL: "https://testnet.bscscan.com"
-        }
+          apiURL: 'https://api.etherscan.io/v2/api',
+          browserURL: 'https://testnet.bscscan.com',
+        },
       },
       {
-        network: "seiTestnet",
+        network: 'seiTestnet',
         chainId: 1328,
         urls: {
-          apiURL:  "https://testnet.seiscan.com/api",
-          browserURL:  "https://testnet.seiscan.com"
-        }
-      }
-    ]
+          apiURL: 'https://testnet.seiscan.com/api',
+          browserURL: 'https://testnet.seiscan.com',
+        },
+      },
+    ],
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS === 'true',
@@ -107,11 +107,11 @@ module.exports = {
   sourcify: {
     enabled: true,
   },
-   abiExporter: {
+  abiExporter: {
     path: './abis',
     runOnCompile: true,
     clear: true,
     flat: true,
-    format: "minimal"  // or "full", "json"
+    format: 'minimal', // or "full", "json"
   },
 };

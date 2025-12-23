@@ -181,20 +181,12 @@
           },
           "t_enum(PollStatus)1772": {
             "label": "enum VotingSystem.PollStatus",
-            "members": [
-              "Active",
-              "Completed",
-              "Cancelled"
-            ],
+            "members": ["Active", "Completed", "Cancelled"],
             "numberOfBytes": "1"
           },
           "t_enum(PollType)1768": {
             "label": "enum VotingSystem.PollType",
-            "members": [
-              "YesNo",
-              "MultipleChoice",
-              "RankedVoting"
-            ],
+            "members": ["YesNo", "MultipleChoice", "RankedVoting"],
             "numberOfBytes": "1"
           },
           "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {

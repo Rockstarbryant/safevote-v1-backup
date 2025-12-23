@@ -2,11 +2,58 @@ import { ethers } from 'ethers';
 import { SAFE_VOTE_V2_ABI } from '../utils/SafeVoteV2ABI';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
-// const CHAIN_ID = parseInt(process.env.REACT_APP_CHAIN_ID || '421614'); // ← Removed unused variable
+const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:5000';
 
 let provider = null;
 let signer = null;
 let contract = null;
+
+// Cache for on-chain election IDs to avoid repeated API calls
+const onChainIdCache = new Map();
+
+// ============================================
+// GET ON-CHAIN ELECTION ID
+// Maps UUID (used for merkle proofs) to numeric on-chain ID
+// ============================================
+export const getOnChainElectionId = async (uuidElectionId) => {
+  try {
+    // Check cache first
+    if (onChainIdCache.has(uuidElectionId)) {
+      console.log(`📦 Using cached on-chain ID for ${uuidElectionId}`);
+      return onChainIdCache.get(uuidElectionId);
+    }
+
+    console.log(`🔍 Fetching on-chain ID for UUID: ${uuidElectionId}`);
+
+    const response = await fetch(
+      `${BACKEND_API}/api/elections/${uuidElectionId}/onchain-id`
+    );
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(
+        errData.error ||
+          `Failed to get on-chain election ID: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    const onChainId = data.onChainElectionId;
+
+    if (onChainId === undefined || onChainId === null) {
+      throw new Error('On-chain election ID is null. Election not deployed on-chain yet.');
+    }
+
+    // Cache it
+    onChainIdCache.set(uuidElectionId, onChainId);
+    console.log(`✅ Got on-chain ID: ${onChainId} for UUID: ${uuidElectionId}`);
+
+    return onChainId;
+  } catch (error) {
+    console.error('❌ Error fetching on-chain election ID:', error.message);
+    throw error;
+  }
+};
 
 // Initialize provider
 export const initializeProvider = async () => {
@@ -26,27 +73,18 @@ export const initializeProvider = async () => {
   }
 };
 
-// Get provider
 export const getProvider = () => provider;
-
-// Get signer
 export const getSigner = () => signer;
-
-// Get contract
 export const getContract = () => contract;
-
-// Check if contract is ready
 export const isContractReady = () => {
   return contract !== null && signer !== null;
 };
 
-// Get current account
 export const getCurrentAccount = async () => {
   if (!signer) await initializeProvider();
   return await signer.getAddress();
 };
 
-// Get total elections
 export const getTotalElections = async () => {
   try {
     if (!contract) await initializeProvider();
@@ -58,7 +96,6 @@ export const getTotalElections = async () => {
   }
 };
 
-// Get election details
 export const getElection = async (electionId) => {
   try {
     if (!contract) await initializeProvider();
@@ -88,57 +125,88 @@ export const getElection = async (electionId) => {
   }
 };
 
-// Check if this voter has already voted in this election (using key hash)
-export const hasVoted = async (electionId, voterKey) => {
+// Check if voter has already voted
+export const hasVoted = async (uuidElectionId, voterKey) => {
   try {
     if (!contract) await initializeProvider();
 
-    // The contract uses keccak256(electionId, voterKey) as the key hash
+    // Get on-chain election ID
+    const onChainElectionId = await getOnChainElectionId(uuidElectionId);
+
     const keyHash = ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(['uint256', 'bytes32'], [electionId, voterKey])
+      ethers.utils.defaultAbiCoder.encode(
+        ['uint256', 'bytes32'],
+        [onChainElectionId, voterKey]
+      )
     );
 
-    const used = await contract.usedVoterKeys(electionId, keyHash);
+    const used = await contract.usedVoterKeys(onChainElectionId, keyHash);
+    console.log(
+      `🗳️ Vote check for on-chain ID ${onChainElectionId}: ${used ? 'Already voted' : 'Not voted'}`
+    );
     return used;
   } catch (error) {
     console.error('Error checking vote status:', error);
-    // On error, assume not voted (safe default)
     return false;
   }
 };
 
-// Cast vote
-export const castVote = async (electionId, voterKey, merkleProof, votes, delegateTo) => {
+// ============================================
+// CAST VOTE - Main function
+// Expects: uuidElectionId (UUID string used for merkle proofs)
+// Internally converts to on-chain ID for contract call
+// ============================================
+export const castVote = async (uuidElectionId, voterKey, merkleProof, votes, delegateTo) => {
   try {
     if (!contract) await initializeProvider();
 
+    console.log(`📤 Casting vote for election UUID: ${uuidElectionId}`);
+
+    // Convert UUID to on-chain ID
+    const onChainElectionId = await getOnChainElectionId(uuidElectionId);
+    console.log(
+      `🔗 Using on-chain election ID: ${onChainElectionId}`
+    );
+
     const delegateAddress = delegateTo || ethers.constants.AddressZero;
 
-    const tx = await contract.vote(electionId, voterKey, merkleProof, votes, delegateAddress);
+    // Call contract with on-chain ID
+    const tx = await contract.vote(
+      onChainElectionId,
+      voterKey,
+      merkleProof,
+      votes,
+      delegateAddress
+    );
 
+    console.log(`⏳ Transaction pending: ${tx.hash}`);
     const receipt = await tx.wait();
+    console.log(`✅ Transaction confirmed: ${receipt.transactionHash}`);
 
-    // === SUCCESS: Record vote in backend database ===
+    // Record vote in backend database
     try {
       const currentAddress = await signer.getAddress();
       const chainId = (await provider.getNetwork()).chainId;
 
-      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/votes/record`, {
+      await fetch(`${BACKEND_API}/api/votes/record`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          electionId: electionId, // UUID
+          electionId: uuidElectionId, // Keep UUID for backend records
           voterAddress: currentAddress,
           chainId: chainId,
           voterKey: voterKey,
           txHash: receipt.transactionHash,
           blockNumber: receipt.blockNumber,
+          onChainElectionId: onChainElectionId, // Also send on-chain ID
         }),
       });
-      console.log('Vote recorded in backend database');
+      console.log('✅ Vote recorded in backend database');
     } catch (recordErr) {
-      console.warn('Failed to record vote in DB (vote is still on-chain):', recordErr);
-      // Don't fail the whole vote — on-chain is what matters
+      console.warn(
+        '⚠️ Failed to record vote in DB (vote is still on-chain):',
+        recordErr
+      );
     }
 
     return {
@@ -147,7 +215,7 @@ export const castVote = async (electionId, voterKey, merkleProof, votes, delegat
       blockNumber: receipt.blockNumber,
     };
   } catch (error) {
-    console.error('Error casting vote:', error);
+    console.error('❌ Error casting vote:', error);
     return {
       success: false,
       error: error.message || 'Transaction failed or was rejected',
@@ -155,7 +223,6 @@ export const castVote = async (electionId, voterKey, merkleProof, votes, delegat
   }
 };
 
-// Get election results
 export const getElectionResults = async (electionId, positionIndex) => {
   try {
     if (!contract) await initializeProvider();
@@ -171,12 +238,17 @@ export const getElectionResults = async (electionId, positionIndex) => {
   }
 };
 
-// Delegate vote
 export const delegateVote = async (electionId, delegateAddress) => {
   try {
     if (!contract) await initializeProvider();
 
-    const tx = await contract.vote(electionId, ethers.constants.HashZero, [], [], delegateAddress);
+    const tx = await contract.vote(
+      electionId,
+      ethers.constants.HashZero,
+      [],
+      [],
+      delegateAddress
+    );
 
     const receipt = await tx.wait();
 
@@ -211,6 +283,7 @@ const votingService = {
   hasVoted,
   getElectionResults,
   delegateVote,
+  getOnChainElectionId,
 };
 
 export default votingService;

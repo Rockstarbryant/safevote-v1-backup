@@ -113,8 +113,8 @@ export const UI = {
     const createdTimestamp = org[4].toNumber
       ? org[4].toNumber()
       : typeof org[4] === 'string'
-        ? parseInt(org[4])
-        : org[4];
+      ? parseInt(org[4])
+      : org[4];
 
     const createdDate = Utils.formatDate(createdTimestamp);
     // const memberCount = org[5].toString();
@@ -123,8 +123,16 @@ export const UI = {
     card.innerHTML = `
             <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
-                    <h4 class="text-xl font-bold text-white mb-1 truncate">${Utils.escapeHtml(org[0])}</h4>
-                    ${org[1] ? `<p class="text-sm text-purple-200 truncate">${Utils.escapeHtml(org[1])}</p>` : ''}
+                    <h4 class="text-xl font-bold text-white mb-1 truncate">${Utils.escapeHtml(
+                      org[0]
+                    )}</h4>
+                    ${
+                      org[1]
+                        ? `<p class="text-sm text-purple-200 truncate">${Utils.escapeHtml(
+                            org[1]
+                          )}</p>`
+                        : ''
+                    }
                 </div>
                 <span class="badge ${org[3] ? 'badge-public' : 'badge-private'} ml-2 flex-shrink-0">
                     <i class="fas ${org[3] ? 'fa-globe' : 'fa-lock'} mr-1"></i>
@@ -157,7 +165,11 @@ export const UI = {
                 </div>
             </div>
 
-            ${isAdmin ? '<div class="mb-3"><span class="badge badge-admin"><i class="fas fa-crown mr-1"></i>Administrator</span></div>' : ''}
+            ${
+              isAdmin
+                ? '<div class="mb-3"><span class="badge badge-admin"><i class="fas fa-crown mr-1"></i>Administrator</span></div>'
+                : ''
+            }
             
             <button onclick="UI.openOrganization(${orgId}); event.stopPropagation();" 
                     class="w-full btn-primary">
@@ -172,35 +184,38 @@ export const UI = {
    * Open organization dashboard
    */
   async openOrganization(orgId) {
-  this.currentOrgId = orgId;
+    this.currentOrgId = orgId;
 
-  // CACHED organization data — instant after first load
-  const org = await ImmutableLoader.loadOrganization(window.Contract.contract, orgId);
+    // CACHED organization data — instant after first load
+    const org = await ImmutableLoader.loadOrganization(window.Contract.contract, orgId);
 
-  if (!org || org[0] === '') {
-    Utils.showNotification('Organization not found or failed to load', 'error');
-    return;
-  }
+    if (!org || org[0] === '') {
+      Utils.showNotification('Organization not found or failed to load', 'error');
+      return;
+    }
 
-  // Check if user is member
-  const isMember = await window.Contract.isMember(orgId, this.currentAccount || '0x0000000000000000000000000000000000000000');
+    // Check if user is member
+    const isMember = await window.Contract.isMember(
+      orgId,
+      this.currentAccount || '0x0000000000000000000000000000000000000000'
+    );
 
-  // Frontend-only view restriction (creator can toggle in Settings)
-  const isViewRestricted = Storage.orgSettings.isViewRestricted(orgId);
+    // Frontend-only view restriction (creator can toggle in Settings)
+    const isViewRestricted = Storage.orgSettings.isViewRestricted(orgId);
 
-  if (isViewRestricted && !isMember) {
-    Utils.showNotification('This organization restricts viewing to members only', 'warning');
-    return;
-  }
+    if (isViewRestricted && !isMember) {
+      Utils.showNotification('This organization restricts viewing to members only', 'warning');
+      return;
+    }
 
-  // Update recent orgs
-  Storage.recentOrgs.add(orgId, org[0]);
+    // Update recent orgs
+    Storage.recentOrgs.add(orgId, org[0]);
 
-  // Update header
-  document.getElementById('orgName').textContent = org[0];
+    // Update header
+    document.getElementById('orgName').textContent = org[0];
 
-  const orgInfo = document.getElementById('orgInfo');
-  orgInfo.innerHTML = `
+    const orgInfo = document.getElementById('orgInfo');
+    orgInfo.innerHTML = `
       <div class="flex flex-wrap items-center gap-4 text-sm">
           <span><i class="fas fa-users mr-1"></i>${Utils.bigNumberToNumber(org[5])} members</span>
           <span>•</span>
@@ -215,22 +230,22 @@ export const UI = {
       </div>
   `;
 
-  // Show dashboard
-  const dashboard = document.getElementById('orgDashboard');
-  dashboard.classList.remove('hidden');
+    // Show dashboard
+    const dashboard = document.getElementById('orgDashboard');
+    dashboard.classList.remove('hidden');
 
-  // Load everything in parallel
-  await Promise.all([
-    window.Contract.loadOrgPolls(orgId),
-    window.Contract.loadOrgMembers(orgId),
-    window.Contract.loadOrgSettings(orgId),
-  ]);
+    // Load everything in parallel
+    await Promise.all([
+      window.Contract.loadOrgPolls(orgId),
+      window.Contract.loadOrgMembers(orgId),
+      window.Contract.loadOrgSettings(orgId),
+    ]);
 
-  // Default to Active Polls tab
-  UI.switchTab('activePolls');
+    // Default to Active Polls tab
+    UI.switchTab('activePolls');
 
-  Utils.scrollTo('orgDashboard');
-},
+    Utils.scrollTo('orgDashboard');
+  },
 
   /**
    * Close organization dashboard
@@ -343,18 +358,30 @@ export const UI = {
         <div class="flex items-start justify-between mb-5">
             <div class="flex-1 pr-4">
             <div class="flex items-center gap-3 mb-2">
-                    <i class="fas fa-circle text-lg ${isActive ? 'text-green-400' : 'text-gray-500'}"></i>
-                    <span class="text-sm font-medium ${isActive ? 'text-green-300' : 'text-gray-400'}">
+                    <i class="fas fa-circle text-lg ${
+                      isActive ? 'text-green-400' : 'text-gray-500'
+                    }"></i>
+                    <span class="text-sm font-medium ${
+                      isActive ? 'text-green-300' : 'text-gray-400'
+                    }">
                         ${isActive ? 'Active' : 'Ended'}
                     </span>
                 </div>
-                <h3 class="text-xl font-bold text-white mb-2 line-clamp-2">${Utils.escapeHtml(poll.question)}</h3>
+                <h3 class="text-xl font-bold text-white mb-2 line-clamp-2">${Utils.escapeHtml(
+                  poll.question
+                )}</h3>
                 <div class="flex flex-wrap items-center gap-3 text-sm">
-                    <span class="px-3 py-1 rounded-full font-medium ${Utils.getPollStatusColor(poll.status)} text-white">
+                    <span class="px-3 py-1 rounded-full font-medium ${Utils.getPollStatusColor(
+                      poll.status
+                    )} text-white">
                         ${Utils.getPollStatusText(poll.status)}
                     </span>
                     <span class="text-gray-300">${Utils.getPollTypeText(poll.pollType)}</span>
-                    ${poll.isAnonymous ? '<span class="text-gray-400"><i class="fas fa-user-secret mr-1"></i>Anonymous</span>' : ''}
+                    ${
+                      poll.isAnonymous
+                        ? '<span class="text-gray-400"><i class="fas fa-user-secret mr-1"></i>Anonymous</span>'
+                        : ''
+                    }
                 </div>
                 <!-- Created & End Time -->
             <div class="text-right text-xs text-gray-400">
@@ -362,7 +389,11 @@ export const UI = {
                 <div>Ends: ${endDate}</div>
             </div>
             </div>
-            ${isCreator ? '<div class="text-yellow-400 text-2xl"><i class="fas fa-crown"></i></div>' : ''}
+            ${
+              isCreator
+                ? '<div class="text-yellow-400 text-2xl"><i class="fas fa-crown"></i></div>'
+                : ''
+            }
         </div>
 
         <!-- Progress Bar -->
@@ -380,7 +411,9 @@ export const UI = {
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="bg-white/5 rounded-xl p-4 text-center">
                 <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Time Remaining</p>
-                <p class="text-2xl font-bold text-white">${Utils.formatTimeRemaining(poll.endTime.toNumber())}</p>
+                <p class="text-2xl font-bold text-white">${Utils.formatTimeRemaining(
+                  poll.endTime.toNumber()
+                )}</p>
             </div>
             <div class="bg-white/5 rounded-xl p-4 text-center">
                 <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Quorum Required</p>
@@ -416,7 +449,9 @@ export const UI = {
                     </button>
                     <button onclick="UI.togglePollVisibility(${pollId})" 
                             class="bg-orange-600 text-white py-3 rounded-xl font-medium hover:bg-orange-700 transition">
-                        <i class="fas ${Storage.visibility.isHidden(pollId) ? 'fa-eye' : 'fa-eye-slash'} mr-2"></i>
+                        <i class="fas ${
+                          Storage.visibility.isHidden(pollId) ? 'fa-eye' : 'fa-eye-slash'
+                        } mr-2"></i>
                         ${Storage.visibility.isHidden(pollId) ? 'Unhide Poll' : 'Hide Poll'}
                     </button>
                 </div>
@@ -494,28 +529,44 @@ export const UI = {
           const path = depth === 0 ? [index] : [/* parent path */ index]; // We'll fix path in handleLike
 
           return `
-                <div class="${depth > 0 ? 'ml-8 border-l-2 border-purple-500/30 pl-4 mt-4' : 'mb-6'}">
+                <div class="${
+                  depth > 0 ? 'ml-8 border-l-2 border-purple-500/30 pl-4 mt-4' : 'mb-6'
+                }">
                     <div class="flex gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                             ${comment.author.substring(2, 4).toUpperCase()}
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="font-mono text-purple-300 text-sm">${Utils.formatAddress(comment.author)}</span>
-                                <span class="text-gray-500 text-xs">${Utils.timeAgo(comment.timestamp)}</span>
+                                <span class="font-mono text-purple-300 text-sm">${Utils.formatAddress(
+                                  comment.author
+                                )}</span>
+                                <span class="text-gray-500 text-xs">${Utils.timeAgo(
+                                  comment.timestamp
+                                )}</span>
                             </div>
                             <p class="text-white mb-3">${Utils.escapeHtml(comment.text)}</p>
                             <div class="flex items-center gap-6 text-sm">
-                                <button onclick="UI.handleLike(${pollId}, ${depth === 0 ? index : '/*need path*/'})" 
-                                        class="flex items-center gap-1 hover:text-red-400 transition ${hasLiked ? 'text-red-400' : 'text-gray-400'}">
+                                <button onclick="UI.handleLike(${pollId}, ${
+            depth === 0 ? index : '/*need path*/'
+          })" 
+                                        class="flex items-center gap-1 hover:text-red-400 transition ${
+                                          hasLiked ? 'text-red-400' : 'text-gray-400'
+                                        }">
                                     <i class="fas fa-heart"></i> ${comment.likes.length || ''}
                                 </button>
-                                <button onclick="UI.startReply(${pollId}, ${depth === 0 ? index : 'path'})" 
+                                <button onclick="UI.startReply(${pollId}, ${
+            depth === 0 ? index : 'path'
+          })" 
                                         class="text-gray-400 hover:text-purple-400 transition">
                                     Reply
                                 </button>
                             </div>
-                            ${comment.replies.length > 0 ? renderThread(comment.replies, depth + 1) : ''}
+                            ${
+                              comment.replies.length > 0
+                                ? renderThread(comment.replies, depth + 1)
+                                : ''
+                            }
                         </div>
                     </div>
                 </div>
@@ -584,10 +635,10 @@ export const UI = {
   },
 
   toggleViewRestriction() {
-  const restricted = document.getElementById('restrictViewToggle').checked;
-  Storage.orgSettings.setViewRestricted(UI.currentOrgId, restricted);
-  Utils.showNotification('View restriction updated', 'info');
-},
+    const restricted = document.getElementById('restrictViewToggle').checked;
+    Storage.orgSettings.setViewRestricted(UI.currentOrgId, restricted);
+    Utils.showNotification('View restriction updated', 'info');
+  },
 
   showModal(modalId) {
     const modal = document.getElementById(modalId);

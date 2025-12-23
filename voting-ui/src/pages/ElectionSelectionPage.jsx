@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import formatters from '../utils/formatters';
 
 const ElectionSelectionPage = () => {
   const [elections, setElections] = useState([]);
@@ -97,7 +98,7 @@ const ElectionSelectionPage = () => {
     }
     return <span className="status-badge badge-active">Active</span>;
   };
-
+/*
   const formatDate = (timestamp) => {
     // ✅ FIX 6: Handle both Unix timestamps and ISO strings
     if (!timestamp) return 'N/A';
@@ -113,7 +114,7 @@ const ElectionSelectionPage = () => {
     }
 
     return date.toLocaleString();
-  };
+  }; */
 
   if (loading) {
     return (
@@ -203,11 +204,11 @@ const ElectionSelectionPage = () => {
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">🗓️ Start:</span>
-                  <span className="meta-value">{formatDate(election.startTime)}</span>
+                  <span className="meta-value">{formatters.formatDateTime(election.startTime)}</span>
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">⏰ End:</span>
-                  <span className="meta-value">{formatDate(election.endTime)}</span>
+                  <span className="meta-value">{formatters.formatDateTime(election.endTime)}</span>
                 </div>
                 <div className="meta-item">
                   <span className="meta-label">👥 Voters:</span>

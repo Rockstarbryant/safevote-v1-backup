@@ -23,103 +23,115 @@ export const Contract = {
    * Initialize contract connection
    */
   async init() {
-  if (typeof window.ethereum === 'undefined') {
-    Utils.showNotification('Please install a Web3 wallet (MetaMask, Rabby, OKX, etc.)', 'error');
-    return false;
-  }
-
-  try {
-    // Check if already connected
-    const accounts = await ethereum.request({ method: 'eth_accounts' });
-    if (accounts.length > 0) {
-      await this.connect();
+    if (typeof window.ethereum === 'undefined') {
+      Utils.showNotification('Please install a Web3 wallet (MetaMask, Rabby, OKX, etc.)', 'error');
+      return false;
     }
-    return true;
-  } catch (error) {
-    console.error('Init error:', error);
-    return false;
-  }
-},
 
-/**
- * Connect wallet
- */
-async connect() {
-  try {
-    Utils.showLoading('Connecting wallet...');
-
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-    this.provider = new ethers.providers.Web3Provider(window.ethereum);
-    this.signer = this.provider.getSigner();
-    this.currentAccount = accounts[0];
-
-    // Dispatch account change
-    window.dispatchEvent(new CustomEvent('accountChanged', { detail: this.currentAccount }));
-
-    // Get current network
-    const network = await this.provider.getNetwork();
-    updateContractForChain(network.chainId);  // Now global
-
-    // Re-create contract instance with new address
-    this.contract = new ethers.Contract(window.CONTRACT_ADDRESS, SafeVoteV2MergedABI, this.signer);
-    if (!window.CONTRACT_ADDRESS) {
-  Utils.showNotification('Unsupported network — no contract deployed here yet', 'warning');
-  return;
-}
-
-    // Update UI
-    document.getElementById('connectWallet').classList.add('hidden');
-    document.getElementById('accountInfo').classList.remove('hidden');
-    document.getElementById('accountAddress').textContent = Utils.formatAddress(this.currentAccount);
-
-    // Sync network switcher dropdown
-    syncNetworkSwitcher();
-
-    // Initialize UI
-    UI.init(this.currentAccount);
-
-    // Setup listeners
-    this.setupEventListeners();
-
-    // Load organizations
-    await this.loadPublicOrgs();
-
-    Utils.hideLoading();
-    Utils.showNotification(`Wallet connected on ${CHAIN_CONFIG[network.chainId]?.name || 'Unknown Network'}!`, 'success');
-    // After successful connect
-const refreshBtn = document.getElementById('refreshDataBtn');
-if (refreshBtn) refreshBtn.classList.remove('hidden');
-
-    return true;
-  } catch (error) {
-    Utils.hideLoading();
-    console.error(`Connection error:`, error);
-    Utils.showNotification('Failed to connect wallet', 'error');
-    return false;
-  }
-},
-
-/**
- * Switch to a specific network (called from dropdown)
- */
-async switchNetwork(targetChainId) {
-  const chainIdHex = '0x' + parseInt(targetChainId).toString(16);
-
-  try {
-    await ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: chainIdHex }],
-    });
-    // Wallet will trigger chainChanged → page reloads via listener
-  } catch (switchError) {
-    if (switchError.code === 4902) {
-      Utils.showNotification('This network is not added to your wallet. Add it manually.', 'error');
-    } else {
-      console.error('Network switch error:', switchError);
-      Utils.showNotification('Failed to switch network', 'error');
+    try {
+      // Check if already connected
+      const accounts = await ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        await this.connect();
+      }
+      return true;
+    } catch (error) {
+      console.error('Init error:', error);
+      return false;
     }
-  }
-},
+  },
+
+  /**
+   * Connect wallet
+   */
+  async connect() {
+    try {
+      Utils.showLoading('Connecting wallet...');
+
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      this.provider = new ethers.providers.Web3Provider(window.ethereum);
+      this.signer = this.provider.getSigner();
+      this.currentAccount = accounts[0];
+
+      // Dispatch account change
+      window.dispatchEvent(new CustomEvent('accountChanged', { detail: this.currentAccount }));
+
+      // Get current network
+      const network = await this.provider.getNetwork();
+      updateContractForChain(network.chainId); // Now global
+
+      // Re-create contract instance with new address
+      this.contract = new ethers.Contract(
+        window.CONTRACT_ADDRESS,
+        SafeVoteV2MergedABI,
+        this.signer
+      );
+      if (!window.CONTRACT_ADDRESS) {
+        Utils.showNotification('Unsupported network — no contract deployed here yet', 'warning');
+        return;
+      }
+
+      // Update UI
+      document.getElementById('connectWallet').classList.add('hidden');
+      document.getElementById('accountInfo').classList.remove('hidden');
+      document.getElementById('accountAddress').textContent = Utils.formatAddress(
+        this.currentAccount
+      );
+
+      // Sync network switcher dropdown
+      syncNetworkSwitcher();
+
+      // Initialize UI
+      UI.init(this.currentAccount);
+
+      // Setup listeners
+      this.setupEventListeners();
+
+      // Load organizations
+      await this.loadPublicOrgs();
+
+      Utils.hideLoading();
+      Utils.showNotification(
+        `Wallet connected on ${CHAIN_CONFIG[network.chainId]?.name || 'Unknown Network'}!`,
+        'success'
+      );
+      // After successful connect
+      const refreshBtn = document.getElementById('refreshDataBtn');
+      if (refreshBtn) refreshBtn.classList.remove('hidden');
+
+      return true;
+    } catch (error) {
+      Utils.hideLoading();
+      console.error(`Connection error:`, error);
+      Utils.showNotification('Failed to connect wallet', 'error');
+      return false;
+    }
+  },
+
+  /**
+   * Switch to a specific network (called from dropdown)
+   */
+  async switchNetwork(targetChainId) {
+    const chainIdHex = '0x' + parseInt(targetChainId).toString(16);
+
+    try {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: chainIdHex }],
+      });
+      // Wallet will trigger chainChanged → page reloads via listener
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        Utils.showNotification(
+          'This network is not added to your wallet. Add it manually.',
+          'error'
+        );
+      } else {
+        console.error('Network switch error:', switchError);
+        Utils.showNotification('Failed to switch network', 'error');
+      }
+    }
+  },
 
   /**
    * Setup blockchain event listeners
@@ -134,12 +146,15 @@ async switchNetwork(targetChainId) {
     });
 
     // Poll events
-    this.contract.on('PollCreated', (_pollId, orgId, _creator, question, _pollType, _endTime, _timestamp) => {
-  if (UI.currentOrgId && orgId.toString() === UI.currentOrgId.toString()) {
-    Utils.showNotification(`New poll: ${question}`, 'info');
-    this.loadOrgPolls(UI.currentOrgId);
-  }
-});
+    this.contract.on(
+      'PollCreated',
+      (_pollId, orgId, _creator, question, _pollType, _endTime, _timestamp) => {
+        if (UI.currentOrgId && orgId.toString() === UI.currentOrgId.toString()) {
+          Utils.showNotification(`New poll: ${question}`, 'info');
+          this.loadOrgPolls(UI.currentOrgId);
+        }
+      }
+    );
 
     // Vote events
     this.contract.on('VoteCastV1', (_pollId, orgId) => {
@@ -236,46 +251,44 @@ async switchNetwork(targetChainId) {
    * Load public organizations
    */
   async loadPublicOrgs() {
-  if (!this.contract) return;
+    if (!this.contract) return;
 
-  try {
-    let publicOrgIds = [];
     try {
-      publicOrgIds = await this.contract.getPublicOrganizations();
-    } catch (error) {
-      if (error.code === 'CALL_EXCEPTION' && (error.data === '0x' || error.data === null)) {
-        console.info('No public organizations — normal for new deployments');
-        publicOrgIds = [];
-      } else {
-        throw error;
+      let publicOrgIds = [];
+      try {
+        publicOrgIds = await this.contract.getPublicOrganizations();
+      } catch (error) {
+        if (error.code === 'CALL_EXCEPTION' && (error.data === '0x' || error.data === null)) {
+          console.info('No public organizations — normal for new deployments');
+          publicOrgIds = [];
+        } else {
+          throw error;
+        }
       }
+
+      const orgs = await ImmutableLoader.loadOrganizations(this.contract, publicOrgIds);
+
+      UI.displayOrganizations(publicOrgIds, orgs);
+
+      document.querySelectorAll('.btn-filter').forEach((btn) => btn.classList.remove('active'));
+      document.getElementById('filterPublic')?.classList.add('active');
+    } catch (error) {
+      console.error('Error loading public orgs:', error);
+      Utils.showNotification('Failed to load organizations', 'error');
     }
+  },
 
-    const orgs = await ImmutableLoader.loadOrganizations(this.contract, publicOrgIds);
-
-    UI.displayOrganizations(publicOrgIds, orgs);
-
-    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('filterPublic')?.classList.add('active');
-
-  } catch (error) {
-    console.error('Error loading public orgs:', error);
-    Utils.showNotification('Failed to load organizations', 'error');
-  }
-},
-
-/**
- * Check if organization exists
- */
-async organizationExists(orgId) {
-  try {
-    const org = await this.contract.getOrganization(orgId);
-    return org && org[0] && org[0].length > 0; // Check if name exists
-  } catch (error) {
-    return false;
-  }
-},
-  
+  /**
+   * Check if organization exists
+   */
+  async organizationExists(orgId) {
+    try {
+      const org = await this.contract.getOrganization(orgId);
+      return org && org[0] && org[0].length > 0; // Check if name exists
+    } catch (error) {
+      return false;
+    }
+  },
 
   /**
    * Load user's organizations
@@ -371,7 +384,10 @@ async organizationExists(orgId) {
       await this.loadOrgMembers(UI.currentOrgId);
     } catch (error) {
       console.error('Add members error:', error);
-      Utils.showNotification('You need to be a member of this organization to add members', 'error');
+      Utils.showNotification(
+        'You need to be a member of this organization to add members',
+        'error'
+      );
     } finally {
       Utils.hideLoading();
     }
@@ -402,98 +418,99 @@ async organizationExists(orgId) {
   },
 
   /**
- * Load organization polls
- */
-async loadOrgPolls(orgId, showEnded = false) {
-  try {
-    // ✅ First check if organization exists
+   * Load organization polls
+   */
+  async loadOrgPolls(orgId, showEnded = false) {
     try {
-      const org = await this.contract.getOrganization(orgId);
-      if (!org || !org[0]) { // org[0] is the name
-        console.warn(`Organization ${orgId} does not exist`);
-        const containerId = showEnded ? 'endedPollsContainer' : 'activePollsContainer';
-        const container = document.getElementById(containerId);
-        if (container) {
-          container.innerHTML = `
+      // ✅ First check if organization exists
+      try {
+        const org = await this.contract.getOrganization(orgId);
+        if (!org || !org[0]) {
+          // org[0] is the name
+          console.warn(`Organization ${orgId} does not exist`);
+          const containerId = showEnded ? 'endedPollsContainer' : 'activePollsContainer';
+          const container = document.getElementById(containerId);
+          if (container) {
+            container.innerHTML = `
             <div class="col-span-full glass rounded-xl p-12 text-center text-white animate-fade-in">
               <i class="fas fa-exclamation-triangle text-6xl mb-6 opacity-40"></i>
               <p class="text-xl opacity-80">Organization not found</p>
             </div>
           `;
+          }
+          return;
         }
+      } catch (error) {
+        console.error(`Organization ${orgId} not found:`, error);
+        Utils.showNotification('Organization not found', 'error');
         return;
       }
-    } catch (error) {
-      console.error(`Organization ${orgId} not found:`, error);
-      Utils.showNotification('Organization not found', 'error');
-      return;
-    }
 
-    // ✅ Try to get polls with error handling
-    let pollIds = [];
-    try {
-      pollIds = await this.contract.getOrganizationPolls(orgId);
-    } catch (error) {
-      console.warn(`No polls found for org ${orgId}:`, error);
-      pollIds = [];
-    }
+      // ✅ Try to get polls with error handling
+      let pollIds = [];
+      try {
+        pollIds = await this.contract.getOrganizationPolls(orgId);
+      } catch (error) {
+        console.warn(`No polls found for org ${orgId}:`, error);
+        pollIds = [];
+      }
 
-    const pollsData = [];
+      const pollsData = [];
 
-    // Batch load poll metadata from cache or chain
-    const polls = await ImmutableLoader.cache.fetchBatch(
-      pollIds.map((id) => `poll_${id}`),
-      async (key) => {
-        const pollId = key.replace('poll_', '');
-        console.log(`📄 Loading poll ${pollId} from chain`);
+      // Batch load poll metadata from cache or chain
+      const polls = await ImmutableLoader.cache.fetchBatch(
+        pollIds.map((id) => `poll_${id}`),
+        async (key) => {
+          const pollId = key.replace('poll_', '');
+          console.log(`📄 Loading poll ${pollId} from chain`);
+          try {
+            return await this.contract.getPoll(pollId);
+          } catch (error) {
+            console.warn(`Could not load poll ${pollId}:`, error);
+            return null;
+          }
+        }
+      );
+
+      // Process each poll
+      for (const pollId of pollIds) {
+        const poll = polls[`poll_${pollId}`];
+        if (!poll) continue;
+
         try {
-          return await this.contract.getPoll(pollId);
+          const results = await this.contract.getPollResults(pollId);
+          const isActive = Utils.isPollActive(poll);
+
+          if (isActive === showEnded) continue;
+
+          pollsData.push({
+            pollId,
+            poll,
+            results,
+            isActive,
+          });
         } catch (error) {
-          console.warn(`Could not load poll ${pollId}:`, error);
-          return null;
+          console.warn(`Could not load results for poll ${pollId}:`, error);
+          // Skip this poll and continue
         }
       }
-    );
 
-    // Process each poll
-    for (const pollId of pollIds) {
-      const poll = polls[`poll_${pollId}`];
-      if (!poll) continue;
+      // Sort polls
+      pollsData.sort((a, b) => {
+        const aEnd = Utils.bigNumberToNumber(a.poll.endTime);
+        const bEnd = Utils.bigNumberToNumber(b.poll.endTime);
+        return showEnded ? bEnd - aEnd : aEnd - bEnd;
+      });
 
-      try {
-        const results = await this.contract.getPollResults(pollId);
-        const isActive = Utils.isPollActive(poll);
+      // Render to the correct container
+      const containerId = showEnded ? 'endedPollsContainer' : 'activePollsContainer';
+      const container = document.getElementById(containerId);
+      if (!container) return;
 
-        if (isActive === showEnded) continue;
+      container.innerHTML = '';
 
-        pollsData.push({
-          pollId,
-          poll,
-          results,
-          isActive,
-        });
-      } catch (error) {
-        console.warn(`Could not load results for poll ${pollId}:`, error);
-        // Skip this poll and continue
-      }
-    }
-
-    // Sort polls
-    pollsData.sort((a, b) => {
-      const aEnd = Utils.bigNumberToNumber(a.poll.endTime);
-      const bEnd = Utils.bigNumberToNumber(b.poll.endTime);
-      return showEnded ? bEnd - aEnd : aEnd - bEnd;
-    });
-
-    // Render to the correct container
-    const containerId = showEnded ? 'endedPollsContainer' : 'activePollsContainer';
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    if (pollsData.length === 0) {
-      container.innerHTML = `
+      if (pollsData.length === 0) {
+        container.innerHTML = `
         <div class="col-span-full glass rounded-xl p-12 text-center text-white animate-fade-in">
           <i class="fas fa-inbox text-6xl mb-6 opacity-40"></i>
           <p class="text-xl opacity-80">
@@ -502,107 +519,110 @@ async loadOrgPolls(orgId, showEnded = false) {
           ${!showEnded ? '<p class="text-sm opacity-60 mt-4">Create one to get started!</p>' : ''}
         </div>
       `;
-      return;
-    }
-
-    // Append poll cards
-    pollsData.forEach((data) => {
-      const card = UI.createPollCard(data.pollId, data.poll, data.results, data.isActive);
-      if (card) container.appendChild(card);
-    });
-
-    // Render comments after cards are in DOM
-    setTimeout(() => {
-      pollsData.forEach(({ pollId }) => UI.renderComments(pollId));
-    }, 100);
-  } catch (error) {
-    console.error('Error loading polls:', error);
-    Utils.showNotification('Failed to load polls', 'error');
-  }
-},
-
-  
-  /**
- * Load organization members
- */
-async loadOrgMembers(orgId) {
-  try {
-    // ✅ First check if organization exists
-    let org;
-    try {
-      org = await ImmutableLoader.loadOrganization(this.contract, orgId);
-      if (!org || !org[5]) { // Check if org exists (org[5] is memberCount or similar)
-        console.warn(`Organization ${orgId} does not exist`);
-        const container = document.getElementById('membersList');
-        if (container) {
-          container.innerHTML = '<p class="text-white opacity-70 text-center py-8">Organization not found</p>';
-        }
         return;
       }
-    } catch (error) {
-      console.error(`Organization ${orgId} not found:`, error);
-      Utils.showNotification('Organization not found', 'error');
-      return;
-    }
 
-    // ✅ Then try to get members with error handling
-    let members = [];
+      // Append poll cards
+      pollsData.forEach((data) => {
+        const card = UI.createPollCard(data.pollId, data.poll, data.results, data.isActive);
+        if (card) container.appendChild(card);
+      });
+
+      // Render comments after cards are in DOM
+      setTimeout(() => {
+        pollsData.forEach(({ pollId }) => UI.renderComments(pollId));
+      }, 100);
+    } catch (error) {
+      console.error('Error loading polls:', error);
+      Utils.showNotification('Failed to load polls', 'error');
+    }
+  },
+
+  /**
+   * Load organization members
+   */
+  async loadOrgMembers(orgId) {
     try {
-      members = await this.contract.getOrganizationMembers(orgId);
-    } catch (error) {
-      console.warn(`No members found for org ${orgId}:`, error);
-      members = [];
-    }
-
-    const membersData = [];
-
-    // Load member info with individual error handling
-    for (const address of members) {
+      // ✅ First check if organization exists
+      let org;
       try {
-        const info = await ImmutableLoader.loadMemberInfo(this.contract, orgId, address);
-        if (info && info[1]) {
-          // isActive
-          membersData.push({ address, info });
+        org = await ImmutableLoader.loadOrganization(this.contract, orgId);
+        if (!org || !org[5]) {
+          // Check if org exists (org[5] is memberCount or similar)
+          console.warn(`Organization ${orgId} does not exist`);
+          const container = document.getElementById('membersList');
+          if (container) {
+            container.innerHTML =
+              '<p class="text-white opacity-70 text-center py-8">Organization not found</p>';
+          }
+          return;
         }
       } catch (error) {
-        console.warn(`Could not load member ${address}:`, error);
-        // Skip this member and continue
-      }
-    }
-
-    // SAFE CALL — check if UI is ready
-    if (typeof window.UI !== 'undefined' && typeof window.UI.renderMembers === 'function') {
-      window.UI.renderMembers(membersData, org);
-    } else {
-      console.info('Rendering members list (fallback mode)');
-      const container = document.getElementById('membersList');
-      if (!container) return;
-
-      const currentUser = window.Contract.currentAccount?.toLowerCase();
-      const isAdmin = currentUser && org[2].toLowerCase() === currentUser;
-
-      // Show/Hide Leave Organization button
-      const leaveBtn = document.getElementById('leaveOrgBtn');
-      if (leaveBtn) {
-        const isMember = membersData.some(m => m.address.toLowerCase() === currentUser);
-        if (isMember && !isAdmin) {
-          leaveBtn.classList.remove('hidden');
-        } else {
-          leaveBtn.classList.add('hidden');
-        }
-      }
-
-      if (membersData.length === 0) {
-        container.innerHTML = '<p class="text-white opacity-70 text-center py-8">No members yet</p>';
+        console.error(`Organization ${orgId} not found:`, error);
+        Utils.showNotification('Organization not found', 'error');
         return;
       }
 
-      container.innerHTML = membersData.map(m => {
-        const addr = m.address.toLowerCase();
-        const isCurrentUser = addr === currentUser;
-        const votesCast = Utils.bigNumberToNumber(m.info[2]);
+      // ✅ Then try to get members with error handling
+      let members = [];
+      try {
+        members = await this.contract.getOrganizationMembers(orgId);
+      } catch (error) {
+        console.warn(`No members found for org ${orgId}:`, error);
+        members = [];
+      }
 
-        return `
+      const membersData = [];
+
+      // Load member info with individual error handling
+      for (const address of members) {
+        try {
+          const info = await ImmutableLoader.loadMemberInfo(this.contract, orgId, address);
+          if (info && info[1]) {
+            // isActive
+            membersData.push({ address, info });
+          }
+        } catch (error) {
+          console.warn(`Could not load member ${address}:`, error);
+          // Skip this member and continue
+        }
+      }
+
+      // SAFE CALL — check if UI is ready
+      if (typeof window.UI !== 'undefined' && typeof window.UI.renderMembers === 'function') {
+        window.UI.renderMembers(membersData, org);
+      } else {
+        console.info('Rendering members list (fallback mode)');
+        const container = document.getElementById('membersList');
+        if (!container) return;
+
+        const currentUser = window.Contract.currentAccount?.toLowerCase();
+        const isAdmin = currentUser && org[2].toLowerCase() === currentUser;
+
+        // Show/Hide Leave Organization button
+        const leaveBtn = document.getElementById('leaveOrgBtn');
+        if (leaveBtn) {
+          const isMember = membersData.some((m) => m.address.toLowerCase() === currentUser);
+          if (isMember && !isAdmin) {
+            leaveBtn.classList.remove('hidden');
+          } else {
+            leaveBtn.classList.add('hidden');
+          }
+        }
+
+        if (membersData.length === 0) {
+          container.innerHTML =
+            '<p class="text-white opacity-70 text-center py-8">No members yet</p>';
+          return;
+        }
+
+        container.innerHTML = membersData
+          .map((m) => {
+            const addr = m.address.toLowerCase();
+            const isCurrentUser = addr === currentUser;
+            const votesCast = Utils.bigNumberToNumber(m.info[2]);
+
+            return `
           <div class="glass rounded-xl p-5 flex items-center justify-between hover:bg-white hover:bg-opacity-10 transition">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
@@ -610,27 +630,38 @@ async loadOrgMembers(orgId) {
               </div>
               <div>
                 <p class="font-mono text-purple-300">${Utils.formatAddress(m.address)}</p>
-                <p class="text-sm text-gray-400">${votesCast} vote${votesCast !== 1 ? 's' : ''} cast</p>
-                ${isAdmin ? '<span class="text-xs text-yellow-400"><i class="fas fa-crown mr-1"></i>Admin</span>' : ''}
+                <p class="text-sm text-gray-400">${votesCast} vote${
+              votesCast !== 1 ? 's' : ''
+            } cast</p>
+                ${
+                  isAdmin
+                    ? '<span class="text-xs text-yellow-400"><i class="fas fa-crown mr-1"></i>Admin</span>'
+                    : ''
+                }
                 ${isCurrentUser ? '<span class="text-xs text-green-400">You</span>' : ''}
               </div>
             </div>
 
-            ${isAdmin && !isCurrentUser ? `
+            ${
+              isAdmin && !isCurrentUser
+                ? `
               <button onclick="window.Contract.removeMember(${orgId}, '${m.address}')" 
                       class="text-red-400 hover:text-red-300 transition text-xl" title="Remove member">
                 <i class="fas fa-user-times"></i>
               </button>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
         `;
-      }).join('');
+          })
+          .join('');
+      }
+    } catch (error) {
+      console.error('Error loading members:', error);
+      Utils.showNotification('Failed to load members', 'error');
     }
-  } catch (error) {
-    console.error('Error loading members:', error);
-    Utils.showNotification('Failed to load members', 'error');
-  }
-},
+  },
 
   /**
    * Load organization settings
@@ -659,25 +690,25 @@ async loadOrgMembers(orgId) {
   },
 
   async leaveOrganization() {
-  if (!this.contract || !UI.currentOrgId) return;
+    if (!this.contract || !UI.currentOrgId) return;
 
-  if (!confirm('Are you sure you want to leave this organization?')) return;
+    if (!confirm('Are you sure you want to leave this organization?')) return;
 
-  try {
-    Utils.showLoading('Leaving organization...');
-    const tx = await this.contract.leaveOrganization(UI.currentOrgId);
-    await tx.wait();
-    Utils.showNotification('You have left the organization', 'success');
+    try {
+      Utils.showLoading('Leaving organization...');
+      const tx = await this.contract.leaveOrganization(UI.currentOrgId);
+      await tx.wait();
+      Utils.showNotification('You have left the organization', 'success');
 
-    // Refresh members list
-    await this.loadOrgMembers(UI.currentOrgId);
-  } catch (error) {
-    console.error('Leave error:', error);
-    Utils.showNotification('Failed to leave organization', 'error');
-  } finally {
-    Utils.hideLoading();
-  }
-},
+      // Refresh members list
+      await this.loadOrgMembers(UI.currentOrgId);
+    } catch (error) {
+      console.error('Leave error:', error);
+      Utils.showNotification('Failed to leave organization', 'error');
+    } finally {
+      Utils.hideLoading();
+    }
+  },
 
   /**
    * Load only hidden polls (for creator in "Show Hidden" mode)
@@ -908,7 +939,9 @@ async loadOrgMembers(orgId) {
 
         div.innerHTML = `
                     <input type="radio" name="voteOption" value="${index}" id="voteOpt${index}" class="w-5 h-5 mr-3">
-                    <label for="voteOpt${index}" class="text-lg text-gray-800 cursor-pointer flex-1">${Utils.escapeHtml(option)}</label>
+                    <label for="voteOpt${index}" class="text-lg text-gray-800 cursor-pointer flex-1">${Utils.escapeHtml(
+          option
+        )}</label>
                 `;
 
         container.appendChild(div);
@@ -987,10 +1020,10 @@ async loadOrgMembers(orgId) {
       const msg = error.message.includes('Already voted')
         ? 'You have already voted'
         : error.message.includes('Voting key already used')
-          ? 'This voting key has already been used'
-          : error.message.includes('Not authorized')
-            ? 'You are not authorized to vote'
-            : 'Failed to cast vote';
+        ? 'This voting key has already been used'
+        : error.message.includes('Not authorized')
+        ? 'You are not authorized to vote'
+        : 'Failed to cast vote';
 
       Utils.showNotification(msg, 'error');
     } finally {
@@ -1017,10 +1050,14 @@ async loadOrgMembers(orgId) {
                 <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full animate-modal-pop">
                     <div class="p-8">
                         <div class="text-center mb-8">
-                            <h3 class="text-3xl font-bold text-gradient mb-4">${Utils.escapeHtml(poll.question)}</h3>
+                            <h3 class="text-3xl font-bold text-gradient mb-4">${Utils.escapeHtml(
+                              poll.question
+                            )}</h3>
                             <div class="flex flex-wrap justify-center gap-6 text-gray-600">
                                 <span>Total Votes: <span class="font-bold">${results[2].toNumber()}</span></span>
-                                <span>Quorum: <span class="font-bold">${poll.requiredQuorum}%</span></span>
+                                <span>Quorum: <span class="font-bold">${
+                                  poll.requiredQuorum
+                                }%</span></span>
                             </div>
                         </div>
 
@@ -1034,13 +1071,21 @@ async loadOrgMembers(orgId) {
                                   votes === Math.max(...results[1].map((v) => v.toNumber()));
 
                                 return `
-                                    <div class="bg-gray-50 rounded-xl p-5 ${isWinner ? 'ring-4 ring-yellow-400' : ''}">
+                                    <div class="bg-gray-50 rounded-xl p-5 ${
+                                      isWinner ? 'ring-4 ring-yellow-400' : ''
+                                    }">
                                         <div class="flex justify-between items-center mb-3">
                                             <span class="text-xl font-bold flex items-center gap-3">
-                                                ${isWinner ? '<i class="fas fa-trophy text-yellow-500"></i>' : ''}
+                                                ${
+                                                  isWinner
+                                                    ? '<i class="fas fa-trophy text-yellow-500"></i>'
+                                                    : ''
+                                                }
                                                 ${Utils.escapeHtml(option)}
                                             </span>
-                                            <span class="text-2xl font-bold">${votes} <span class="text-lg text-gray-600">(${pct.toFixed(1)}%)</span></span>
+                                            <span class="text-2xl font-bold">${votes} <span class="text-lg text-gray-600">(${pct.toFixed(
+                                  1
+                                )}%)</span></span>
                                         </div>
                                         <div class="w-full bg-gray-200 rounded-full h-4">
                                             <div class="bg-gradient-to-r from-purple-600 to-pink-600 h-4 rounded-full" style="width: ${pct}%"></div>
@@ -1051,8 +1096,12 @@ async loadOrgMembers(orgId) {
                               .join('')}
                         </div>
 
-                        <div class="text-center p-6 rounded-xl mb-8 ${results[4] ? 'bg-green-50' : 'bg-red-50'}">
-                            <span class="text-3xl font-bold ${results[4] ? 'text-green-700' : 'text-red-700'}">
+                        <div class="text-center p-6 rounded-xl mb-8 ${
+                          results[4] ? 'bg-green-50' : 'bg-red-50'
+                        }">
+                            <span class="text-3xl font-bold ${
+                              results[4] ? 'text-green-700' : 'text-red-700'
+                            }">
                                 ${results[4] ? '✓ Quorum Met' : '✗ Quorum Not Met'}
                             </span>
                         </div>
@@ -1096,10 +1145,14 @@ async loadOrgMembers(orgId) {
                 <div class="p-4 space-y-3">
                     <!-- Header -->
                     <div class="text-center">
-                        <h3 class="text-base font-semibold text-gray-900">${Utils.escapeHtml(poll.question)}</h3>
+                        <h3 class="text-base font-semibold text-gray-900">${Utils.escapeHtml(
+                          poll.question
+                        )}</h3>
                         <div class="flex justify-center gap-2 text-gray-500 text-xs mt-1">
                             <span>Total: <span class="font-medium">${totalVotes}</span></span>
-                            <span>Quorum: <span class="font-medium">${poll.requiredQuorum}%</span></span>
+                            <span>Quorum: <span class="font-medium">${
+                              poll.requiredQuorum
+                            }%</span></span>
                         </div>
                     </div>
 
@@ -1122,7 +1175,9 @@ async loadOrgMembers(orgId) {
                     <span class="text-xs font-semibold">${voteCount} (${pct.toFixed(1)}%)</span>
                 </div>
                 <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="h-3 ${isWinner ? 'bg-yellow-400' : 'bg-purple-500'} rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    <div class="h-3 ${
+                      isWinner ? 'bg-yellow-400' : 'bg-purple-500'
+                    } rounded-full transition-all duration-500" style="width: ${pct}%"></div>
                 </div>
             </div>
         `;
@@ -1132,8 +1187,12 @@ async loadOrgMembers(orgId) {
                     </div>
 
                     <!-- Quorum Info -->
-                    <div class="text-center p-2 rounded-md ${quorumMet ? 'bg-green-50' : 'bg-red-50'}">
-                        <span class="text-xs font-semibold ${quorumMet ? 'text-green-700' : 'text-red-700'}">
+                    <div class="text-center p-2 rounded-md ${
+                      quorumMet ? 'bg-green-50' : 'bg-red-50'
+                    }">
+                        <span class="text-xs font-semibold ${
+                          quorumMet ? 'text-green-700' : 'text-red-700'
+                        }">
                             ${quorumMet ? '✓ Quorum Met' : '✗ Quorum Not Met'}
                         </span>
                     </div>
@@ -1184,7 +1243,9 @@ async loadOrgMembers(orgId) {
                     <div class="p-8">
                         <div class="text-center mb-8">
                             <h3 class="text-3xl font-bold text-gradient mb-2">Manage Voting Keys</h3>
-                            <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(poll.question)}</p>
+                            <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(
+        poll.question
+      )}</p>
                         </div>
 
                         <p class="text-center text-gray-700 mb-6">
@@ -1202,14 +1263,32 @@ async loadOrgMembers(orgId) {
                                 return `
                                     <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl ${disabled} cursor-pointer">
                                         <div class="flex items-center gap-4">
-                                            <input type="checkbox" value="${m.addr}" class="authBox w-5 h-5" ${checked} ${!canAuthorize ? 'disabled' : ''}>
+                                            <input type="checkbox" value="${
+                                              m.addr
+                                            }" class="authBox w-5 h-5" ${checked} ${
+                                  !canAuthorize ? 'disabled' : ''
+                                }>
                                             <div>
                                                 <div class="font-mono font-semibold">${short}</div>
-                                                <div class="text-sm text-gray-600">${m.votes} past votes</div>
+                                                <div class="text-sm text-gray-600">${
+                                                  m.votes
+                                                } past votes</div>
                                             </div>
                                         </div>
-                                        <span class="px-3 py-1 rounded-full text-xs font-medium ${m.hasVoted ? 'bg-green-600 text-white' : m.isAuthorized ? 'bg-blue-600 text-white' : 'bg-gray-400 text-white'}">
-                                            ${m.hasVoted ? 'Voted' : m.isAuthorized ? 'Authorized' : 'Pending'}
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                                          m.hasVoted
+                                            ? 'bg-green-600 text-white'
+                                            : m.isAuthorized
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-400 text-white'
+                                        }">
+                                            ${
+                                              m.hasVoted
+                                                ? 'Voted'
+                                                : m.isAuthorized
+                                                ? 'Authorized'
+                                                : 'Pending'
+                                            }
                                         </span>
                                     </label>
                                 `;
@@ -1253,7 +1332,9 @@ async loadOrgMembers(orgId) {
                 <div class="p-8">
                     <div class="text-center mb-8">
                         <h3 class="text-3xl font-bold text-gradient mb-2">Manage Voting Keys</h3>
-                        <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(poll.question)}</p>
+                        <p class="text-gray-600">Poll #${pollId}: ${Utils.escapeHtml(
+      poll.question
+    )}</p>
                     </div>
 
                     <p class="text-center text-gray-700 mb-6">
@@ -1271,14 +1352,32 @@ async loadOrgMembers(orgId) {
                             return `
                                 <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl ${disabled} cursor-pointer">
                                     <div class="flex items-center gap-4">
-                                        <input type="checkbox" value="${m.addr}" class="authBox w-5 h-5" ${checked} ${!canAuthorize ? 'disabled' : ''}>
+                                        <input type="checkbox" value="${
+                                          m.addr
+                                        }" class="authBox w-5 h-5" ${checked} ${
+                              !canAuthorize ? 'disabled' : ''
+                            }>
                                         <div>
                                             <div class="font-mono font-semibold">${short}</div>
-                                            <div class="text-sm text-gray-600">${m.votes} past votes</div>
+                                            <div class="text-sm text-gray-600">${
+                                              m.votes
+                                            } past votes</div>
                                         </div>
                                     </div>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${m.hasVoted ? 'bg-green-600 text-white' : m.isAuthorized ? 'bg-blue-600 text-white' : 'bg-gray-400 text-white'}">
-                                        ${m.hasVoted ? 'Voted' : m.isAuthorized ? 'Authorized' : 'Pending'}
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                                      m.hasVoted
+                                        ? 'bg-green-600 text-white'
+                                        : m.isAuthorized
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-400 text-white'
+                                    }">
+                                        ${
+                                          m.hasVoted
+                                            ? 'Voted'
+                                            : m.isAuthorized
+                                            ? 'Authorized'
+                                            : 'Pending'
+                                        }
                                     </span>
                                 </label>
                             `;
@@ -1347,8 +1446,6 @@ async function connectWallet() {
     Utils.showNotification('Please refresh the page', 'error');
   }
 }
-
-  
 
 // Auto-init on load
 window.addEventListener('load', async () => {

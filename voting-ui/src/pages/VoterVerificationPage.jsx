@@ -31,11 +31,11 @@ const VoterVerificationPage = () => {
   }, [electionId]);
 
   useEffect(() => {
-    if (address && election) {
-      setWalletAddress(address);
-      autoVerifyVoter();
-    }
-  }, [address, election]);
+  if (address && election) {
+    setWalletAddress(address);
+    autoVerifyVoter();
+  }
+}, [address, election?.uuid]); // Only depend on election UUID
 
   const fetchElection = async () => {
     try {
@@ -102,7 +102,8 @@ const VoterVerificationPage = () => {
         throw new Error('Invalid verification data received');
       }
 
-      setVoterKey(data.key);
+     // setVoterKey(data.key);
+      setVoterKey(data.voterAddress);
       setMerkleProof(data.merkleProof);
       setIsVerified(true);
       setVerificationStatus('success');

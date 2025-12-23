@@ -44,7 +44,9 @@ function App() {
         {error && (
           <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-6 mb-8">
             <p className="text-red-300 font-bold">❌ Error: {error}</p>
-            <p className="text-sm text-red-200 mt-2">Make sure your backend is running on port 3001</p>
+            <p className="text-sm text-red-200 mt-2">
+              Make sure your backend is running on port 3001
+            </p>
           </div>
         )}
 
@@ -72,12 +74,6 @@ function App() {
       </div>
     </div>
   );
-
 }
-
-
-  
-
-
 
 export default App;

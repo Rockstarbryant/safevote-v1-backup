@@ -71,14 +71,14 @@ async function initializeTables() {
         FOREIGN KEY (election_uuid) REFERENCES elections(uuid)
       );
 
-      CREATE TABLE IF NOT EXISTS chain_deployments (
+      CREATE TABLE IF NOT EXISTS election_chains (
         id SERIAL PRIMARY KEY,
-        election_uuid VARCHAR(255) NOT NULL,
+        election_id VARCHAR(255) NOT NULL,
         chain_id INTEGER NOT NULL,
-        on_chain_election_id VARCHAR(255),
+        on_chain_election_id INTEGER,
         tx_hash VARCHAR(255),
-        deployed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (election_uuid) REFERENCES elections(uuid)
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(election_id, chain_id)
       );
     `);
     console.log('✅ Tables initialized');
@@ -125,7 +125,7 @@ app.get('/api/elections', async (req, res) => {
     console.log(`✅ Fetched ${rows.length} elections from database`);
 
     const elections = rows.map((row) => ({
-      uuid: row.uuid, // ← UUID is the primary identifier for merkle proofs
+      uuid: row.uuid,
       title: row.title || 'Untitled Election',
       description: row.description || '',
       location: row.location || 'Global',
@@ -168,7 +168,7 @@ app.get('/api/elections/:uuid', async (req, res) => {
 
     const row = rows[0];
     res.json({
-      uuid: row.uuid, // ← UUID for merkle proof
+      uuid: row.uuid,
       title: row.title,
       description: row.description,
       location: row.location,
@@ -191,12 +191,59 @@ app.get('/api/elections/:uuid', async (req, res) => {
 });
 
 // ============================================
+// GET ON-CHAIN ELECTION ID
+// FIX: Uses election_chains table (correct table with actual data)
+// ============================================
+app.get('/api/elections/:electionId/onchain-id', async (req, res) => {
+  const { electionId } = req.params;
+
+  try {
+    console.log(`🔍 Fetching on-chain ID for election: ${electionId}`);
+
+    // Query election_chains table (correct table with actual data)
+    const { rows } = await dbPool.query(
+      `SELECT on_chain_election_id, chain_id 
+       FROM election_chains 
+       WHERE election_id = $1 
+       LIMIT 1`,
+      [electionId]
+    );
+
+    if (rows.length === 0) {
+      console.warn(`⚠️ No on-chain deployment found for election: ${electionId}`);
+      return res.status(404).json({
+        error: 'On-chain election ID not found. Election may not be deployed on-chain yet.',
+        electionId,
+      });
+    }
+
+    const onChainElectionId = rows[0].on_chain_election_id;
+    const chainId = rows[0].chain_id;
+
+    console.log(`✅ Found on-chain ID: ${onChainElectionId} on chain ${chainId}`);
+
+    res.json({
+      success: true,
+      electionId,
+      onChainElectionId: parseInt(onChainElectionId),
+      chainId,
+    });
+  } catch (err) {
+    console.error('❌ On-chain ID fetch error:', err.message);
+    res.status(500).json({
+      error: 'Failed to fetch on-chain ID',
+      details: err.message,
+    });
+  }
+});
+
+// ============================================
 // CREATE ELECTION (accepts electionId as UUID)
 // ============================================
 app.post('/api/elections/create', async (req, res) => {
   try {
     const {
-      electionId, // ← This is the UUID from electionconductor.js
+      electionId,
       title,
       description,
       location,
@@ -266,7 +313,7 @@ app.post('/api/elections/create', async (req, res) => {
       success: true,
       message: 'Election created successfully',
       election: {
-        uuid: rows[0].uuid, // ← Return UUID
+        uuid: rows[0].uuid,
         title: rows[0].title,
         createdAt: rows[0].created_at,
       },
@@ -277,66 +324,96 @@ app.post('/api/elections/create', async (req, res) => {
   }
 });
 
-// Get on-chain election ID (assume first chain or all)
-app.get('/api/elections/:electionId/onchain-id', async (req, res) => {
-  const { electionId } = req.params;
-
+// ============================================
+// RECORD VOTE (after blockchain confirmation)
+// Called by: votingService.js (frontend)
+// ============================================
+app.post('/api/votes/record', async (req, res) => {
   try {
-    const { rows } = await dbPool.query(
-      `SELECT on_chain_election_id FROM election_chains WHERE election_id = $1 LIMIT 1`,
-      [electionId]
-    );
+    const { electionId, voterAddress, chainId, txHash, blockNumber, onChainElectionId } = req.body;
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'On-chain ID not found for this election' });
+    if (!electionId || !voterAddress || !chainId || !txHash) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        required: ['electionId', 'voterAddress', 'chainId', 'txHash'],
+      });
     }
 
-    res.json({ onChainElectionId: rows[0].on_chain_election_id });
-  } catch (err) {
-    console.error('On-chain ID fetch error:', err.message);
-    res.status(500).json({ error: 'Failed to fetch on-chain ID' });
+    const normalizedAddress = voterAddress.toLowerCase();
+
+    console.log(`📝 Recording vote: ${normalizedAddress} in election ${electionId}`);
+
+    // Insert vote record
+    await dbPool.query(
+      `INSERT INTO votes (election_uuid, voter_address, chain_id, tx_hash, timestamp)
+       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+       ON CONFLICT (election_uuid, voter_address, chain_id) 
+       DO UPDATE SET 
+         tx_hash = EXCLUDED.tx_hash,
+         timestamp = CURRENT_TIMESTAMP`,
+      [electionId, normalizedAddress, chainId, txHash]
+    );
+
+    console.log(`✅ Vote recorded for ${normalizedAddress} on chain ${chainId}`);
+
+    res.json({
+      success: true,
+      electionId,
+      voterAddress: normalizedAddress,
+      chainId,
+      txHash,
+      message: 'Vote recorded successfully',
+    });
+  } catch (error) {
+    console.error('❌ Record vote error:', error.message);
+    res.status(500).json({
+      error: 'Failed to record vote',
+      message: error.message,
+    });
   }
 });
 
-// ============================================
-// NOTE: Key generation is done in the FRONTEND
-// ============================================
-// The /api/elections/keys/generate endpoint is called by electionconductor.js
-// in the FRONTEND, NOT here on server.js
-//
-// Sequence:
-// 1. Frontend (electionconductor.js) receives voter addresses from user
-// 2. Frontend calls /api/elections/keys/generate (this endpoint should be in a separate keygen service)
-// 3. Frontend receives merkleRoot back
-// 4. Frontend saves full election data + merkleRoot to /api/elections/create
-// 5. This server.js only FETCHES and DISPLAYS data to voting-ui frontend
-//
-// You may want to move key generation to a separate service or keep it frontend-only
 
 // ============================================
 // SYNC CHAIN DEPLOYMENT
+// Uses election_chains table (correct table with actual data)
 // ============================================
 app.post('/api/elections/sync-chain', async (req, res) => {
   try {
     const { electionId, chainId, onChainElectionId, txHash } = req.body;
 
-    if (!electionId || !chainId || !onChainElectionId) {
+    if (!electionId || !chainId || onChainElectionId === undefined) {
       return res.status(400).json({
         error: 'Missing required fields: electionId (UUID), chainId, onChainElectionId',
       });
     }
 
+    console.log(
+      `⛓️ Syncing chain deployment: ${electionId} -> onChainId ${onChainElectionId} on chain ${chainId}`
+    );
+
     await dbPool.query(
       `
-      INSERT INTO chain_deployments (election_uuid, chain_id, on_chain_election_id, tx_hash)
+      INSERT INTO election_chains (election_id, chain_id, on_chain_election_id, tx_hash)
       VALUES ($1, $2, $3, $4)
+      ON CONFLICT (election_id, chain_id) DO UPDATE
+      SET on_chain_election_id = EXCLUDED.on_chain_election_id,
+          tx_hash = EXCLUDED.tx_hash
     `,
       [electionId, chainId, onChainElectionId, txHash || '']
     );
 
-    console.log(`⛓️ Synced chain deployment: ${electionId} on chain ${chainId}`);
+    console.log(
+      `✅ Chain deployment synced: ${electionId} on chain ${chainId} with on-chain ID ${onChainElectionId}`
+    );
 
-    res.json({ success: true, message: 'Chain deployment synced' });
+    res.json({
+      success: true,
+      message: 'Chain deployment synced',
+      electionId,
+      onChainElectionId,
+      chainId,
+    });
   } catch (err) {
     console.error('❌ Error syncing chain:', err.message);
     res.status(500).json({ error: 'Failed to sync chain', details: err.message });
@@ -350,6 +427,8 @@ connectDB()
   .then(() => {
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 SafeVote Backend running on port ${PORT}`);
+      console.log(`📊 API: http://localhost:${PORT}`);
+      console.log(`✅ Ready to serve elections and on-chain deployments`);
     });
   })
   .catch((err) => {
