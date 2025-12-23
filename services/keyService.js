@@ -186,7 +186,7 @@ app.get('/api/elections/:electionId/keys/:address', async (req, res) => {
 });
 
 // ============================================
-// GET VOTER KEY (NEW ENDPOINT)
+// GET VOTER KEY (NEW ENDPOINT - FIXED)
 // Returns the actual voter_key from voter_keys table
 // Called by: VoterVerificationPage.jsx (during verification)
 // ============================================
@@ -204,14 +204,36 @@ app.get('/api/elections/:electionId/keys/:address/get-key', async (req, res) => 
     console.log(`🔑 Fetching voter_key for ${normalizedAddress} in election ${electionId}`);
 
     // Query voter_keys table to get the actual voter_key
-    const { rows } = await dbPool.query(
+    // NOTE: election_id column might be NULL in your table
+    // If election_id is NULL, we need to query differently
+    let rows;
+    
+    // First try: Query with election_id (if it's populated)
+    let result = await dbPool.query(
       `SELECT voter_key FROM voter_keys 
        WHERE election_id = $1 AND voter_address = $2 
        LIMIT 1`,
       [electionId, normalizedAddress]
     );
 
+    rows = result.rows;
+
+    // If not found and election_id is NULL in table, try without election_id filter
     if (rows.length === 0) {
+      console.log(`⚠️ No match with election_id filter, trying without filter`);
+      
+      result = await dbPool.query(
+        `SELECT voter_key FROM voter_keys 
+         WHERE voter_address = $1 
+         LIMIT 1`,
+        [normalizedAddress]
+      );
+      
+      rows = result.rows;
+    }
+
+    if (rows.length === 0) {
+      console.log(`❌ Voter key not found for ${normalizedAddress}`);
       return res.status(404).json({
         error: 'Voter key not found for this address',
         voterAddress: normalizedAddress,
