@@ -15,10 +15,10 @@ const BallotPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isVerified || !merkleProof || !currentElection) {
-      addSecurityWarning('Unauthorized ballot access');
-      navigate(`/verify/${electionId}`);
-    }
+  if (!isVerified || !merkleProof || !currentElection) {
+    addSecurityWarning('Unauthorized ballot access');
+    navigate(`/verify/${electionId}`);
+  }
   }, [isVerified, merkleProof, currentElection, electionId, navigate]);
 
   if (!currentElection || !currentElection.positions?.length) {

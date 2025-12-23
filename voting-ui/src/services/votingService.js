@@ -24,29 +24,36 @@ export const getOnChainElectionId = async (uuidElectionId) => {
     }
 
     console.log(`🔍 Fetching on-chain ID for UUID: ${uuidElectionId}`);
+    console.log(`   API Endpoint: ${BACKEND_API}/api/elections/${uuidElectionId}/onchain-id`);
 
     const response = await fetch(
       `${BACKEND_API}/api/elections/${uuidElectionId}/onchain-id`
     );
 
     if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(
-        errData.error ||
-          `Failed to get on-chain election ID: ${response.status}`
-      );
+      let errorMsg = `HTTP ${response.status}`;
+      try {
+        const errData = await response.json();
+        errorMsg = errData.error || errorMsg;
+      } catch (e) {
+        const errText = await response.text();
+        errorMsg = errText || errorMsg;
+      }
+      throw new Error(`Failed to get on-chain election ID: ${errorMsg}`);
     }
 
     const data = await response.json();
     const onChainId = data.onChainElectionId;
 
     if (onChainId === undefined || onChainId === null) {
-      throw new Error('On-chain election ID is null. Election not deployed on-chain yet.');
+      throw new Error(
+        'On-chain election ID is null. Election may not be deployed on-chain yet.'
+      );
     }
 
     // Cache it
     onChainIdCache.set(uuidElectionId, onChainId);
-    console.log(`✅ Got on-chain ID: ${onChainId} for UUID: ${uuidElectionId}`);
+    console.log(`✅ Successfully fetched on-chain ID: ${onChainId} for UUID: ${uuidElectionId}`);
 
     return onChainId;
   } catch (error) {

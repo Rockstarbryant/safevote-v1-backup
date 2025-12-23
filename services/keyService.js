@@ -186,6 +186,58 @@ app.get('/api/elections/:electionId/keys/:address', async (req, res) => {
 });
 
 // ============================================
+// GET VOTER KEY (NEW ENDPOINT)
+// Returns the actual voter_key from voter_keys table
+// Called by: VoterVerificationPage.jsx (during verification)
+// ============================================
+app.get('/api/elections/:electionId/keys/:address/get-key', async (req, res) => {
+  if (!dbPool) {
+    return res.status(503).json({
+      error: 'Database not available',
+    });
+  }
+
+  try {
+    const { electionId, address } = req.params;
+    const normalizedAddress = address.toLowerCase();
+
+    console.log(`🔑 Fetching voter_key for ${normalizedAddress} in election ${electionId}`);
+
+    // Query voter_keys table to get the actual voter_key
+    const { rows } = await dbPool.query(
+      `SELECT voter_key FROM voter_keys 
+       WHERE election_id = $1 AND voter_address = $2 
+       LIMIT 1`,
+      [electionId, normalizedAddress]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: 'Voter key not found for this address',
+        voterAddress: normalizedAddress,
+      });
+    }
+
+    const voterKey = rows[0].voter_key;
+
+    console.log(`✅ Found voter_key: ${voterKey.substring(0, 10)}...`);
+
+    res.json({
+      success: true,
+      electionId,
+      voterAddress: normalizedAddress,
+      voterKey: voterKey,
+    });
+  } catch (error) {
+    console.error('❌ Error fetching voter key:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch voter key',
+      message: error.message,
+    });
+  }
+});
+
+// ============================================
 // RECORD VOTE (after blockchain confirmation)
 // Called by: voting-ui.js (frontend)
 // ============================================

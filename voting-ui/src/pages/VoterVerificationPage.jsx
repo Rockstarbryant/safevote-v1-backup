@@ -20,7 +20,6 @@ const VoterVerificationPage = () => {
   const [error, setError] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState('');
 
-  // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
   const KEYGEN_API = process.env.REACT_APP_KEYGEN_API || 'http://localhost:3001';
   const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:5000';
 
@@ -31,18 +30,17 @@ const VoterVerificationPage = () => {
   }, [electionId]);
 
   useEffect(() => {
-  if (address && election) {
-    setWalletAddress(address);
-    autoVerifyVoter();
-  }
-}, [address, election?.uuid]); // Only depend on election UUID
+    if (address && election) {
+      setWalletAddress(address);
+      autoVerifyVoter();
+    }
+  }, [address, election?.uuid]);
 
   const fetchElection = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // const response = await fetch(`${API_URL}/api/elections/uuid/${electionId}`);
       const response = await fetch(`${BACKEND_API}/api/elections/${electionId}`);
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
@@ -78,7 +76,9 @@ const VoterVerificationPage = () => {
       setVerifying(true);
       setError(null);
 
-      //  const response = await fetch(`${API_URL}/api/elections/${electionId}/keys/${address}`);
+      console.log(`🔍 Verifying voter: ${address} for election: ${electionId}`);
+
+      // FIX: Call the correct endpoint that returns voter_key
       const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/keys/${address}`);
 
       if (!response.ok) {
@@ -98,12 +98,27 @@ const VoterVerificationPage = () => {
 
       const data = await response.json();
 
+      console.log(`✅ Verification response received:`, data);
+
       if (!data.success || !data.merkleProof) {
         throw new Error('Invalid verification data received');
       }
 
-     // setVoterKey(data.key);
-      setVoterKey(data.voterAddress);
+      // FIX: The keyService returns voter data, need to fetch the actual voter_key from database
+      // Since keyService doesn't return voter_key in the response, we need to get it from voter_keys table
+      // OR modify keyService to return it
+
+      // For now, let's get the voter key from the database
+      const voterKeyData = await getVoterKeyFromDatabase(electionId, address);
+      
+      if (!voterKeyData) {
+        throw new Error('Could not retrieve voter key from database');
+      }
+
+      console.log(`✅ Voter Key retrieved: ${voterKeyData.substring(0, 10)}...`);
+
+      // CORRECT: Set the actual voter_key, not voterAddress
+      setVoterKey(voterKeyData);
       setMerkleProof(data.merkleProof);
       setIsVerified(true);
       setVerificationStatus('success');
@@ -117,6 +132,35 @@ const VoterVerificationPage = () => {
       addSecurityWarning('Voter verification failed');
     } finally {
       setVerifying(false);
+    }
+  };
+
+  // NEW FUNCTION: Fetch the actual voter_key from keyService
+  const getVoterKeyFromDatabase = async (electionId, voterAddress) => {
+    try {
+      console.log(`🔑 Fetching voter_key for ${voterAddress}`);
+      
+      const response = await fetch(
+        `${KEYGEN_API}/api/elections/${electionId}/keys/${voterAddress}/get-key`
+      );
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to fetch voter key: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.voterKey) {
+        throw new Error('No voter key in response');
+      }
+
+      console.log(`✅ Successfully fetched voter_key: ${data.voterKey.substring(0, 10)}...`);
+      return data.voterKey;
+    } catch (err) {
+      console.error('❌ Error fetching voter key:', err);
+      setError(`Failed to retrieve voter key: ${err.message}`);
+      return null;
     }
   };
 
