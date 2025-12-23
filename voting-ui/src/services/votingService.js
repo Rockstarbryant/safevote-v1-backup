@@ -8,247 +8,233 @@ let provider = null;
 let signer = null;
 let contract = null;
 
-// Cache for on-chain election IDs to avoid repeated API calls
+// Cache UUID → on-chain ID
 const onChainIdCache = new Map();
 
-// ============================================
-// GET ON-CHAIN ELECTION ID
-// Maps UUID (used for merkle proofs) to numeric on-chain ID
-// ============================================
-export const getOnChainElectionId = async (uuidElectionId) => {
-  try {
-    // Check cache first
-    if (onChainIdCache.has(uuidElectionId)) {
-      console.log(`📦 Using cached on-chain ID for ${uuidElectionId}`);
-      return onChainIdCache.get(uuidElectionId);
-    }
+/* ============================================
+   HELPERS
+============================================ */
 
-    console.log(`🔍 Fetching on-chain ID for UUID: ${uuidElectionId}`);
-    console.log(`   API Endpoint: ${BACKEND_API}/api/elections/${uuidElectionId}/onchain-id`);
+const validateBytes32 = (value, name) => {
+  if (!value) throw new Error(`${name} is missing`);
 
-    const response = await fetch(
-      `${BACKEND_API}/api/elections/${uuidElectionId}/onchain-id`
-    );
+  let v = typeof value === 'string' ? value : value.toString();
+  if (!v.startsWith('0x')) v = '0x' + v;
 
-    if (!response.ok) {
-      let errorMsg = `HTTP ${response.status}`;
-      try {
-        const errData = await response.json();
-        errorMsg = errData.error || errorMsg;
-      } catch (e) {
-        const errText = await response.text();
-        errorMsg = errText || errorMsg;
-      }
-      throw new Error(`Failed to get on-chain election ID: ${errorMsg}`);
-    }
-
-    const data = await response.json();
-    const onChainId = data.onChainElectionId;
-
-    if (onChainId === undefined || onChainId === null) {
-      throw new Error(
-        'On-chain election ID is null. Election may not be deployed on-chain yet.'
-      );
-    }
-
-    // Cache it
-    onChainIdCache.set(uuidElectionId, onChainId);
-    console.log(`✅ Successfully fetched on-chain ID: ${onChainId} for UUID: ${uuidElectionId}`);
-
-    return onChainId;
-  } catch (error) {
-    console.error('❌ Error fetching on-chain election ID:', error.message);
-    throw error;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(v)) {
+    throw new Error(`${name} must be bytes32`);
   }
+
+  return v;
 };
 
-// Initialize provider
+/* ============================================
+   PROVIDER / CONTRACT
+============================================ */
+
 export const initializeProvider = async () => {
-  try {
-    if (window.ethereum) {
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      signer = provider.getSigner();
-      contract = new ethers.Contract(CONTRACT_ADDRESS, SAFE_VOTE_V2_ABI, signer);
-      return true;
-    } else {
-      throw new Error('No Ethereum wallet found');
-    }
-  } catch (error) {
-    console.error('Provider initialization failed:', error);
-    throw error;
-  }
+  if (!window.ethereum) throw new Error('No Ethereum wallet found');
+
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send('eth_requestAccounts', []);
+  signer = provider.getSigner();
+  contract = new ethers.Contract(CONTRACT_ADDRESS, SAFE_VOTE_V2_ABI, signer);
+
+  return true;
 };
 
 export const getProvider = () => provider;
 export const getSigner = () => signer;
 export const getContract = () => contract;
-export const isContractReady = () => {
-  return contract !== null && signer !== null;
-};
+
+export const isContractReady = () => contract && signer;
 
 export const getCurrentAccount = async () => {
   if (!signer) await initializeProvider();
-  return await signer.getAddress();
+  return signer.getAddress();
+};
+
+/* ============================================
+   ELECTION HELPERS
+============================================ */
+
+export const getOnChainElectionId = async (uuid) => {
+  if (onChainIdCache.has(uuid)) {
+    return onChainIdCache.get(uuid);
+  }
+
+  const res = await fetch(
+    `${BACKEND_API}/api/elections/${uuid}/onchain-id`
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to fetch on-chain ID: ${text}`);
+  }
+
+  const { onChainElectionId } = await res.json();
+  if (onChainElectionId === null || onChainElectionId === undefined) {
+    throw new Error('Election not deployed on-chain');
+  }
+
+  onChainIdCache.set(uuid, onChainElectionId);
+  return onChainElectionId;
 };
 
 export const getTotalElections = async () => {
-  try {
-    if (!contract) await initializeProvider();
-    const total = await contract.getTotalElections();
-    return total.toNumber();
-  } catch (error) {
-    console.error('Error getting total elections:', error);
-    throw error;
-  }
+  if (!contract) await initializeProvider();
+  const total = await contract.getTotalElections();
+  return total.toNumber();
 };
 
 export const getElection = async (electionId) => {
-  try {
-    if (!contract) await initializeProvider();
-    const election = await contract.getElection(electionId);
-
-    return {
-      electionId: election.electionId_.toNumber(),
-      creator: election.creator,
-      title: election.title,
-      description: election.description,
-      location: election.location,
-      createdAt: election.createdAt.toNumber(),
-      startTime: election.startTime.toNumber(),
-      endTime: election.endTime.toNumber(),
-      totalRegisteredVoters: election.totalRegisteredVoters.toNumber(),
-      totalVotesCast: election.totalVotesCast.toNumber(),
-      voterMerkleRoot: election.voterMerkleRoot,
-      isPublic: election.isPublic,
-      allowAnonymous: election.allowAnonymous,
-      allowDelegation: election.allowDelegation,
-      status: election.status,
-      positions: election.positions,
-    };
-  } catch (error) {
-    console.error('Error getting election:', error);
-    throw error;
-  }
+  if (!contract) await initializeProvider();
+  return contract.getElection(electionId);
 };
 
-// Check if voter has already voted
-export const hasVoted = async (uuidElectionId, voterKey) => {
+/* ============================================
+   VOTING STATUS
+============================================ */
+
+export const hasVoted = async (electionUuid, voterKey) => {
   try {
     if (!contract) await initializeProvider();
 
-    // Get on-chain election ID
-    const onChainElectionId = await getOnChainElectionId(uuidElectionId);
+    const onChainElectionId = await getOnChainElectionId(electionUuid);
+    const voterKeyBytes32 = validateBytes32(voterKey, 'Voter Key');
 
-    const keyHash = ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(
-        ['uint256', 'bytes32'],
-        [onChainElectionId, voterKey]
-      )
-    );
+    // IMPORTANT: keyHash = keccak256(voterKey)
+    const keyHash = ethers.utils.keccak256(voterKeyBytes32);
 
-    const used = await contract.usedVoterKeys(onChainElectionId, keyHash);
-    console.log(
-      `🗳️ Vote check for on-chain ID ${onChainElectionId}: ${used ? 'Already voted' : 'Not voted'}`
-    );
-    return used;
-  } catch (error) {
-    console.error('Error checking vote status:', error);
+    return await contract.usedVoterKeys(onChainElectionId, keyHash);
+  } catch (err) {
+    console.error('Vote check failed:', err);
     return false;
   }
 };
 
-// ============================================
-// CAST VOTE - Main function
-// Expects: uuidElectionId (UUID string used for merkle proofs)
-// Internally converts to on-chain ID for contract call
-// ============================================
-export const castVote = async (uuidElectionId, voterKey, merkleProof, votes, delegateTo) => {
+/* ============================================
+   CAST VOTE (MATCHES keyGenerator.js)
+============================================ */
+
+export const castVote = async (
+  electionUuid,
+  voterKey,
+  merkleProof,
+  votes,
+  delegateTo
+) => {
   try {
     if (!contract) await initializeProvider();
 
-    console.log(`📤 Casting vote for election UUID: ${uuidElectionId}`);
+    console.log('📤 Casting vote...');
+    console.log('Election UUID:', electionUuid);
 
-    // Convert UUID to on-chain ID
-    const onChainElectionId = await getOnChainElectionId(uuidElectionId);
-    console.log(
-      `🔗 Using on-chain election ID: ${onChainElectionId}`
-    );
+    const voterKeyBytes32 = validateBytes32(voterKey, 'Voter Key');
 
-    const delegateAddress = delegateTo || ethers.constants.AddressZero;
+    // 🔑 THIS IS THE CRITICAL FIX
+    // Backend Merkle tree uses keccak256(voterKey)
+    const keyHash = ethers.utils.keccak256(voterKeyBytes32);
 
-    // Call contract with on-chain ID
+    console.log('Voter Key:', voterKeyBytes32);
+    console.log('Key Hash (leaf):', keyHash);
+
+    if (!Array.isArray(merkleProof)) {
+      throw new Error('Merkle proof must be an array');
+    }
+
+    if (!Array.isArray(votes)) {
+      throw new Error('Votes must be an array');
+    }
+
+    // Convert votes → uint256[][]
+    const formattedVotes = votes.map((arr, i) => {
+      if (!Array.isArray(arr)) {
+        throw new Error(`Votes[${i}] must be an array`);
+      }
+      return arr.map(v => ethers.BigNumber.from(v));
+    });
+
+    const onChainElectionId = await getOnChainElectionId(electionUuid);
+    const delegateAddress =
+      delegateTo && delegateTo !== ethers.constants.AddressZero
+        ? delegateTo
+        : ethers.constants.AddressZero;
+
+    console.log('On-chain election ID:', onChainElectionId);
+    console.log('Merkle proof length:', merkleProof.length);
+    console.log('Votes:', formattedVotes);
+    console.log('Delegate:', delegateAddress);
+
     const tx = await contract.vote(
       onChainElectionId,
-      voterKey,
+      keyHash,            // 🔥 HASHED KEY (MATCHES MERKLE TREE)
       merkleProof,
-      votes,
-      delegateAddress
+      formattedVotes,
+      delegateAddress,
+      { gasLimit: 800000 }
     );
 
-    console.log(`⏳ Transaction pending: ${tx.hash}`);
+    console.log('⏳ TX pending:', tx.hash);
     const receipt = await tx.wait();
-    console.log(`✅ Transaction confirmed: ${receipt.transactionHash}`);
+    console.log('✅ TX confirmed:', receipt.transactionHash);
 
-    // Record vote in backend database
+    // Record vote off-chain (best-effort)
     try {
-      const currentAddress = await signer.getAddress();
-      const chainId = (await provider.getNetwork()).chainId;
+      const address = await signer.getAddress();
+      const { chainId } = await provider.getNetwork();
 
       await fetch(`${BACKEND_API}/api/votes/record`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          electionId: uuidElectionId, // Keep UUID for backend records
-          voterAddress: currentAddress,
-          chainId: chainId,
-          voterKey: voterKey,
+          electionId: electionUuid,
+          voterAddress: address,
+          chainId,
+          voterKeyHash: keyHash,
           txHash: receipt.transactionHash,
           blockNumber: receipt.blockNumber,
-          onChainElectionId: onChainElectionId, // Also send on-chain ID
-        }),
+          onChainElectionId
+        })
       });
-      console.log('✅ Vote recorded in backend database');
-    } catch (recordErr) {
-      console.warn(
-        '⚠️ Failed to record vote in DB (vote is still on-chain):',
-        recordErr
-      );
+    } catch (dbErr) {
+      console.warn('Vote recorded on-chain but DB update failed:', dbErr);
     }
 
     return {
       success: true,
       transactionHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
+      blockNumber: receipt.blockNumber
     };
   } catch (error) {
     console.error('❌ Error casting vote:', error);
     return {
       success: false,
-      error: error.message || 'Transaction failed or was rejected',
+      error: error.reason || error.message || 'Transaction failed'
     };
   }
 };
+
+/* ============================================
+   RESULTS
+============================================ */
 
 export const getElectionResults = async (electionId, positionIndex) => {
-  try {
-    if (!contract) await initializeProvider();
-    const results = await contract.getElectionResults(electionId, positionIndex);
-
-    return {
-      candidates: results.candidates,
-      votesCast: results.votesCast.map((v) => v.toNumber()),
-    };
-  } catch (error) {
-    console.error('Error getting results:', error);
-    throw error;
-  }
+  if (!contract) await initializeProvider();
+  const res = await contract.getElectionResults(electionId, positionIndex);
+  return {
+    candidates: res.candidates,
+    votesCast: res.votesCast.map(v => v.toNumber())
+  };
 };
+
+/* ============================================
+   DELEGATION
+============================================ */
 
 export const delegateVote = async (electionId, delegateAddress) => {
   try {
     if (!contract) await initializeProvider();
-
     const tx = await contract.vote(
       electionId,
       ethers.constants.HashZero,
@@ -256,28 +242,22 @@ export const delegateVote = async (electionId, delegateAddress) => {
       [],
       delegateAddress
     );
-
     const receipt = await tx.wait();
-
-    return {
-      success: true,
-      transactionHash: receipt.transactionHash,
-    };
-  } catch (error) {
-    console.error('Error delegating vote:', error);
-    return {
-      success: false,
-      error: error.message,
-    };
+    return { success: true, transactionHash: receipt.transactionHash };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 };
 
-// Initialize on import
+/* ============================================
+   AUTO INIT
+============================================ */
+
 if (window.ethereum) {
   initializeProvider().catch(console.error);
 }
 
-const votingService = {
+export default {
   initializeProvider,
   getProvider,
   getSigner,
@@ -290,7 +270,6 @@ const votingService = {
   hasVoted,
   getElectionResults,
   delegateVote,
-  getOnChainElectionId,
+  getOnChainElectionId
 };
 
-export default votingService;

@@ -14,7 +14,7 @@ class VoterKeyGenerator {
    * Generate voter keys and merkle root for an election
    * Stores keys in voter_keys table and merkle root in elections table
    */
-  async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
+    async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
     try {
       const existing = await this.getStoredMerkleRoot(electionId);
       if (existing) {
@@ -33,6 +33,7 @@ class VoterKeyGenerator {
       const voterKeyMappings = [];
       const normalizedAddresses = voterAddresses.map(addr => addr.toLowerCase());
 
+      // Generate unique key for each voter
       for (let i = 0; i < numVoters; i++) {
         const voterId = crypto.randomBytes(16).toString('hex');
         const voterKey = ethers.utils.id(`${electionId}-${voterId}-${Date.now()}-${i}`);
@@ -41,20 +42,27 @@ class VoterKeyGenerator {
         keys.push(voterKey);
 
         voterKeyMappings.push({
-          uuid: electionId,
-          voter_id: voterId,
+          election_id: electionId,
           voter_address: normalizedAddresses[i],
           voter_key: voterKey,
           key_hash: keyHash,
-          proof: '[]', // or generate real proof
+          proof: null, // Will fill after tree creation
           distributed: false
         });
       }
 
+      // Build merkle tree from hashed keys
       const leaves = keys.map(key => keccak256(key));
       const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
       const merkleRoot = tree.getHexRoot();
 
+      // Generate proofs for each key
+      voterKeyMappings.forEach((mapping, i) => {
+        const leaf = leaves[i];
+        mapping.proof = JSON.stringify(tree.getHexProof(leaf));
+      });
+
+      // TRANSACTION: Store everything atomically
       const client = await this.db.connect();
       try {
         await client.query('BEGIN');
@@ -65,14 +73,14 @@ class VoterKeyGenerator {
           [merkleRoot, electionId]
         );
 
-        // INSERT voter keys
+        // INSERT voter keys with proofs
         for (const mapping of voterKeyMappings) {
           await client.query(
             `INSERT INTO voter_keys 
              (election_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
             [
-              electionId,
+              mapping.election_id,
               mapping.voter_address,
               mapping.voter_key,
               mapping.key_hash,
@@ -84,8 +92,8 @@ class VoterKeyGenerator {
 
         await client.query('COMMIT');
 
-        console.log(`Generated and stored ${numVoters} voter keys for election ${electionId}`);
-        console.log(`Merkle Root: ${merkleRoot}`);
+        console.log(`✅ Generated and stored ${numVoters} voter keys for election ${electionId}`);
+        console.log(`   Root: ${merkleRoot}`);
 
         this.inMemoryTrees.set(electionId, {
           tree,
@@ -102,10 +110,11 @@ class VoterKeyGenerator {
         client.release();
       }
     } catch (error) {
-      console.error('Error generating voter keys:', error.message);
+      console.error('❌ Error generating voter keys:', error.message);
       throw error;
     }
   }
+
 
 
   /**
