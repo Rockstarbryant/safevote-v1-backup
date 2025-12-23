@@ -42,7 +42,7 @@ class VoterKeyGenerator {
         keys.push(voterKey);
 
         voterKeyMappings.push({
-          election_uuid: electionId,
+          election_id: electionId,
           voter_address: normalizedAddresses[i],
           voter_key: voterKey,
           key_hash: keyHash,
@@ -77,10 +77,10 @@ class VoterKeyGenerator {
         for (const mapping of voterKeyMappings) {
           await client.query(
             `INSERT INTO voter_keys 
-             (election_uuid, voter_address, voter_key, key_hash, proof, distributed, created_at)
+             (election_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
             [
-              mapping.election_uuid,
+              mapping.election_id,
               mapping.voter_address,
               mapping.voter_key,
               mapping.key_hash,
