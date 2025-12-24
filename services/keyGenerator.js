@@ -16,112 +16,77 @@ class VoterKeyGenerator {
  * Matches contract: leaf = keccak256(abi.encodePacked(voterKey))
  */
 async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
-  console.log(`\nStarting key generation for election ${electionId}`);
-  console.log(`Voters requested: ${numVoters}`);
-  console.log(`Addresses provided: ${voterAddresses.length}`);
+  console.log(`\n=== KEY GENERATION START ===`);
+  console.log(`Election: ${electionId}`);
+  console.log(`Voters: ${numVoters}`);
 
   try {
-    // Check if already generated
-    const existingRoot = await this.getStoredMerkleRoot(electionId);
-    if (existingRoot) {
-      console.log(`Keys already exist — root: ${existingRoot}`);
-      throw new Error(`Keys already generated for election ${electionId}`);
-    }
+    const existing = await this.getStoredMerkleRoot(electionId);
+    if (existing) throw new Error('Keys already generated');
 
-    if (!Array.isArray(voterAddresses) || voterAddresses.length === 0) {
-      throw new Error('voterAddresses must be a non-empty array');
-    }
+    if (voterAddresses.length !== numVoters) throw new Error('Address count mismatch');
 
-    if (voterAddresses.length !== numVoters) {
-      throw new Error(`Mismatch: ${voterAddresses.length} addresses vs ${numVoters} voters`);
-    }
+    const normalized = voterAddresses.map(a => a.toLowerCase());
+    const records = [];
 
-    const normalizedAddresses = voterAddresses.map(addr => addr.toLowerCase());
-    const mappings = [];
-
-    console.log(`Generating ${numVoters} random 32-byte voter keys...`);
+    console.log(`Generating ${numVoters} random voter keys...`);
 
     for (let i = 0; i < numVoters; i++) {
-      // Random 32 bytes → 0x + 64 hex chars
       const keyBytes = crypto.randomBytes(32);
       const voterKey = '0x' + keyBytes.toString('hex');
 
-      mappings.push({
+      records.push({
         election_id: electionId,
-        voter_address: normalizedAddresses[i],
-        voter_key: voterKey,
-        proof: null // filled after tree
+        voter_address: normalized[i],
+        voter_key: voterKey
       });
 
-      console.log(`Key ${i + 1}/${numVoters}: ${voterKey.substring(0, 10)}...${voterKey.substring(58)} → ${normalizedAddresses[i]}`);
+      console.log(`Key ${i+1}: ${voterKey.substring(0,10)}... → ${normalized[i]}`);
     }
 
-    console.log(`Building merkle tree from raw voterKey bytes`);
+    console.log(`Building merkle tree from voterKey bytes`);
 
-    // Leaves = keccak256(voterKey bytes) → matches Solidity keccak256(abi.encodePacked(voterKey))
-    const leaves = mappings.map(m => keccak256(ethers.utils.arrayify(m.voter_key)));
+    // FIXED: Use Buffer for Node
+    const leaves = records.map(r => keccak256(Buffer.from(r.voter_key.slice(2), 'hex')));
 
     const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-    const merkleRoot = tree.getHexRoot();
+    const root = tree.getHexRoot();
 
-    console.log(`Merkle root generated: ${merkleRoot}`);
+    console.log(`Merkle root: ${root}`);
 
     // Generate proofs
-    mappings.forEach((m, i) => {
+    records.forEach((r, i) => {
       const proof = tree.getHexProof(leaves[i]);
-      m.proof = JSON.stringify(proof);
-      console.log(`Proof ${i + 1} length: ${proof.length}`);
+      r.proof = JSON.stringify(proof);
+      console.log(`Proof ${i+1} length: ${proof.length}`);
     });
 
-    // Database transaction
     const client = await this.db.connect();
     try {
       await client.query('BEGIN');
-      console.log('DB transaction started');
 
-      // Update election with root
-      await client.query(
-        `UPDATE elections 
-         SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP 
-         WHERE uuid = $2`,
-        [merkleRoot, electionId]
-      );
-      console.log('Election merkle_root updated');
+      await client.query(`UPDATE elections SET merkle_root = $1 WHERE uuid = $2`, [root, electionId]);
 
-      // Insert all voter_keys
-      for (const m of mappings) {
+      for (const r of records) {
         await client.query(
-          `INSERT INTO voter_keys 
-           (election_id, voter_address, voter_key, proof, distributed, created_at)
+          `INSERT INTO voter_keys (election_id, voter_address, voter_key, proof, distributed, created_at)
            VALUES ($1, $2, $3, $4, FALSE, CURRENT_TIMESTAMP)
-           ON CONFLICT (election_id, voter_address) DO UPDATE
-           SET voter_key = EXCLUDED.voter_key, proof = EXCLUDED.proof`,
-          [m.election_id, m.voter_address, m.voter_key, m.proof]
+           ON CONFLICT (election_id, voter_address) DO UPDATE SET voter_key = EXCLUDED.voter_key, proof = EXCLUDED.proof`,
+          [r.election_id, r.voter_address, r.voter_key, r.proof]
         );
       }
-      console.log(`Inserted ${mappings.length} voter keys into DB`);
 
       await client.query('COMMIT');
-      console.log('Transaction committed — keys saved');
-
-      // Cache tree
-      this.inMemoryTrees.set(electionId, {
-        tree,
-        leaves,
-        mappings
-      });
-
-      console.log(`Key generation SUCCESS for election ${electionId}\n`);
-      return { merkleRoot, totalKeys: numVoters };
-    } catch (dbError) {
+      console.log('=== KEY GENERATION SUCCESS ===\n');
+      return { merkleRoot: root, totalKeys: numVoters };
+    } catch (err) {
       await client.query('ROLLBACK');
-      console.error('DB transaction failed — rolled back:', dbError.message);
-      throw dbError;
+      throw err;
     } finally {
       client.release();
     }
   } catch (error) {
-    console.error('Key generation FAILED:', error.message);
+    console.error('=== KEY GENERATION FAILED ===', error.message);
     throw error;
   }
 }
