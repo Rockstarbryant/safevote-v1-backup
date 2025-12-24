@@ -9,8 +9,7 @@ import SecurityWarning from '../components/security/SecurityWarning';
 const VoterVerificationPage = () => {
   const { electionId } = useParams();
   const navigate = useNavigate();
-  const { setCurrentElection, setVoterKey, setMerkleProof, setIsVerified, setWalletAddress } =
-    useVoting();
+  const { setCurrentElection, setMerkleProof, setVoterKey, setIsVerified, setWalletAddress } = useVoting();
   const { addSecurityWarning } = useSecurity();
   const { address, connectWallet, isConnecting } = useWallet();
 
@@ -69,100 +68,68 @@ const VoterVerificationPage = () => {
     }
   };
 
-  const autoVerifyVoter = async () => {
-    if (!address || !election) return;
+const autoVerifyVoter = async () => {
+  if (!address || !election) return;
 
-    try {
-      setVerifying(true);
-      setError(null);
+  try {
+    setVerifying(true);
+    setError(null);
+    setVerificationStatus('');
 
-      console.log(`🔍 Verifying voter: ${address} for election: ${electionId}`);
+    console.log(`🔍 Starting auto-verification for wallet: ${address}`);
+    console.log(`Election UUID: ${electionId}`);
 
-      // FIX: Call the correct endpoint that returns voter_key
-      const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/keys/${address}`);
+    // New endpoint that returns voter_key + merkleProof
+    const response = await fetch(`${KEYGEN_API}/api/elections/${electionId}/voter/${address}/key`);
 
-      if (!response.ok) {
-        if (response.status === 403) {
-          setVerificationStatus('alreadyVoted');
-          setError('You have already voted in this election.');
-          addSecurityWarning('Double vote attempt detected');
-        } else if (response.status === 404) {
-          setVerificationStatus('ineligible');
-          setError('Your wallet is not registered for this election.');
-        } else {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || 'Verification failed');
-        }
-        return;
-      }
-
-      const data = await response.json();
-
-      console.log(`✅ Verification response received:`, data);
-
-      if (!data.success || !data.merkleProof) {
-        throw new Error('Invalid verification data received');
-      }
-
-      // FIX: The keyService returns voter data, need to fetch the actual voter_key from database
-      // Since keyService doesn't return voter_key in the response, we need to get it from voter_keys table
-      // OR modify keyService to return it
-
-      // For now, let's get the voter key from the database
-      const voterKeyData = await getVoterKeyFromDatabase(electionId, address);
-      
-      if (!voterKeyData) {
-        throw new Error('Could not retrieve voter key from database');
-      }
-
-      console.log(`✅ Voter Key retrieved: ${voterKeyData.substring(0, 10)}...`);
-
-      // CORRECT: Set the actual voter_key, not voterAddress
-      setVoterKey(voterKeyData);
-      setMerkleProof(data.merkleProof);
-      setIsVerified(true);
-      setVerificationStatus('success');
-
-      setTimeout(() => {
-        navigate(`/vote/${electionId}`);
-      }, 2000);
-    } catch (err) {
-      console.error('Auto verification failed:', err);
-      setError(err.message || 'Verification failed. Please try again.');
-      addSecurityWarning('Voter verification failed');
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  // NEW FUNCTION: Fetch the actual voter_key from keyService
-  const getVoterKeyFromDatabase = async (electionId, voterAddress) => {
-    try {
-      console.log(`🔑 Fetching voter_key for ${voterAddress}`);
-      
-      const response = await fetch(
-        `${KEYGEN_API}/api/elections/${electionId}/keys/${voterAddress}/get-key`
-      );
-
-      if (!response.ok) {
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log('Voter not found in voter_keys table');
+        setVerificationStatus('ineligible');
+        setError('Your wallet is not registered for this election.');
+      } else if (response.status === 403) {
+        console.log('Already voted (403 from backend)');
+        setVerificationStatus('alreadyVoted');
+        setError('You have already voted in this election.');
+        addSecurityWarning('Double vote attempt detected');
+      } else {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to fetch voter key: ${response.status}`);
+        console.error('Verification API error:', errData);
+        throw new Error(errData.error || `Server error ${response.status}`);
       }
-
-      const data = await response.json();
-      
-      if (!data.voterKey) {
-        throw new Error('No voter key in response');
-      }
-
-      console.log(`✅ Successfully fetched voter_key: ${data.voterKey.substring(0, 10)}...`);
-      return data.voterKey;
-    } catch (err) {
-      console.error('❌ Error fetching voter key:', err);
-      setError(`Failed to retrieve voter key: ${err.message}`);
-      return null;
+      return;
     }
-  };
+
+    const data = await response.json();
+    console.log('✅ Verification API response:', data);
+
+    if (!data.voterKey || !data.merkleProof) {
+      console.error('Missing voterKey or merkleProof in response');
+      throw new Error('Invalid data received from server');
+    }
+
+    // Set context values
+    setVoterKey(data.voterKey);
+    setMerkleProof(data.merkleProof);
+    setIsVerified(true);
+    setVerificationStatus('success');
+
+    console.log(`✅ Voter verified! Key: ${data.voterKey.substring(0, 10)}...`);
+    console.log(`Proof length: ${data.merkleProof.length}`);
+    console.log('Redirecting to ballot in 2 seconds...');
+
+    setTimeout(() => {
+      navigate(`/vote/${electionId}`);
+    }, 2000);
+  } catch (err) {
+    console.error('❌ Auto verification failed:', err);
+    setError(err.message || 'Verification failed. Please try again.');
+    setVerificationStatus('');
+    addSecurityWarning('Voter verification failed');
+  } finally {
+    setVerifying(false);
+  }
+};
 
   const handleConnectWallet = async () => {
     try {

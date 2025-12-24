@@ -5,6 +5,8 @@ import VoterVerificationPage from './pages/VoterVerificationPage';
 import BallotPage from './pages/BallotPage';
 import ReviewPage from './pages/ReviewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import CreateElectionPage from './pages/CreateElectionPage';
+import ResultsPage from './pages/ResultsPage';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import { VotingProvider } from './context/VotingContext';
@@ -12,6 +14,9 @@ import { SecurityProvider } from './context/SecurityContext';
 import './styles/voting.css';
 import './styles/security.css';
 import './styles/responsive.css';
+import './styles/ResultsPage.css';
+import './styles/CreateElectionPage.css';
+
 
 function App() {
   return (
@@ -29,6 +34,8 @@ function App() {
                 <Route path="/review/:electionId" element={<ReviewPage />} />
                 <Route path="/confirmation/:electionId" element={<ConfirmationPage />} />
                 <Route path="/voting" element={<VotingPage />} />
+                <Route path="/results/:electionId" element={<ResultsPage />} />
+                <Route path="/create-election" element={<CreateElectionPage />} />
                 <Route path="*" element={<Navigate to="/elections" replace />} />
               </Routes>
             </main>

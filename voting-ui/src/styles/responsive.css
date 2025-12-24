@@ -509,4 +509,23 @@
   .election-card:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   }
+
+  /* ============================================================
+   Responsive Design
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .loading-container {
+    gap: 1.5rem;
+  }
+
+  .loading-message {
+    font-size: 0.9rem;
+  }
+
+  .spinner-pulse,
+  .spinner-orbital {
+    transform: scale(0.85);
+  }
+}
 }

@@ -1,5 +1,6 @@
 /**
  * Election Conductor - Multi-step election creation wizard
+ * FIXED: Create election in database BEFORE generating keys
  */
 
 const ElectionConductor = {
@@ -32,8 +33,8 @@ const ElectionConductor = {
       console.error('Election conductor container not found');
       return;
     }
-    this.electionUUID = this.generateUUID();
-    console.log('Generated Election UUID:', this.electionUUID);
+    this.electionData.electionUUID = this.generateUUID();
+    console.log('✅ Generated Election UUID:', this.electionData.electionUUID);
     this.render();
   },
 
@@ -42,11 +43,8 @@ const ElectionConductor = {
    */
   generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      // Modern browsers
       return 'elec-' + crypto.randomUUID();
     }
-
-    // Fallback for older browsers (still very unique)
     return (
       'elec-' +
       'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -517,6 +515,7 @@ const ElectionConductor = {
         <div class="bg-white bg-opacity-10 rounded-xl p-4">
           <h3 class="text-white font-bold mb-3">📋 Election Details</h3>
           <div class="text-white text-sm space-y-2">
+            <p><strong>UUID:</strong> <code class="font-mono text-xs">${this.electionData.electionUUID}</code></p>
             <p><strong>Title:</strong> ${this.electionData.title}</p>
             <p><strong>Description:</strong> ${this.electionData.description || '(None)'}</p>
             <p><strong>Location:</strong> ${this.electionData.location || '(None)'}</p>
@@ -528,7 +527,7 @@ const ElectionConductor = {
     }</p>
             <p><strong>Duration:</strong> ${duration} hours</p>
             <p><strong>Visibility:</strong> ${
-              this.electionData.isPublic ? '🌍 Public' : '🔒 Private'
+              this.electionData.isPublic ? '🌐 Public' : '🔒 Private'
             }</p>
             <p><strong>Anonymous:</strong> ${
               this.electionData.allowAnonymous ? '✓ Yes' : '✗ No'
@@ -613,124 +612,6 @@ const ElectionConductor = {
     `;
   },
 
-  /**
-   * Generate keys
-   */
-  async generateKeys() {
-    const addressesText = document.getElementById('voterAddresses').value.trim();
-    if (!addressesText) {
-      alert('Please enter at least one voter address');
-      return;
-    }
-
-    const voterAddresses = addressesText
-      .split('\n')
-      .map((a) => a.trim())
-      .filter((a) => a && /^0x[a-fA-F0-9]{40}$/.test(a));
-
-    if (voterAddresses.length === 0) {
-      alert('No valid addresses found');
-      return;
-    }
-
-    try {
-      Utils.showLoading('Generating secure keys...');
-
-      // ✅ FIX: For vanilla JavaScript (no React)
-      // Get API URLs from window object or use defaults
-      const KEYGEN_API = window.KEYGEN_API || 'http://localhost:3001';
-      const BACKEND_API = window.BACKEND_API || 'http://localhost:5000';
-
-      console.log(`📡 Calling keyService: ${KEYGEN_API}/api/elections/keys/generate`);
-
-      const response = await fetch(`${KEYGEN_API}/api/elections/keys/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          electionId: this.electionUUID,
-          numVoters: voterAddresses.length,
-          voterAddresses,
-        }),
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'Key generation failed');
-      }
-
-      const data = await response.json();
-      this.merkleRoot = data.merkleRoot;
-      this.voterAddresses = voterAddresses;
-
-      console.log(`✅ Keys generated. Merkle root: ${this.merkleRoot}`);
-
-      // Save full election details after keys succeed
-      const startDateTime = new Date(
-        `${this.electionData.startDate}T${this.electionData.startTime}`
-      );
-      const endDateTime = new Date(`${this.electionData.endDate}T${this.electionData.endTime}`);
-      const startTime = Math.floor(startDateTime.getTime() / 1000);
-      const endTime = Math.floor(endDateTime.getTime() / 1000);
-
-      console.log(`📝 Saving election to: ${BACKEND_API}/api/elections/create`);
-
-      const saveResponse = await fetch(`${BACKEND_API}/api/elections/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          electionId: this.electionUUID,
-          title: this.electionData.title || 'Untitled Election',
-          description: this.electionData.description || '',
-          location: this.electionData.location || '',
-          creator: '0x0000000000000000000000000000000000000000', // Temporary; get from wallet later
-          startTime: startTime,
-          endTime: endTime,
-          totalVoters: voterAddresses.length,
-          isPublic: this.electionData.isPublic,
-          allowAnonymous: this.electionData.allowAnonymous,
-          allowDelegation: this.electionData.allowDelegation,
-          positions: this.electionData.positions.map((p) => ({
-            title: p.title || 'Untitled Position',
-            candidates: p.candidates.filter((c) => c.trim()),
-            maxSelections: 1,
-          })),
-          merkleRoot: this.merkleRoot,
-          voterAddresses: voterAddresses,
-        }),
-      });
-
-      if (!saveResponse.ok) {
-        const err = await saveResponse.json();
-        console.warn('⚠️ Failed to save election details:', err);
-        // Don't throw - keys were generated successfully
-        // Election can be saved again later
-      } else {
-        console.log('✅ Election details saved successfully');
-      }
-
-      // Update UI
-      document.getElementById('keyResult').innerHTML = `
-      <div class="bg-green-500 bg-opacity-20 border border-green-400 rounded-xl p-4">
-        <h3 class="text-white font-bold mb-2">✅ Keys Generated!</h3>
-        <p class="text-white text-sm">Merkle Root: <code class="font-mono">${this.merkleRoot}</code></p>
-        <p class="text-white text-sm">Total Voters: ${voterAddresses.length}</p>
-      </div>
-    `;
-
-      Utils.showNotification('Keys generated and details saved!', 'success');
-    } catch (error) {
-      console.error('❌ Key generation error:', error);
-      document.getElementById('keyResult').innerHTML = `
-      <div class="bg-red-500 bg-opacity-20 border border-red-400 rounded-xl p-4">
-        <h3 class="text-white font-bold mb-2">❌ Error</h3>
-        <p class="text-white text-sm">${error.message}</p>
-      </div>
-    `;
-      Utils.showNotification('Key generation failed', 'error');
-    } finally {
-      Utils.hideLoading();
-    }
-  },
   /**
    * Save step data
    */
@@ -835,6 +716,7 @@ const ElectionConductor = {
       endDate: '',
       endTime: '',
       numVoters: 0,
+      electionUUID: this.generateUUID(),
       isPublic: true,
       allowAnonymous: false,
       allowDelegation: false,
@@ -847,7 +729,133 @@ const ElectionConductor = {
   },
 
   /**
-   * Deploy election
+   * Generate keys - FIXED: Save election first!
+   */
+  async generateKeys() {
+    const addressesText = document.getElementById('voterAddresses').value.trim();
+    if (!addressesText) {
+      alert('Please enter at least one voter address');
+      return;
+    }
+
+    const voterAddresses = addressesText
+      .split('\n')
+      .map((a) => a.trim())
+      .filter((a) => a && /^0x[a-fA-F0-9]{40}$/.test(a));
+
+    if (voterAddresses.length === 0) {
+      alert('No valid addresses found');
+      return;
+    }
+
+    try {
+      if (typeof Utils !== 'undefined') {
+        Utils.showLoading('Creating election and generating keys...');
+      }
+
+      const KEYGEN_API = window.KEYGEN_API || 'http://localhost:3001';
+      const BACKEND_API = window.BACKEND_API || 'http://localhost:5000';
+
+      // Parse timestamps
+      const startDateTime = new Date(
+        `${this.electionData.startDate}T${this.electionData.startTime}`
+      );
+      const endDateTime = new Date(`${this.electionData.endDate}T${this.electionData.endTime}`);
+      const startTime = Math.floor(startDateTime.getTime() / 1000);
+      const endTime = Math.floor(endDateTime.getTime() / 1000);
+
+      console.log(`📝 Step 1: Creating election in database...`);
+      console.log(`   Election UUID: ${this.electionData.electionUUID}`);
+
+      // ✅ STEP 1: Create election in database FIRST
+      const createResponse = await fetch(`${BACKEND_API}/api/elections/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          electionId: this.electionData.electionUUID,
+          title: this.electionData.title || 'Untitled Election',
+          description: this.electionData.description || '',
+          location: this.electionData.location || '',
+          creator: '0x0000000000000000000000000000000000000000',
+          startTime: startTime,
+          endTime: endTime,
+          totalVoters: voterAddresses.length,
+          isPublic: this.electionData.isPublic,
+          allowAnonymous: this.electionData.allowAnonymous,
+          allowDelegation: this.electionData.allowDelegation,
+          positions: this.electionData.positions.map((p) => ({
+            title: p.title || 'Untitled Position',
+            candidates: p.candidates.filter((c) => c.trim()),
+            maxSelections: 1,
+          })),
+          voterAddresses: voterAddresses,
+        }),
+      });
+
+      if (!createResponse.ok) {
+        const err = await createResponse.json();
+        throw new Error(`Failed to create election: ${err.message || err.error}`);
+      }
+
+      const createData = await createResponse.json();
+      console.log(`✅ Election created in database`);
+
+      // ✅ STEP 2: Now generate keys
+      console.log(`\n🔑 Step 2: Generating voter keys...`);
+
+      const keyResponse = await fetch(`${KEYGEN_API}/api/elections/keys/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          electionId: this.electionData.electionUUID,
+          numVoters: voterAddresses.length,
+          voterAddresses,
+        }),
+      });
+
+      if (!keyResponse.ok) {
+        const err = await keyResponse.json();
+        throw new Error(`Key generation failed: ${err.message || err.error}`);
+      }
+
+      const keyData = await keyResponse.json();
+      this.merkleRoot = keyData.merkleRoot;
+      this.voterAddresses = voterAddresses;
+
+      console.log(`✅ Keys generated successfully`);
+      console.log(`   Merkle Root: ${this.merkleRoot}`);
+
+      // Update UI
+      document.getElementById('keyResult').innerHTML = `
+        <div class="bg-green-500 bg-opacity-20 border border-green-400 rounded-xl p-4">
+          <h3 class="text-white font-bold mb-2">✅ Election & Keys Generated!</h3>
+          <p class="text-white text-sm">Election UUID: <code class="font-mono">${this.electionData.electionUUID}</code></p>
+          <p class="text-white text-sm">Merkle Root: <code class="font-mono">${this.merkleRoot.substring(0, 20)}...</code></p>
+          <p class="text-white text-sm">Total Voters: ${voterAddresses.length}</p>
+        </div>
+      `;
+
+      if (typeof Utils !== 'undefined') {
+        Utils.hideLoading();
+        Utils.showNotification('Election created and keys generated!', 'success');
+      }
+    } catch (error) {
+      console.error('❌ Error:', error.message);
+      document.getElementById('keyResult').innerHTML = `
+        <div class="bg-red-500 bg-opacity-20 border border-red-400 rounded-xl p-4">
+          <h3 class="text-white font-bold mb-2">❌ Error</h3>
+          <p class="text-white text-sm">${error.message}</p>
+        </div>
+      `;
+      if (typeof Utils !== 'undefined') {
+        Utils.hideLoading();
+        Utils.showNotification(`Error: ${error.message}`, 'error');
+      }
+    }
+  },
+
+  /**
+   * Deploy election to blockchains
    */
   async deploy() {
     try {
@@ -910,7 +918,7 @@ const ElectionConductor = {
         throw new Error('All positions must have at least one candidate');
       }
 
-      // Generate voter merkle root (simplified)
+      // Get voter merkle root
       const voterMerkleRoot = this.merkleRoot;
 
       if (!voterMerkleRoot || voterMerkleRoot === '0x000...') {
@@ -932,7 +940,6 @@ const ElectionConductor = {
           // Switch chain if needed
           if (currentNetwork.chainId !== chainId) {
             await window.Contract.switchNetwork(chainId);
-            // Wait a moment for chain switch
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
 
@@ -958,12 +965,10 @@ const ElectionConductor = {
           deploymentResults.push({
             chainId,
             success: true,
-            electionId: this.electionUUID, // Global ID for frontend/backend
-            onChainElectionId, // Real on-chain ID
+            electionId: this.electionData.electionUUID,
+            onChainElectionId,
             txHash: receipt.transactionHash,
           });
-
-          // After all deployments succeed — save full election data
 
           // Sync to backend
           try {
@@ -971,7 +976,7 @@ const ElectionConductor = {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                electionId: this.electionUUID,
+                electionId: this.electionData.electionUUID,
                 chainId: chainId,
                 onChainElectionId: onChainElectionId,
                 txHash: receipt.transactionHash,
@@ -981,7 +986,7 @@ const ElectionConductor = {
             console.warn(`Sync failed for chain ${chainId}:`, syncErr);
           }
 
-          console.log(`✅ Election deployed on chain ${chainId} with ID ${this.electionUUID}`);
+          console.log(`✅ Election deployed on chain ${chainId}`);
         } catch (error) {
           console.error(`❌ Deployment failed on chain ${chainId}:`, error);
           deploymentResults.push({
@@ -1000,7 +1005,6 @@ const ElectionConductor = {
         throw new Error('Election deployment failed on all chains');
       }
 
-      // Show results
       if (typeof Utils !== 'undefined') {
         Utils.hideLoading();
         const message =
@@ -1010,13 +1014,9 @@ const ElectionConductor = {
         Utils.showNotification(message, 'success');
       }
 
-      // Log deployment details
       console.log('🎉 Deployment Results:', deploymentResults);
-
-      // Show summary
       this.showDeploymentSummary(deploymentResults);
 
-      // Reset after successful deployment
       setTimeout(() => {
         this.reset();
       }, 2000);
@@ -1035,7 +1035,6 @@ const ElectionConductor = {
    * Show deployment summary
    */
   showDeploymentSummary(results) {
-    // Deduplicate by chainId
     const uniqueResults = [];
     const seen = new Set();
     for (const r of results) {
@@ -1047,7 +1046,7 @@ const ElectionConductor = {
 
     let summary = '📋 Deployment Summary\n\n';
     summary += `Election: ${this.electionData.title}\n`;
-    summary += `Global ID: ${this.electionUUID}\n`; // ← Important!
+    summary += `Global ID: ${this.electionData.electionUUID}\n`;
     summary += `Start: ${this.electionData.startDate} ${this.electionData.startTime}\n`;
     summary += `End: ${this.electionData.endDate} ${this.electionData.endTime}\n`;
     summary += `Voters: ${this.voterAddresses.length}\n`;
@@ -1056,30 +1055,28 @@ const ElectionConductor = {
     summary += '📊 Chain Deployments:\n';
     uniqueResults.forEach((r) => {
       if (r.success) {
-        summary += `✅ Chain ${r.chainId} (Arbitrum Sepolia)\n`;
-        summary += `   Global ID: ${this.electionUUID}\n`;
+        summary += `✅ Chain ${r.chainId}\n`;
         summary += `   TX: ${r.txHash}\n\n`;
       } else {
         summary += `❌ Chain ${r.chainId}: ${r.error || 'Failed'}\n\n`;
       }
     });
 
-    summary += `🔗 Vote Link: ${window.location.origin}/verify/${this.electionUUID}\n`;
-    summary += `\nYour election is now LIVE! Share the vote link with voters.`;
+    summary += `🗳️ Vote Link: ${window.location.origin}/verify/${this.electionData.electionUUID}\n`;
+    summary += `\nYour election is now LIVE!`;
 
     console.log(summary);
 
-    // Show in UI
     const resultDiv = document.createElement('div');
     resultDiv.className = 'glass rounded-2xl p-8 mt-8 text-center';
     resultDiv.innerHTML = `
-    <h2 class="text-3xl font-bold text-green-400 mb-4">🎉 Election Deployed Successfully!</h2>
-    <pre class="text-left text-sm bg-black bg-opacity-50 p-4 rounded-xl overflow-x-auto">${summary}</pre>
-    <button onclick="navigator.clipboard.writeText('${window.location.origin}/verify/${this.electionUUID}')" 
-            class="btn-primary mt-4">
-      📋 Copy Vote Link
-    </button>
-  `;
+      <h2 class="text-3xl font-bold text-green-400 mb-4">🎉 Election Deployed Successfully!</h2>
+      <pre class="text-left text-sm bg-black bg-opacity-50 p-4 rounded-xl overflow-x-auto">${summary}</pre>
+      <button onclick="navigator.clipboard.writeText('${window.location.origin}/verify/${this.electionData.electionUUID}')" 
+              class="btn-primary mt-4">
+        📋 Copy Vote Link
+      </button>
+    `;
     document.getElementById('electionConductorContainer').appendChild(resultDiv);
   },
 };

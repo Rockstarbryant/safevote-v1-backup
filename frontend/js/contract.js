@@ -807,60 +807,65 @@ export const Contract = {
     }
   },
 
-  async submitVote() {
-    const pollId = document.getElementById('voteModal').dataset.pollId;
-    const selectedOption = document.querySelector('input[name="voteOption"]:checked');
-    let votingKey = document.getElementById('voteKeyInput').value.trim();
+ async submitVote() {
+  const pollId = document.getElementById('voteModal').dataset.pollId;
+  const selectedOption = document.querySelector('input[name="voteOption"]:checked');
+  let votingKey = document.getElementById('voteKeyInput').value.trim();
 
-    if (!selectedOption) {
-      Utils.showNotification('Please select an option', 'error');
-      return;
-    }
+  if (!selectedOption) {
+    Utils.showNotification('Please select an option', 'error');
+    return;
+  }
 
-    if (!votingKey) {
-      Utils.showNotification('Please enter your voting key', 'error');
-      return;
-    }
+  if (!votingKey) {
+    Utils.showNotification('Please enter your voting key', 'error');
+    return;
+  }
 
-    if (!votingKey.startsWith('0x')) {
-      votingKey = '0x' + votingKey;
-    }
+  if (!votingKey.startsWith('0x')) {
+    votingKey = '0x' + votingKey;
+  }
 
-    if (!/^0x[a-fA-F0-9]{64}$/.test(votingKey)) {
-      Utils.showNotification('Invalid voting key format', 'error');
-      return;
-    }
+  if (!/^0x[a-fA-F0-9]{64}$/.test(votingKey)) {
+    Utils.showNotification('Invalid voting key format', 'error');
+    return;
+  }
 
-    try {
-      Utils.showLoading('Casting vote...');
+  try {
+    Utils.showLoading('Casting vote...');
 
-      // Correct signature from merged ABI
-      const tx = await this.contract.vote(pollId, parseInt(selectedOption.value), votingKey);
-      await tx.wait();
+    // FIXED LINE: Use signature to disambiguate overloaded function
+    const tx = await this.contract["vote(uint256,uint256,bytes32)"](
+      pollId,
+      parseInt(selectedOption.value),
+      votingKey
+    );
 
-      Utils.showNotification('Vote cast successfully!', 'success');
-      await this.loadOrgPolls(UI.currentOrgId);
-      UI.closeModal('voteModal');
+    await tx.wait();
 
-      const voteKeyInput = document.getElementById('voteKeyInput');
-      if (voteKeyInput) voteKeyInput.value = '';
+    Utils.showNotification('Vote cast successfully!', 'success');
+    await this.loadOrgPolls(UI.currentOrgId);
+    UI.closeModal('voteModal');
 
-      Storage.stats.incrementVotesCast();
-    } catch (error) {
-      console.error('Vote error:', error);
-      const msg = error.message.includes('Already voted')
-        ? 'You have already voted'
-        : error.message.includes('Voting key already used')
-        ? 'This voting key has already been used'
-        : error.message.includes('Not authorized')
-        ? 'You are not authorized to vote'
-        : 'Failed to cast vote';
+    const voteKeyInput = document.getElementById('voteKeyInput');
+    if (voteKeyInput) voteKeyInput.value = '';
 
-      Utils.showNotification(msg, 'error');
-    } finally {
-      Utils.hideLoading();
-    }
-  },
+    Storage.stats.incrementVotesCast();
+  } catch (error) {
+    console.error('Vote error:', error);
+    const msg = error.message.includes('Already voted')
+      ? 'You have already voted'
+      : error.message.includes('Voting key already used')
+      ? 'This voting key has already been used'
+      : error.message.includes('Not authorized')
+      ? 'You are not authorized to vote'
+      : 'Failed to cast vote';
+
+    Utils.showNotification(msg, 'error');
+  } finally {
+    Utils.hideLoading();
+  }
+},
 
   async viewPollResults(pollId) {
     // ... unchanged (your beautiful results modal)

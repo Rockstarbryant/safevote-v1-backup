@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import formatters from '../utils/formatters';
 
@@ -23,7 +23,7 @@ const ElectionSelectionPage = () => {
       setLoading(true);
       setError(null);
 
-      console.log(`📡 Fetching from: ${BACKEND_API}/api/elections`);
+      console.log(`🔡 Fetching from: ${BACKEND_API}/api/elections`);
 
       // ✅ FIX 2: Correct API URL (was using RESULTS_API which doesn't exist)
       const response = await fetch(`${BACKEND_API}/api/elections`);
@@ -98,23 +98,6 @@ const ElectionSelectionPage = () => {
     }
     return <span className="status-badge badge-active">Active</span>;
   };
-/*
-  const formatDate = (timestamp) => {
-    // ✅ FIX 6: Handle both Unix timestamps and ISO strings
-    if (!timestamp) return 'N/A';
-
-    let date;
-    if (typeof timestamp === 'string') {
-      date = new Date(timestamp);
-    } else if (typeof timestamp === 'number') {
-      // Check if it's a Unix timestamp (seconds) or milliseconds
-      date = new Date(timestamp * (timestamp > 10000000000 ? 1 : 1000));
-    } else {
-      return 'N/A';
-    }
-
-    return date.toLocaleString();
-  }; */
 
   if (loading) {
     return (
@@ -169,7 +152,7 @@ const ElectionSelectionPage = () => {
 
       {elections.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📭</div>
+          <div className="empty-icon">🔭</div>
           <h3>No elections found</h3>
           <p>
             {filter === 'all'
@@ -223,17 +206,29 @@ const ElectionSelectionPage = () => {
               </div>
 
               <div className="election-features">
-                {election.allowAnonymous && <span className="feature-badge">🔒 Anonymous</span>}
+                {election.allowAnonymous && <span className="feature-badge">🔐 Anonymous</span>}
                 {election.allowDelegation && <span className="feature-badge">🤝 Delegation</span>}
-                {election.isPublic && <span className="feature-badge">🌐 Public Results</span>}
+                {election.isPublic && (
+                  <Link
+                    to={`/results/${election.uuid}`}
+                        className="feature-badge"
+                            style={{ cursor: 'pointer' }}
+                               >
+                                  🌐 Public Results
+                                       </Link>
+                  )}
+
               </div>
 
-              <button
-                onClick={() => handleElectionSelect(election)}
-                className="btn btn-primary btn-large"
-              >
-                Vote Now →
-              </button>
+              {/* ✅ ACTION BUTTONS - Updated */}
+              <div className="election-actions">
+                <button
+                  onClick={() => handleElectionSelect(election)}
+                  className="btn btn-primary"
+                >
+                  🗳️ Vote Now
+                </button>
+              </div>
             </div>
           ))}
         </div>

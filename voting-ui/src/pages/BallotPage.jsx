@@ -142,6 +142,7 @@ const BallotPage = () => {
             disabled={selectedCandidateIndex === null}
             className="ballot-btn ballot-btn-primary"
           >
+            
             {isLast ? 'Review & Submit →' : 'Next →'}
           </button>
         </div>
