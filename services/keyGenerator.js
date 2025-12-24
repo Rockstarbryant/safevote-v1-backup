@@ -46,8 +46,8 @@ async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
 
     console.log(`Building merkle tree from voterKey bytes`);
 
-    // FIXED: Use Buffer for Node
-    const leaves = records.map(r => keccak256(Buffer.from(r.voter_key.slice(2), 'hex')));
+    // FIXED: 
+    const leaves = records.map(r => keccak256(ethers.utils.arrayify(r.voter_key)));
 
     const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
     const root = tree.getHexRoot();
