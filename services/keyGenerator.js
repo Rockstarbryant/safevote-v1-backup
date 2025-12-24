@@ -120,12 +120,11 @@ class VoterKeyGenerator {
         const updateResult = await client.query(
           `UPDATE elections 
            SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP
-           WHERE uuid = $2
-           RETURNING id`,
+           WHERE uuid = $2`,
           [merkleRoot, electionId]
         );
 
-        if (updateResult.rows.length === 0) {
+        if (updateResult.rowCount === 0) {
           throw new Error(`Election ${electionId} not found in database`);
         }
 
@@ -134,21 +133,20 @@ class VoterKeyGenerator {
         // Insert voter keys with proofs
         let insertCount = 0;
         for (const r of records) {
-          const result = await client.query(
-            `INSERT INTO voter_keys 
-             (election_id, voter_address, voter_key, proof, distributed, created_at)
-             VALUES ($1, $2, $3, $4, FALSE, CURRENT_TIMESTAMP)
-             ON CONFLICT (election_id, voter_address) 
-             DO UPDATE SET 
-               voter_key = EXCLUDED.voter_key, 
-               proof = EXCLUDED.proof,
-               updated_at = CURRENT_TIMESTAMP
-             RETURNING id`,
-            [r.election_id, r.voter_address, r.voter_key, r.proof]
-          );
-          
-          if (result.rows.length > 0) {
+          try {
+            // Generate key_hash for this voter_key
+            const keyHashInput = keccak256(ethers.utils.solidityPack(['bytes32'], [r.voter_key]));
+            const keyHash = '0x' + keyHashInput.toString('hex');
+
+            await client.query(
+              `INSERT INTO voter_keys 
+               (election_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
+               VALUES ($1, $2, $3, $4, $5, FALSE, CURRENT_TIMESTAMP)`,
+              [r.election_id, r.voter_address, r.voter_key, keyHash, r.proof]
+            );
             insertCount++;
+          } catch (insertErr) {
+            console.warn(`⚠️  Failed to insert key for ${r.voter_address}: ${insertErr.message}`);
           }
         }
 
@@ -311,7 +309,7 @@ class VoterKeyGenerator {
 
       // Check voter is registered
       const { rows } = await this.db.query(
-        `SELECT voter_key, proof FROM voter_keys 
+        `SELECT voter_key, key_hash, proof FROM voter_keys 
          WHERE election_id = $1 AND voter_address = $2 
          LIMIT 1`,
         [electionId, normalized]
@@ -323,9 +321,11 @@ class VoterKeyGenerator {
       }
 
       const voterKey = rows[0].voter_key;
+      const keyHash = rows[0].key_hash;
       const storedProof = JSON.parse(rows[0].proof);
 
       console.log(`✓ Found voter key: ${voterKey.substring(0, 10)}...`);
+      console.log(`✓ Found key hash: ${keyHash.substring(0, 10)}...`);
       console.log(`✓ Proof hashes: ${storedProof.length}`);
 
       // Generate fresh proof from tree to ensure accuracy
@@ -335,6 +335,7 @@ class VoterKeyGenerator {
 
       return {
         voterKey,
+        keyHash,
         merkleProof: proofData.proof,
         merkleRoot: proofData.merkleRoot,
         eligible: true
@@ -434,7 +435,7 @@ class VoterKeyGenerator {
       console.log(`📥 Exporting all voter keys for ${electionId}...`);
 
       const { rows } = await this.db.query(
-        `SELECT voter_address, voter_key, distributed, created_at
+        `SELECT voter_address, voter_key, key_hash, distributed, created_at
          FROM voter_keys 
          WHERE election_id = $1
          ORDER BY id ASC`,
