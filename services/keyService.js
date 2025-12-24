@@ -190,117 +190,29 @@ app.get('/api/elections/:electionId/keys/:address', async (req, res) => {
 // Returns the actual voter_key from voter_keys table
 // Called by: VoterVerificationPage.jsx (during verification)
 // ============================================
-app.get('/api/elections/:electionId/keys/:address/get-key', async (req, res) => {
-  if (!dbPool) {
-    return res.status(503).json({
-      error: 'Database not available',
-    });
-  }
+app.get('/api/elections/:electionId/voter/:address/key', async (req, res) => {
+  const { electionId, address } = req.params;
+  const normalized = address.toLowerCase();
 
   try {
-    const { electionId, address } = req.params;
-    const normalizedAddress = address.toLowerCase();
-
-    console.log(`🔑 Fetching voter_key for ${normalizedAddress} in election ${electionId}`);
-
-    // Query voter_keys table to get the actual voter_key
-    // NOTE: election_id column might be NULL in your table
-    // If election_id is NULL, we need to query differently
-    let rows;
-    
-    // First try: Query with election_id (if it's populated)
-    let result = await dbPool.query(
-      `SELECT voter_key FROM voter_keys 
+    const { rows } = await dbPool.query(
+      `SELECT voter_key, proof FROM voter_keys 
        WHERE election_id = $1 AND voter_address = $2 
        LIMIT 1`,
-      [electionId, normalizedAddress]
+      [electionId, normalized]
     );
 
-    rows = result.rows;
-
-    // If not found and election_id is NULL in table, try without election_id filter
     if (rows.length === 0) {
-      console.log(`⚠️ No match with election_id filter, trying without filter`);
-      
-      result = await dbPool.query(
-        `SELECT voter_key FROM voter_keys 
-         WHERE voter_address = $1 
-         LIMIT 1`,
-        [normalizedAddress]
-      );
-      
-      rows = result.rows;
+      return res.status(404).json({ error: 'Voter not registered' });
     }
-
-    if (rows.length === 0) {
-      console.log(`❌ Voter key not found for ${normalizedAddress}`);
-      return res.status(404).json({
-        error: 'Voter key not found for this address',
-        voterAddress: normalizedAddress,
-      });
-    }
-
-    const voterKey = rows[0].voter_key;
-
-    console.log(`✅ Found voter_key: ${voterKey.substring(0, 10)}...`);
 
     res.json({
-      success: true,
-      electionId,
-      voterAddress: normalizedAddress,
-      voterKey: voterKey,
+      voterKey: rows[0].voter_key,
+      merkleProof: JSON.parse(rows[0].proof)
     });
-  } catch (error) {
-    console.error('❌ Error fetching voter key:', error.message);
-    res.status(500).json({
-      error: 'Failed to fetch voter key',
-      message: error.message,
-    });
-  }
-});
-
-// ============================================
-// RECORD VOTE (after blockchain confirmation)
-// Called by: voting-ui.js (frontend)
-// ============================================
-app.post('/api/votes/record', async (req, res) => {
-  if (!dbPool) {
-    return res.status(503).json({
-      error: 'Database not available',
-    });
-  }
-
-  try {
-    const { electionId, voterAddress, chainId, txHash } = req.body;
-
-    if (!electionId || !voterAddress || !chainId || !txHash) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-        required: ['electionId', 'voterAddress', 'chainId', 'txHash'],
-      });
-    }
-
-    const normalizedAddress = voterAddress.toLowerCase();
-
-    // Record vote in database
-    await keyGen.recordVote(electionId, normalizedAddress, chainId, txHash);
-
-    console.log(`✅ Vote recorded for ${normalizedAddress} on chain ${chainId}`);
-
-    res.json({
-      success: true,
-      electionId,
-      voterAddress: normalizedAddress,
-      chainId,
-      txHash,
-      message: 'Vote recorded successfully',
-    });
-  } catch (error) {
-    console.error('❌ Record vote error:', error.message);
-    res.status(500).json({
-      error: 'Failed to record vote',
-      message: error.message,
-    });
+  } catch (err) {
+    console.error('Voter key fetch error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
