@@ -12,121 +12,119 @@ class VoterKeyGenerator {
   }
 
   /**
-   * Generate random voter keys (bytes32) and merkle root
-   * Stores voter_key, key_hash, proof in voter_keys table
-   */
-  async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
-    console.log(`Starting key generation for election ${electionId}`);
-    console.log(`Requested voters: ${numVoters}, addresses provided: ${voterAddresses.length}`);
+ * Generate random voter keys (bytes32) and merkle root
+ * Matches contract: leaf = keccak256(abi.encodePacked(voterKey))
+ */
+async generateVoterKeys(electionId, numVoters, voterAddresses = []) {
+  console.log(`\nStarting key generation for election ${electionId}`);
+  console.log(`Voters requested: ${numVoters}`);
+  console.log(`Addresses provided: ${voterAddresses.length}`);
 
-    try {
-      const existing = await this.getStoredMerkleRoot(electionId);
-      if (existing) {
-        console.log(`Keys already exist for election ${electionId}, root: ${existing}`);
-        throw new Error(`Keys already generated for election ${electionId}`);
-      }
+  try {
+    // Check if already generated
+    const existingRoot = await this.getStoredMerkleRoot(electionId);
+    if (existingRoot) {
+      console.log(`Keys already exist — root: ${existingRoot}`);
+      throw new Error(`Keys already generated for election ${electionId}`);
+    }
 
-      if (!Array.isArray(voterAddresses) || voterAddresses.length === 0) {
-        throw new Error('voterAddresses must be a non-empty array');
-      }
+    if (!Array.isArray(voterAddresses) || voterAddresses.length === 0) {
+      throw new Error('voterAddresses must be a non-empty array');
+    }
 
-      if (voterAddresses.length !== numVoters) {
-        throw new Error(`Mismatch: ${voterAddresses.length} addresses vs ${numVoters} requested`);
-      }
+    if (voterAddresses.length !== numVoters) {
+      throw new Error(`Mismatch: ${voterAddresses.length} addresses vs ${numVoters} voters`);
+    }
 
-      const normalizedAddresses = voterAddresses.map(addr => addr.toLowerCase());
-      console.log(`Generating ${numVoters} random voter keys...`);
+    const normalizedAddresses = voterAddresses.map(addr => addr.toLowerCase());
+    const mappings = [];
 
-      const voterKeys = []; // raw '0x' + 64 hex
-      const mappings = [];
+    console.log(`Generating ${numVoters} random 32-byte voter keys...`);
 
-      for (let i = 0; i < numVoters; i++) {
-        const keyBytes = crypto.randomBytes(32);
-        const voterKey = '0x' + keyBytes.toString('hex');
+    for (let i = 0; i < numVoters; i++) {
+      // Random 32 bytes → 0x + 64 hex chars
+      const keyBytes = crypto.randomBytes(32);
+      const voterKey = '0x' + keyBytes.toString('hex');
 
-        voterKeys.push(voterKey);
-
-        mappings.push({
-          election_id: electionId,
-          voter_address: normalizedAddresses[i],
-          voter_key: voterKey,
-          key_hash: ethers.utils.keccak256(voterKey), // for double-vote check if needed
-        });
-
-        if (i < 3 || i === numVoters - 1) {
-          console.log(`Generated key ${i}: ${voterKey.substring(0, 10)}...`);
-        }
-      }
-
-      console.log(`Building merkle tree from ${voterKeys.length} voter keys`);
-
-      // Leaves = keccak256(voterKey bytes) to match Solidity keccak256(abi.encodePacked(voterKey))
-      const leaves = voterKeys.map(key => keccak256(ethers.utils.arrayify(key)));
-      const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-      const merkleRoot = tree.getHexRoot();
-
-      console.log(`Merkle root calculated: ${merkleRoot}`);
-
-      // Generate and attach proofs
-      mappings.forEach((m, i) => {
-        const leaf = leaves[i];
-        m.proof = JSON.stringify(tree.getHexProof(leaf));
+      mappings.push({
+        election_id: electionId,
+        voter_address: normalizedAddresses[i],
+        voter_key: voterKey,
+        proof: null // filled after tree
       });
 
-      console.log(`Generated proofs for all voters`);
-
-      const client = await this.db.connect();
-      try {
-        await client.query('BEGIN');
-        console.log('Transaction started');
-
-        // Update elections with root
-        await client.query(
-          `UPDATE elections 
-           SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP 
-           WHERE uuid = $2`,
-          [merkleRoot, electionId]
-        );
-        console.log('Updated elections table with merkle root');
-
-        // Insert voter_keys
-        for (const m of mappings) {
-          await client.query(
-            `INSERT INTO voter_keys 
-             (election_id, voter_address, voter_key, key_hash, proof, distributed, created_at)
-             VALUES ($1, $2, $3, $4, $5, FALSE, CURRENT_TIMESTAMP)
-             ON CONFLICT (election_id, voter_address) DO UPDATE
-             SET voter_key = EXCLUDED.voter_key, proof = EXCLUDED.proof`,
-            [m.election_id, m.voter_address, m.voter_key, m.key_hash, m.proof]
-          );
-        }
-        console.log(`Inserted ${mappings.length} voter keys into DB`);
-
-        await client.query('COMMIT');
-        console.log('Transaction committed successfully');
-
-        // Cache tree
-        this.inMemoryTrees.set(electionId, {
-          tree,
-          voterKeys,
-          addresses: normalizedAddresses,
-          merkleRoot
-        });
-
-        console.log(`Key generation completed for election ${electionId}`);
-        return { merkleRoot, totalKeys: numVoters };
-      } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Transaction rolled back due to error:', error.message);
-        throw error;
-      } finally {
-        client.release();
-      }
-    } catch (error) {
-      console.error('Key generation failed:', error.message);
-      throw error;
+      console.log(`Key ${i + 1}/${numVoters}: ${voterKey.substring(0, 10)}...${voterKey.substring(58)} → ${normalizedAddresses[i]}`);
     }
+
+    console.log(`Building merkle tree from raw voterKey bytes`);
+
+    // Leaves = keccak256(voterKey bytes) → matches Solidity keccak256(abi.encodePacked(voterKey))
+    const leaves = mappings.map(m => keccak256(ethers.utils.arrayify(m.voter_key)));
+
+    const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+    const merkleRoot = tree.getHexRoot();
+
+    console.log(`Merkle root generated: ${merkleRoot}`);
+
+    // Generate proofs
+    mappings.forEach((m, i) => {
+      const proof = tree.getHexProof(leaves[i]);
+      m.proof = JSON.stringify(proof);
+      console.log(`Proof ${i + 1} length: ${proof.length}`);
+    });
+
+    // Database transaction
+    const client = await this.db.connect();
+    try {
+      await client.query('BEGIN');
+      console.log('DB transaction started');
+
+      // Update election with root
+      await client.query(
+        `UPDATE elections 
+         SET merkle_root = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE uuid = $2`,
+        [merkleRoot, electionId]
+      );
+      console.log('Election merkle_root updated');
+
+      // Insert all voter_keys
+      for (const m of mappings) {
+        await client.query(
+          `INSERT INTO voter_keys 
+           (election_id, voter_address, voter_key, proof, distributed, created_at)
+           VALUES ($1, $2, $3, $4, FALSE, CURRENT_TIMESTAMP)
+           ON CONFLICT (election_id, voter_address) DO UPDATE
+           SET voter_key = EXCLUDED.voter_key, proof = EXCLUDED.proof`,
+          [m.election_id, m.voter_address, m.voter_key, m.proof]
+        );
+      }
+      console.log(`Inserted ${mappings.length} voter keys into DB`);
+
+      await client.query('COMMIT');
+      console.log('Transaction committed — keys saved');
+
+      // Cache tree
+      this.inMemoryTrees.set(electionId, {
+        tree,
+        leaves,
+        mappings
+      });
+
+      console.log(`Key generation SUCCESS for election ${electionId}\n`);
+      return { merkleRoot, totalKeys: numVoters };
+    } catch (dbError) {
+      await client.query('ROLLBACK');
+      console.error('DB transaction failed — rolled back:', dbError.message);
+      throw dbError;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Key generation FAILED:', error.message);
+    throw error;
   }
+}
 
    async loadTreeIntoMemory(electionId) {
     if (this.inMemoryTrees.has(electionId)) {
