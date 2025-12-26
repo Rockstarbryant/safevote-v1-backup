@@ -52,26 +52,36 @@ body {
 }
 
 
-/* Header */
+/* Compact Header */
 .app-header {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(88, 28, 135, 0.5));
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(147, 51, 234, 0.3);
-  padding: 1rem 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(88, 28, 135, 0.6));
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+  padding: 0.75rem 0; /* Reduced from 1rem */
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); /* Lighter shadow for less visual weight */
+  min-height: 60px; /* Ensures consistent compact height */
 }
 
 .header-container {
-  max-width: 1400px;
+  max-width: 1400px; /* Slightly tighter than 1900px for better focus */
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1rem;
+  height: 100%; /* Helps constrain vertical space */
+}
+
+/* If you have a separate .page-header for the big title below the nav */
+.page-header {
+  text-align: center;
+  padding: 2rem 1rem 1.5rem; /* Much less vertical padding */
+  margin-bottom: 1rem; /* Reduced from 3-4rem */
+  background: transparent; /* Or a subtler overlay if needed */
 }
 
 /* Logo Section */

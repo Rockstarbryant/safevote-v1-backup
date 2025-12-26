@@ -1,8 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardPage from './pages/DashboardPage';
-import UserProfile from './pages/UserProfile';
-import TablesPage from './pages/TablesPage';
-import Typography from './pages/Typography';
 import VotingPage from './pages/VotingPage';
 import ElectionSelectionPage from './pages/ElectionSelectionPage';
 import VoterVerificationPage from './pages/VoterVerificationPage';
@@ -11,7 +7,6 @@ import ReviewPage from './pages/ReviewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import CreateElectionPage from './pages/CreateElectionPage';
 import ResultsPage from './pages/ResultsPage';
-import Sidebar from './components/common/Sidebar';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import { VotingProvider } from './context/VotingContext';
@@ -21,9 +16,7 @@ import './styles/security.css';
 import './styles/responsive.css';
 import './styles/ResultsPage.css';
 import './styles/CreateElectionPage.css';
-import './styles/material-dark.css';
-import './styles/tables-profile.css';
-import './styles/typography.css';
+
 
 function App() {
   return (
@@ -31,15 +24,10 @@ function App() {
       <VotingProvider>
         <Router>
           <div className="app-container">
-            <Sidebar />
-            <div className="main-content">
-              <Header />
+            <Header />
+            <main className="main-content">
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/profile" element={<UserProfile />} />
-                <Route path="/tables" element={<TablesPage />} />
-                <Route path="/typography" element={<Typography />} />
+                <Route path="/" element={<Navigate to="/elections" replace />} />
                 <Route path="/elections" element={<ElectionSelectionPage />} />
                 <Route path="/verify/:electionId" element={<VoterVerificationPage />} />
                 <Route path="/vote/:electionId" element={<BallotPage />} />
@@ -48,10 +36,10 @@ function App() {
                 <Route path="/voting" element={<VotingPage />} />
                 <Route path="/results/:electionId" element={<ResultsPage />} />
                 <Route path="/create-election" element={<CreateElectionPage />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/elections" replace />} />
               </Routes>
-              <Footer />
-            </div>
+            </main>
+            <Footer />
           </div>
         </Router>
       </VotingProvider>
