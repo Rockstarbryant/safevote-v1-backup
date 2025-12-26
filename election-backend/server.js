@@ -373,6 +373,201 @@ app.post('/api/votes/record', async (req, res) => {
   }
 });
 
+// Add these routes to your server.js or create a separate routes file
+
+// ============================================================
+// VOTER KEYS API
+// ============================================================
+
+app.get('/api/voter-keys', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('voter_keys')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('Error fetching voter keys:', err);
+    res.status(500).json({ error: 'Failed to fetch voter keys' });
+  }
+});
+
+// Get voter keys for specific election
+app.get('/api/voter-keys/:electionId', async (req, res) => {
+  try {
+    const { electionId } = req.params;
+
+    const { data, error } = await supabase
+      .from('voter_keys')
+      .select('*')
+      .eq('election_id', electionId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('Error fetching voter keys:', err);
+    res.status(500).json({ error: 'Failed to fetch voter keys' });
+  }
+});
+
+// ============================================================
+// VOTES API
+// ============================================================
+
+app.get('/api/votes', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('votes')
+      .select('*')
+      .order('timestamp', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('Error fetching votes:', err);
+    res.status(500).json({ error: 'Failed to fetch votes' });
+  }
+});
+
+// Get votes for specific election
+app.get('/api/votes/:electionId', async (req, res) => {
+  try {
+    const { electionId } = req.params;
+
+    const { data, error } = await supabase
+      .from('votes')
+      .select('*')
+      .eq('election_uuid', electionId)
+      .order('timestamp', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('Error fetching votes:', err);
+    res.status(500).json({ error: 'Failed to fetch votes' });
+  }
+});
+
+// Get votes by voter address
+app.get('/api/votes/voter/:address', async (req, res) => {
+  try {
+    const { address } = req.params;
+
+    const { data, error } = await supabase
+      .from('votes')
+      .select('*')
+      .eq('voter_address', address)
+      .order('timestamp', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('Error fetching voter votes:', err);
+    res.status(500).json({ error: 'Failed to fetch voter votes' });
+  }
+});
+
+// ============================================================
+// USER PROFILE API
+// ============================================================
+
+// Get user profile by wallet address
+app.get('/api/profile/:address', async (req, res) => {
+  try {
+    const { address } = req.params;
+
+    // Get elections created by this user
+    const { data: elections, error: electionsError } = await supabase
+      .from('elections')
+      .select('*')
+      .eq('creator', address);
+
+    if (electionsError) throw electionsError;
+
+    // Get votes cast by this user
+    const { data: votes, error: votesError } = await supabase
+      .from('votes')
+      .select('*')
+      .eq('voter_address', address);
+
+    if (votesError) throw votesError;
+
+    // Calculate stats
+    const now = Math.floor(Date.now() / 1000);
+    const stats = {
+      electionsCreated: elections?.length || 0,
+      activeElections: elections?.filter(e => e.start_time <= now && e.end_time >= now).length || 0,
+      completedElections: elections?.filter(e => e.end_time < now).length || 0,
+      totalVoters: elections?.reduce((sum, e) => sum + (e.total_voters || 0), 0) || 0,
+      votesCast: votes?.length || 0
+    };
+
+    res.json({
+      address,
+      stats,
+      elections: elections || [],
+      votes: votes || []
+    });
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+// ============================================================
+// DASHBOARD STATS API
+// ============================================================
+
+app.get('/api/stats/dashboard', async (req, res) => {
+  try {
+    // Get all elections
+    const { data: elections, error: electionsError } = await supabase
+      .from('elections')
+      .select('*');
+
+    if (electionsError) throw electionsError;
+
+    // Get all votes
+    const { data: votes, error: votesError } = await supabase
+      .from('votes')
+      .select('*');
+
+    if (votesError) throw votesError;
+
+    // Get all voter keys
+    const { data: voterKeys, error: keysError } = await supabase
+      .from('voter_keys')
+      .select('*');
+
+    if (keysError) throw keysError;
+
+    const now = Math.floor(Date.now() / 1000);
+
+    const stats = {
+      totalElections: elections?.length || 0,
+      activeElections: elections?.filter(e => e.start_time <= now && e.end_time >= now).length || 0,
+      completedElections: elections?.filter(e => e.end_time < now).length || 0,
+      upcomingElections: elections?.filter(e => e.start_time > now).length || 0,
+      totalVoters: voterKeys?.length || 0,
+      totalVotes: votes?.length || 0,
+      activeVoters: new Set(votes?.map(v => v.voter_address)).size || 0
+    };
+
+    res.json(stats);
+  } catch (err) {
+    console.error('Error fetching dashboard stats:', err);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
+});
+
 
 // ============================================
 // SYNC CHAIN DEPLOYMENT

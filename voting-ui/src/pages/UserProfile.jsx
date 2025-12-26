@@ -22,6 +22,8 @@ const UserProfile = () => {
     completedElections: 0
   });
   const [myElections, setMyElections] = useState([]);
+  const [votingHistory, setVotingHistory] = useState([]);
+  const [activityLog, setActivityLog] = useState([]);
 
   const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:5000';
 
@@ -33,26 +35,38 @@ const UserProfile = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${BACKEND_API}/api/elections`);
-      const elections = await response.json();
-
-      const myElections = elections.filter(e => 
-        e.creator?.toLowerCase() === address?.toLowerCase()
-      );
-
-      const now = Math.floor(Date.now() / 1000);
-      const active = myElections.filter(e => e.startTime <= now && e.endTime >= now).length;
-      const completed = myElections.filter(e => e.endTime < now).length;
-      const totalVoters = myElections.reduce((sum, e) => sum + (e.totalVoters || 0), 0);
+      // Fetch user profile
+      const profileRes = await fetch(`${BACKEND_API}/api/profile/${address}`);
+      const profileData = await profileRes.json();
 
       setStats({
-        electionsCreated: myElections.length,
-        totalVoters,
-        activeElections: active,
-        completedElections: completed
+        electionsCreated: profileData.stats.electionsCreated,
+        totalVoters: profileData.stats.totalVoters,
+        activeElections: profileData.stats.activeElections,
+        completedElections: profileData.stats.completedElections,
+        votesCast: profileData.stats.votesCast
       });
 
-      setMyElections(myElections.slice(0, 5));
+      setMyElections(profileData.elections.slice(0, 5));
+      setVotingHistory(profileData.votes.slice(0, 5));
+
+      // Create activity log
+      const activity = [
+        ...profileData.elections.map(e => ({
+          type: 'created',
+          title: `Created ${e.title}`,
+          date: new Date(e.created_at),
+          icon: '📝'
+        })),
+        ...profileData.votes.map(v => ({
+          type: 'voted',
+          title: `Voted in election`,
+          date: new Date(v.timestamp),
+          icon: '🗳️'
+        }))
+      ].sort((a, b) => b.date - a.date).slice(0, 5);
+
+      setActivityLog(activity);
     } catch (err) {
       console.error('Failed to fetch user data:', err);
     } finally {
@@ -283,6 +297,58 @@ const UserProfile = () => {
                        election.startTime > Math.floor(Date.now() / 1000) ? 'Upcoming' : 
                        'Active'}
                     </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Voting History */}
+          <div className="dashboard-card">
+            <div className="card-header">
+              <h2 className="card-title">Voting History</h2>
+            </div>
+            <div className="elections-list">
+              {votingHistory.length === 0 ? (
+                <div className="empty-elections">
+                  <p>No votes cast yet</p>
+                </div>
+              ) : (
+                votingHistory.map((vote, idx) => (
+                  <div key={idx} className="election-item">
+                    <div className="election-item-content">
+                      <h4>Election ID: {vote.election_uuid.substring(0, 10)}...</h4>
+                      <p>Position {vote.position_id} • {vote.candidate_name}</p>
+                    </div>
+                    <span className="status-badge status-completed">
+                      Voted
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Activity Timeline */}
+          <div className="dashboard-card">
+            <div className="card-header">
+              <h2 className="card-title">Recent Activity</h2>
+            </div>
+            <div className="activity-timeline">
+              {activityLog.length === 0 ? (
+                <div className="empty-elections">
+                  <p>No activity yet</p>
+                </div>
+              ) : (
+                activityLog.map((activity, idx) => (
+                  <div key={idx} className="activity-item">
+                    <div className="activity-icon">{activity.icon}</div>
+                    <div className="activity-content">
+                      <p className="activity-title">{activity.title}</p>
+                      <span className="activity-date">
+                        {activity.date.toLocaleDateString()} at {activity.date.toLocaleTimeString()}
+                      </span>
+                    </div>
                   </div>
                 ))
               )}
