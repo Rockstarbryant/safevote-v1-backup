@@ -109,11 +109,6 @@ const ElectionSelectionPage = () => {
 
   return (
     <div className="page-container election-selection-page">
-      <div className="page-header">
-        <h1>🗳️ Available Elections</h1>
-        <p>Select an election to cast your vote</p>
-      </div>
-
       {error && (
         <div className="alert alert-error">
           <span>⚠️ {error}</span>

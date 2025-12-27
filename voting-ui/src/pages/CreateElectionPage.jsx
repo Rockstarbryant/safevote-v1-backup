@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Check, AlertCircle, Loader } from 'lucide-react';
 import ElectionCreationService from '../services/ElectionCreationService';
+import { useMultichainWallet } from '../hooks/useMultichainWallet';
 import '../styles/CreateElectionPage.css';
 
 const CreateElectionPage = () => {
+  const { address, connectWallet } = useMultichainWallet();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

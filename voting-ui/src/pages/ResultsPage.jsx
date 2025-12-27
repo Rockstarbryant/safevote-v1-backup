@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import votingService from '../services/votingService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import ResultsToggle from '../components/common/ResultsToggle';
 import '../styles/ResultsPage.css';
 
 const ResultsPage = () => {
@@ -247,7 +248,10 @@ const ResultsPage = () => {
   return (
     <div className="results-page">
       <div className="results-header">
-        <button className="back-btn" onClick={() => navigate('/elections')}>← Back</button>
+         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <ResultsToggle />
+          <button className="back-btn" onClick={() => navigate('/elections')}>← Back</button>
+        </div>
         <div className="header-content">
           <h1>{election.title}</h1>
           <p className="election-description">{election.description}</p>

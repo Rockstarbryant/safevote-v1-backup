@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,9 +12,23 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed: externalCollapsed, onToggle }) => {
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(externalCollapsed || false);
+
+  useEffect(() => {
+    if (externalCollapsed !== undefined) {
+      setCollapsed(externalCollapsed);
+    }
+  }, [externalCollapsed]);
+
+  const handleToggle = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    if (onToggle) {
+      onToggle(newState);
+    }
+  };
 
   const menuItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -22,7 +36,8 @@ const Sidebar = () => {
     { path: '/elections', icon: Vote, label: 'Elections' },
     { path: '/tables', icon: Table, label: 'Table List' },
     { path: '/results', icon: BarChart3, label: 'Results' },
-    { path: '/create-election', icon: PlusCircle, label: 'Create Election' },
+   // { path: '/create-election', icon: PlusCircle, label: 'Create Election' },
+    { path: '/legacy-create-election', icon: PlusCircle, label: 'Legacy Create Election' },
     { path: '/typography', icon: Type, label: 'Typography' }
   ];
 
@@ -59,7 +74,7 @@ const Sidebar = () => {
       {/* Collapse Toggle */}
       <button 
         className="collapse-btn"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={handleToggle}
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -68,7 +83,7 @@ const Sidebar = () => {
       {/* Sidebar Footer */}
       {!collapsed && (
         <div className="sidebar-footer">
-          <p className="footer-text">Made with ❤️ by BlockBallot</p>
+          <p className="footer-text">Made with ❤️ by Rockstarbryant</p>
           <p className="footer-version">v2.0.0</p>
         </div>
       )}

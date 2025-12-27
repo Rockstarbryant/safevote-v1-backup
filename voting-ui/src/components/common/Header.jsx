@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { formatAddress } from '../../utils/formatters';
-import { Link } from 'react-router-dom';
 import { ChevronDown, LogOut, Copy, Check, Loader } from 'lucide-react';
 import useWallet from '../../hooks/useWallet';
-
 
 export default function Header() {
   const { address, isConnecting, connectWallet, disconnectWallet } = useWallet();
@@ -30,28 +28,19 @@ export default function Header() {
   };
 
   return (
-    <header className="app-header">
-      <div className="header-container">
-        {/* Left Section - Logo & Title */}
-        <div className="header-left">
-          <h1 className="app-title">🗳️ BlockBallot</h1>
-          <p className="app-subtitle">Secure & Transparent Blockchain Voting</p>
+    <header className="app-header-compact">
+      <div className="header-container-compact">
+        {/* Left Section - Just Title */}
+        <div className="header-left-compact">
+          <h1 className="app-title-compact">🗳️ BlockBallot</h1>
         </div>
 
-        {/* Center Section - Navigation */}
-        <nav className="header-nav">
-          <a href="/create-election" className="nav-link">Create Election</a>
-          <Link to="/elections" className="nav-link">View Elections</Link>
-          <Link to="/results" className="nav-link">Check Results</Link>
-          <Link to="/voting" className="nav-link">Voting</Link>
-        </nav>
-
         {/* Right Section - Wallet Status */}
-        <div className="header-right">
+        <div className="header-right-compact">
           {address ? (
-            <div className="wallet-container">
+            <div className="wallet-container-compact">
               {/* Wallet Badge */}
-              <div className="wallet-badge">
+              <div className="wallet-badge-compact">
                 <span className="wallet-status-dot"></span>
                 <span className="wallet-status-text">Connected</span>
               </div>
@@ -59,11 +48,11 @@ export default function Header() {
               {/* Wallet Button with Dropdown */}
               <div className="wallet-dropdown">
                 <button 
-                  className="wallet-button"
+                  className="wallet-button-compact"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                   <span className="wallet-address">{formatAddress(address)}</span>
-                  <ChevronDown className={`dropdown-icon ${dropdownOpen ? 'open' : ''}`} />
+                  <ChevronDown className={`dropdown-icon ${dropdownOpen ? 'open' : ''}`} size={16} />
                 </button>
 
                 {/* Dropdown Menu */}
@@ -102,19 +91,19 @@ export default function Header() {
               </div>
             </div>
           ) : (
-            <div className="wallet-container">
-              <div className="wallet-badge disconnected">
+            <div className="wallet-container-compact">
+              <div className="wallet-badge-compact disconnected">
                 <span className="wallet-status-dot disconnected"></span>
                 <span className="wallet-status-text">Not Connected</span>
               </div>
               <button 
-                className="wallet-button connect-button"
+                className="wallet-button-compact connect-button"
                 onClick={handleConnectClick}
                 disabled={isConnecting}
               >
                 {isConnecting ? (
                   <>
-                    <Loader className="spinner-icon" />
+                    <Loader className="spinner-icon" size={16} />
                     <span>Connecting...</span>
                   </>
                 ) : (
