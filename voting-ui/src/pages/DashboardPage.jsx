@@ -174,7 +174,7 @@ const DashboardPage = () => {
                         className="btn-action"
                         onClick={() => navigate(`/results/${election.uuid}`)}
                       >
-                        View
+                        View Results
                       </button>
                     </td>
                   </tr>

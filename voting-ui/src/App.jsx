@@ -10,7 +10,7 @@ import VoterVerificationPage from './pages/VoterVerificationPage';
 import BallotPage from './pages/BallotPage';
 import ReviewPage from './pages/ReviewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
-import LegacyCreateElection from './pages/LegacyCreateElection';  // We'll create this next
+import LegacyCreateElection from './pages/LegacyCreateElection';
 import CreateElectionPage from './pages/CreateElectionPage';
 import ResultsPage from './pages/ResultsPage';
 import OnChainResultsPage from './pages/OnChainResultsPage';
@@ -19,15 +19,21 @@ import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import { VotingProvider } from './context/VotingContext';
 import { SecurityProvider } from './context/SecurityContext';
-import './styles/voting.css';
-import './styles/security.css';
-import './styles/responsive.css';
-import './styles/ResultsPage.css';
-import './styles/CreateElectionPage.css';
-import './styles/material-dark.css';
-import './styles/tables-profile.css';
-import './styles/typography.css';
-import './styles/onchain-results.css';
+
+// NEW CONSOLIDATED CSS FILES - Import in this order
+import './styles/main-styles.css';           // Core: layout, sidebar, header, footer
+import './styles/pages.css';                 // Dashboard, profile, forms, tables
+import './styles/elections-voting.css';      // Elections, voting, ballot pages
+import './styles/results-verification.css';  // Results, charts, verification
+//import './styles/header-footer.css';        // Header and footer specific styles
+import './styles/glassmorphism.css';  // Glassmorphism effects
+
+// Keep these specialized files if they exist
+import './styles/CreateElectionPage.css';    // Keep if you have custom election creation styles
+import './styles/tables-profile.css';        // Keep if you have additional table/profile styles
+import './styles/typography.css';            // Keep for typography page
+import './styles/onchain-results.css';       // Keep for onchain results page
+import './styles/security.css';              // Keep for security components
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

@@ -1,0 +1,606 @@
+{
+  "electionCreators": [
+    {
+      "index": 0,
+      "address": "0x72b74d75836E223355ba0D8990D3d4696BC309ae",
+      "privateKey": "0x0385401e105b7c9fd68ebd833feb19ca28d273b48ac2cd3976d92f5511655ba8",
+      "type": "election_creator",
+      "funded": false,
+      "fundingTx": "0xfacfe0c724d63fbb733250cdb50b793df765f769cc47ab6aa8b5e047bfddf4f6",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":56,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcab7e08252089472b74d75836e223355ba0d8990d3d4696bc309ae866d23ad5f800080c080a03ec551ba8531676f021a43e120d9069c373f978c909dd26fb74cce4f6bd1d6fca00544f56fcf7646cafea28a8da505eb2b88ada23ca36d9adcd757cec153e46e9d\\\"],\\\"id\\\":56,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x4689E44206b26F267F2CBb0CD5Eb7557103f3088",
+      "privateKey": "0x9ad39e4aa8c42a928b274959153a671a910a1918715d9b661a6e45c59a6ff19d",
+      "type": "election_creator",
+      "funded": false,
+      "fundingTx": "0xa2fe981dbbfd9945f4b8adf1da2c76cd399ecab5023cb32cac62f152d5dc05d4",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":65,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca8900825208944689e44206b26f267f2cbb0cd5eb7557103f3088866d23ad5f800080c080a0753a6412a22a67a935e37d53346ae07bd66f6ac2ab099d2778f4ad8f92f971cda0030b49e0a07c0e47d9293ab4df8792d30b7def684b896bf25ba2faadff5baa2d\\\"],\\\"id\\\":65,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0x6C5B5228aF78F128Dda0Ba3b7c2c695205B95A05",
+      "privateKey": "0x946a7888dc92e7942df460d10e3be0e9d45f23992d3164b6f998c9f5035ba483",
+      "type": "election_creator",
+      "funded": false,
+      "fundingTx": "0xeedfa9ce37a2e012a6976ab71cb9e66dc6a19d424a2d2e6aca0432ca27b4bd5b",
+      "fundingError": "missing response (requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcaa840825208946c5b5228af78f128dda0ba3b7c2c695205b95a05866d23ad5f800080c080a093f18b4a1d42a41fb36a210e71551e07e2cba02a93ceb6a527f7c7303232a025a026298b15714c5623a55407b5224b98df2a437b74e0b2071c4acad3b462474842\\\"],\\\"id\\\":72,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", serverError={\"errno\":-3001,\"code\":\"EAI_AGAIN\",\"syscall\":\"getaddrinfo\",\"hostname\":\"sepolia-rollup.arbitrum.io\"}, url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 0,
+      "address": "0x889e637AB807B910cf082DEC4Bd175C19f360A29",
+      "privateKey": "0xc91d73d862c36e3fbe4e882413ee6969fccb4de3ce2b11b34f1557a4b045a8ce",
+      "type": "election_creator",
+      "funded": false,
+      "fundingTx": "0x5db3a6a3b4bd0016c038046601a014837f389227646f1d8c86b59bc3b5e15335",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":82,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcab7e082520894889e637ab807b910cf082dec4bd175c19f360a29866d23ad5f800080c001a021941610a28867fcd1709e77d681606eac67c24e4bc9f90dca5ecf48306f0238a060167992c39de384a7270d807a89e9189896ef9da8187f7901e9e79e3c4ca950\\\"],\\\"id\\\":82,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x83BAD0082eaD3F3597087D8A19F5e0bfE77f1782",
+      "privateKey": "0xc10962b5e57f707e543a35a5e40bdce4313ceef68e7205edcffd15bdb2605083",
+      "type": "election_creator",
+      "funded": false,
+      "fundingTx": "0x63c62b33bf196e7e5cd2ccdf01d18bb24e2356457d04f45e3bdd4c6af772dce1",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":91,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcab7e08252089483bad0082ead3f3597087d8a19f5e0bfe77f1782866d23ad5f800080c080a0cca8692ab8ad445d523e6a554d94558a736c415d0e5e5065adb657e6b27a6586a0397fa66f1a40ba69fea47863ef8affd04d5eac40a4ad9915c61e6f131b386372\\\"],\\\"id\\\":91,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0xF9f84960a92e85b4De653B67E7709028C3eed4a3",
+      "privateKey": "0x81e18e1b5e31b3c3b167b8700992831260a9a31e59a6b482ff8802fe1de22d7a",
+      "type": "election_creator",
+      "funded": false,
+      "fundingTx": "0x43733be6eb38488d67f4f5c170b2865eacfecaf1b73b6c0056b04e9203428563",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":98,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcad72082520894f9f84960a92e85b4de653b67e7709028c3eed4a3866d23ad5f800080c080a0871e9677744d00a1ba80f5a4383dcb41e69fe38991760cdd99eb728610949084a01db40aa85c09e531b5382bcaff8dedc66799e55a18e9293e1558d2edee3ef640\\\"],\\\"id\\\":98,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 0,
+      "address": "0x7Da78415C0d3B8cD70c8dBDC3a6D072109Db742E",
+      "privateKey": "0xe0f5de963bf1e3e458fe71adf9b814435b0ff963a16db2972798df2b7c9efbc0",
+      "type": "election_creator",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":105,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca8900825208947da78415c0d3b8cd70c8dbdc3a6d072109db742e866d23ad5f800080c080a031c8e3b9149d8a7994396228794561d338128b147cf27e13e33370f42dcaa327a01d20830a6f133cd9a9b5dc583db11a78ce67f18f3295ebd1f47682512756ded5\\\"],\\\"id\\\":105,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x5614C88393B0067a7f0760ebF9dFa1aD300F5Aec",
+      "privateKey": "0x98ba65fb196ff16733df39f72483a6a4317b76963908477467efef853ecbce7e",
+      "type": "election_creator",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":114,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcc3e80825208945614c88393b0067a7f0760ebf9dfa1ad300f5aec866d23ad5f800080c080a0cc32ea2f94cf4b6d7e7613a264670aaef74a2b38fac922f19d3dd14b9b9e9414a06e2b6178b5cbf33b85ce2a192566668b664f791029e28907fa0925c4fb9dbcb0\\\"],\\\"id\\\":114,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0xaFA0CB136F58d938305936b8623A22BB36644b90",
+      "privateKey": "0x6c71f512580702aab11a0341d760d6873e5709153c53a0dfa38493d5d060d879",
+      "type": "election_creator",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":121,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca890082520894afa0cb136f58d938305936b8623a22bb36644b90866d23ad5f800080c080a05bef2200a3d9b6763625962b7a8510d1cfaa076a9724a29411ac93adb3cf688aa0385bb125cf57ce18eefa04b904297b06a366df4c403bba56624480a79dba1a51\\\"],\\\"id\\\":121,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    }
+  ],
+  "eligibleVoters": [
+    {
+      "index": 0,
+      "address": "0xa4c6907dc6C7F6e772Bf2a94294f05EC47c4b0B4",
+      "privateKey": "0x93d6dd0e690f198b57ba7fdab9efe20789a6013b0b80db6aaa1437604a8e6ed7",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x128255ad2cc4ef89881b603985fa3a085e0e5c1d0dd6e5334050a98ae6e52d96",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":130,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca890082520894a4c6907dc6c7f6e772bf2a94294f05ec47c4b0b4866d23ad5f800080c001a0a27235d30ebfd1194c25c7aba9dd3ee0a7b6221466bff2a26dae28348e31e9caa0026a991476392a2a3bdd52afd99acaf908a09604675c46a8dcefec330cb57a87\\\"],\\\"id\\\":130,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x56220Df12EC9f8b27D8B867a1B935021e6259A64",
+      "privateKey": "0x9c659668dff780dbf373b6e3fa525eaf874202068175ae8cab021eef18201518",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x8d05bac55a3215a884291587b922ce6d3d218cff7debfacf3094755e12dbec86",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":137,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcad7208252089456220df12ec9f8b27d8b867a1b935021e6259a64866d23ad5f800080c080a0e33ee05abe7bcef4187585f78b29130069847d40ae1d6c9ba6c93c66bcb5b550a039f67081b5e9f776b5a98a84a101aec4b97f1e70b1492e93f6ec87a496af128c\\\"],\\\"id\\\":137,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0x83afaEe05A14703e4D97D673ea0EAa8CacBbAa97",
+      "privateKey": "0xeb9a2ee03bd653b50acbdec3ce0bb501f0aa18b578b6b99396859a8ddbc7de11",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":144,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb06008252089483afaee05a14703e4d97d673ea0eaa8cacbbaa97866d23ad5f800080c080a07b96f4d5627a7db73c73065a7bebd2f5543c61a26d6ce54d9fe9a43034470f17a03541a9118aed5cede57d77e6c10311ce693d1b5b28526234b2d57fa8db878844\\\"],\\\"id\\\":144,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)",
+      "fundingTx": "0x1098a3e46cac05055bcccfbae6d8727b80dbf8210e93acb5a3cc7cc848ae2fb7"
+    },
+    {
+      "index": 3,
+      "address": "0x7c8C8773239774ae8F5023A0D2D2aAF76B848985",
+      "privateKey": "0xb7bc41a4e86038d7140f5b368bb48f3ffebf8b3bcaa9a0cbe5d08945fa3bd115",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":153,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb2540825208947c8c8773239774ae8f5023a0d2d2aaf76b848985866d23ad5f800080c080a08e3cbc27e30ce61bea24880142dab3c58b7d0e80a984fefa2587bf5f035abb4ea05042a5a463ae5222ed617ad2d21e422c5c79d0e0b1eaee42cc3fc36e072bda20\\\"],\\\"id\\\":153,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)",
+      "fundingTx": "0xa38c06b2a1c7d41564642b289f52c9e9a19f6099fe4266054f3735b386df4abc"
+    },
+    {
+      "index": 4,
+      "address": "0xB1586048bBB379B8822cc0948960BB4087b17Ec7",
+      "privateKey": "0xd7b3c36d216b41e293df673a7f26627451b470ecf90834f14ef0b8459b57f16f",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":160,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcba24082520894b1586048bbb379b8822cc0948960bb4087b17ec7866d23ad5f800080c001a029ce1dc8af92ea99d774ae1926a661b0fd79d87bf3ef35bdfe34bb6fd9302f78a01379d5344659d284be5aa8c37b7301351ffb78ad5acde432bda160667679fbb3\\\"],\\\"id\\\":160,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)",
+      "fundingTx": "0xc9ec2eb014c24198c4a10ebf2296742d2f5a5fc5bcea1c5126d20775aa480ec2"
+    },
+    {
+      "index": 5,
+      "address": "0x1dCd0c66fE3a0b1d870F7cD337A0e630E23967Fe",
+      "privateKey": "0xf16443d3eaa01b26c7d9fae106acf96707dd24e402e9581dee238ce6337b1413",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xa90d435e2ff24f215c9918ed479efcc2dc5196a07fd1283e26bb0ef9021a7854",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":169,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcab7e0825208941dcd0c66fe3a0b1d870f7cd337a0e630e23967fe866d23ad5f800080c080a05225fef78c649aaca0d39ddf882efae182ea846ce96d80ee8dfc6a3f09fb5200a0411b80f9fb8c7d1a24e092b266b2216456be5c80ae347c0746bc58d55cc7f864\\\"],\\\"id\\\":169,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 6,
+      "address": "0x3ceB2d2561c8447DC3d8cB6EDD990c754b5F936d",
+      "privateKey": "0xfcb7b23a18f0be17f6830cb0443f97f430d5c26ed985be67a0b4f37417bc65d3",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x45f8f059a45dee53cf44471554ced2bc0e1e5ecb8c76e16ef788e93cb6d7d1c6",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":178,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bd304e0825208943ceb2d2561c8447dc3d8cb6edd990c754b5f936d866d23ad5f800080c001a0505fda9ff2414efea511c01502ecfbd16a4fe061d41b5f072588a7a004f3baf6a0589314c622360988a7bfc7a6be6b195f57a23658cc708644cf8f12a5bcfcd9b9\\\"],\\\"id\\\":178,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 7,
+      "address": "0x40A49aa0BB575028709CF276972224E282481959",
+      "privateKey": "0x4b51ddd1ec1d92ce1dedbd42efd7e12c24d80237a3d87bdf774c7b8c4e2dec51",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x1cadc53ba951556465f31df529aea0b0e16c8176be312e0c4ccca8f923145a87",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":185,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca89008252089440a49aa0bb575028709cf276972224e282481959866d23ad5f800080c080a05a7ac73aaadb670c456202c9d2cb7c10c0927b6f4bfeafc2676ffefa28ecd15ba03de15e27231b9eb3fe21007365a3eba0a96084e21e814553f6e99b72f2b45270\\\"],\\\"id\\\":185,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 8,
+      "address": "0xc493202B90B1e79864C79B9C32a14C62c37723E3",
+      "privateKey": "0x58522b6a4364bab0c629faab354739478de25a80e78f9dd40870fa243243e563",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xe9155caca900b131372ffed0fb08788fae1554d5d5ae70bfe49cb04bba6cf0ce",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":192,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcaf66082520894c493202b90b1e79864c79b9c32a14c62c37723e3866d23ad5f800080c080a082412d2b0e3f959bd10f11a371520b60803c6c0139a4e12c1dcf3a3f40951cafa02af474ed704c426802130bea9c39da8f638fae509c1558ffacbf837d0f169acd\\\"],\\\"id\\\":192,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 9,
+      "address": "0x8c6e9C1485f3d0531f572f1e1e9f130E7dAD629C",
+      "privateKey": "0xec8afc6f91e1ba6e93e9f06c2921cd5f8f9e0198447c23490198e87b51fe6a33",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x8e3a61dbb5204c71096421350f40d565db07052f44806091088b4de00946f06b",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":201,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcd7700825208948c6e9c1485f3d0531f572f1e1e9f130e7dad629c866d23ad5f800080c080a04b124b9cb60ae077bba06c7446e67f6296ed1efcb6f17d194c2972110c7242eea0258e3572ce5966dc724f865369de67fc6cab223e4764e352fe8d3d7c7bef84c0\\\"],\\\"id\\\":201,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 10,
+      "address": "0xd7Ac22E92702666085bE316f36b41c88E9FB481e",
+      "privateKey": "0x09ddc9356bba318f0f9b647e0ef6fbbc7eb26634a9565c36380db7aec9903ae6",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x443a4c1e50cf88832279b05d1c064f5fa1eb845b0d9bcaf9a9316357dca1c22b",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":208,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87283066eee628459682f00845bca890082520894d7ac22e92702666085be316f36b41c88e9fb481e866d23ad5f800080c080a00e6aa86845a14a548a0d4ba6b67380425eafa5b0cfc5942e804a4e529ec579fd9f47a3f4c10707ef9029a6301be241f7c9b2f819db92101a6f7bac8366874755\\\"],\\\"id\\\":208,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 11,
+      "address": "0x6fcA0c35918650cEDaD0DcfE6c82b7D2913307D7",
+      "privateKey": "0xcd91e26f0baebac728284ec02dcdc379a2a99b01c5be3ba04358126399a4b4ca",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x361c29d5548f1e2536625b9ad42dcda08c58d620b03ab89db4c899a30e6178f4",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":217,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca98a0825208946fca0c35918650cedad0dcfe6c82b7d2913307d7866d23ad5f800080c001a0ab1c026ed0bf9e2b47c31bb6a3d753c57dd64052ddb3e0c7d9c31e7fd8c9034aa00163c3fc938c4414254a635853a7c5c5104aa06c93ea746f75575146d4aa8549\\\"],\\\"id\\\":217,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 12,
+      "address": "0x83b14d7485E3d85E53c919effD17537687Fc21d7",
+      "privateKey": "0x8f343ead02cb8c6faca886db818641fb29e5f165510518d9315a390c66d4c554",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xff487365759a277f3a20f04681f95d1f4cb1a7f17733aa2fc38c3ae321642d2f",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":224,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845be0ef608252089483b14d7485e3d85e53c919effd17537687fc21d7866d23ad5f800080c001a04bc3bfb223a61e18377b49137696a371f1cb547d7c0efaeea36d4c85749b715ea041fe909dd8eb05d2ffa017d5f5e83bb2b27a456899e9a92560ccdffd72e70b25\\\"],\\\"id\\\":224,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 13,
+      "address": "0xF8aA588A7A28545c1B08E795F173a454C7a051bd",
+      "privateKey": "0x4b2df274a24dbc0b7db7525557efdf009ee096413ac50b5f7afe0391f09c75cc",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x6fc7145bf36bf3acaa35b68fdf4883fdd2a09f447c80fd1353644c826c80bce1",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":233,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca890082520894f8aa588a7a28545c1b08e795f173a454c7a051bd866d23ad5f800080c080a08b894780a3fbb389ddc04c0ad69d1ff0d1ab2f995bfe8c47083ee957509735c9a06ef17c273a27a6929735e182e527ced9be336f0d16a21c40c7b57d5d884f7d9e\\\"],\\\"id\\\":233,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 14,
+      "address": "0x74553E88997c1a03Bba006814C80A8De9CC60456",
+      "privateKey": "0x94aac1143564249809d0fad486798c6de957b186602b458a39091513db4f3f01",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x8bd09bec21aece7a99b080fdb1492879f5513e5aaae798528759d44e01a46129",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":240,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb06008252089474553e88997c1a03bba006814c80a8de9cc60456866d23ad5f800080c001a0ae43fbd8a08aaaf9d1aa78b5e66d05deda8d2bb7f289d2228a221869b0b7bd1fa00d7b6f32bdf21d9b322468e1ca2f8be673c2f5326b069a26bb02fae9afe2ed0c\\\"],\\\"id\\\":240,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 0,
+      "address": "0x547F315F64c4DC55CAb037267A310D1Dc64A71a0",
+      "privateKey": "0xf3d7191d144c9a524e851f60eeb3dff2a4867e5845fa2b6dad5435a6259e2821",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xa7636447c57911be3924e8ed906930f9a637430a0d6ec0456a86d19ba273c47f",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":249,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcc000082520894547f315f64c4dc55cab037267a310d1dc64a71a0866d23ad5f800080c001a09839a8dd035bdd3dc0a484b517b8dfeb4161a73938a63974670cff485900daf2a00cec0e6000589f42eb5e26886990f39834ef2b3934546403d6953ceb21a23543\\\"],\\\"id\\\":249,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0xC5c77Ff961F8b421DFd9f8B51663da03F01951e3",
+      "privateKey": "0xe473e730f1e887c1956dff61474666a4aa7e0cf19c80913fd4c61a2a80ca3fd5",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x4ab6adeda8ad4ebf13ba4286e0dee0bb029bf75e22054a5a27b28ff40bad8b8a",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":256,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb92a082520894c5c77ff961f8b421dfd9f8b51663da03f01951e3866d23ad5f800080c080a06dbec31d48902ca1d043eedea19815dbfb7e3d66474ea7a5c87bef4e847a2467a033cca2255f7ef8f2e47273907d6dc79936ce3546847b84ed4fff7da0edef4786\\\"],\\\"id\\\":256,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0x0e49aaec34C67646029b950DF1C6c0BE8340F765",
+      "privateKey": "0xa4f151fad052c8dcb78dd2044cf57b31d041c16f94ab56c331692eb605b71861",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xc00ecfdb6e1a6be4fde2d46e7e43525277a0a003ad6deb23d25a1dbaea2cd144",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":263,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcd1940825208940e49aaec34c67646029b950df1c6c0be8340f765866d23ad5f800080c001a01686cf2e57500a92e287321421710d3b66d42e2553662303029869c1e3b7c1a8a029c0f34ab9654e587de3cf025f23d293884e1b25f0b4875a43e34be2e1b1c854\\\"],\\\"id\\\":263,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 3,
+      "address": "0x4A65ffdF7C02Ad543B5Bc04b894C2F7aDe6c771a",
+      "privateKey": "0x2d981db9bdeaf6d1f45cb2d017cfc33245a81eff457f4f59f14b1f4c68bb034f",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xb7b644f413f7f59f6ecc972f52e834c91ac13db9092c8d5e72530cc0f0fb1547",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":272,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca8900825208944a65ffdf7c02ad543b5bc04b894c2f7ade6c771a866d23ad5f800080c080a0e3ee54472ff33e46389a9fb23b47a99cd6d6146c40282a6f5efa611994cc23dfa05e7c3d567f4e4ba9e42917a67718d863a87a5d8936d24da5614ec3ee4251dac9\\\"],\\\"id\\\":272,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 4,
+      "address": "0xAa9Df36e22253B5ff6d19600D6a30857A80Bc395",
+      "privateKey": "0x1131093d18e7d3e470aba6e893763b30ea09ec36595f2f64822f59f93fb8a107",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xdd9fd0f2a77646efea0e26069af5bb12392bbfbb39d0a5e430fc345adcd2977f",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":282,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca890082520894aa9df36e22253b5ff6d19600d6a30857a80bc395866d23ad5f800080c001a0d3f8812ec4762f9c50c201cd93af811107bac99438f39ab0b3b54b799d042ce3a0745bc26715b203139955361b9cad47c230d8588c04475c206a5d349173f77877\\\"],\\\"id\\\":282,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 5,
+      "address": "0x14E58D501F4791A1E7022837050a5320e6e3dd60",
+      "privateKey": "0x2e40a0f813aa7f6330b3d57cff2b711961f1553bc24a320bee71c1f60c85d6d6",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x4c011f495f2fc93c06dca8f63bbab6e28cc0be57edd56e8241e4f7f8b2c2990c",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":289,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb44808252089414e58d501f4791a1e7022837050a5320e6e3dd60866d23ad5f800080c080a0b87e1f44c7e0e8d46a7ebfaf3fba8b82e69e29897e494f31cd45874566c0beeda020b0cdf352f62b9cceea3b703b6f28a5788fe746e7ee3ea06d0da74b937c3752\\\"],\\\"id\\\":289,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 6,
+      "address": "0xB400d4F1b2A01Aa9E7244FEf8f38857769C64122",
+      "privateKey": "0xfa2ed46df40e8f9d653550b2309e39167dcd99b862c10538b7d1908524822579",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x6bae8b9d0071a34b4a4889a19e7b090b611f6197ce4a8e432fcb64fde28d3666",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":298,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca98a082520894b400d4f1b2a01aa9e7244fef8f38857769c64122866d23ad5f800080c080a0b073bef363f45e9fa164058e69a64d2e1a5b690c535ec2aa38b3949e315a2298a06b559206804d9df9f145dd50a9e25721ddbbab6e16206885255adf206add7afa\\\"],\\\"id\\\":298,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 7,
+      "address": "0x32729056f0C162676aC51bFA483a8517E9462cBa",
+      "privateKey": "0x6dcc63ee9ece20c880fe2d39f8480ae19456d1ea978f126eaaa5199b5b373e75",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x411bc9d02cc69f1415148885855b8fd57c655a2b1772ba40f55f75d4687a142d",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":305,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca89008252089432729056f0c162676ac51bfa483a8517e9462cba866d23ad5f800080c080a031528881b97aafc8c98523f542bd2aa176700d8e8d8d2c23859458d8c4e27404a03682b7c00450f8f2cdb6aef7d7fa556eea622c014d9c8315340f49e1352221cf\\\"],\\\"id\\\":305,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 8,
+      "address": "0x70BCa40D9548DF56c4b8B9d403293dbb99707677",
+      "privateKey": "0x04fed9350b1f79ce622c3f3927c4e014b214a7f707b477aa0d2e50bea63bba45",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x4642d18604c1ae198f7474f7cdb6d789b9702d43aeb76fd495f8855710a79a03",
+      "fundingError": "missing response (requestBody=\"{\\\"method\\\":\\\"eth_blockNumber\\\",\\\"params\\\":[],\\\"id\\\":312,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", serverError={\"errno\":-3001,\"code\":\"EAI_AGAIN\",\"syscall\":\"getaddrinfo\",\"hostname\":\"sepolia-rollup.arbitrum.io\"}, url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 9,
+      "address": "0xC089850fAb8Ec2E97b4328A136e868930017dc8f",
+      "privateKey": "0xf10ddd14b01fabb59149240e7304187bd8a4043b5882f36fbd90dc8ef00022df",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x5dfae1f14448499e3b0dc07f33e9e8a0fb3e67d0362eda3741f0b649dc51597d",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":323,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bd17e4082520894c089850fab8ec2e97b4328a136e868930017dc8f866d23ad5f800080c001a030df713b56e846156f82c0297d90c7dde1ac792a029271227dc7e19a08e7a313a020890533ec884b01ae100bd54bfcffa8f32a95393b2160bdc7aa37d6886a9e36\\\"],\\\"id\\\":323,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 10,
+      "address": "0x8738A2065f375f0586d7a403094Fa14a86326463",
+      "privateKey": "0xadfd2a3280e9b9434fef7bb32c72320f5089fc4a4f10f21513cdf37b7b8747a7",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x5843548e1ac6cae40e1a54cc92d6725be9828e76321936d3e929cfaf79539172",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":330,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcaf660825208948738a2065f375f0586d7a403094fa14a86326463866d23ad5f800080c001a05bb4d163b78d16d2a7c5d2944473e4db3230c513c27505d208cec565c167af20a02c82ce4b84e1d65b924505b542daada95e1274e2fb707e29a83e3c2ccc5624f5\\\"],\\\"id\\\":330,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 11,
+      "address": "0xf4533F2314227719A884115869ce97bCB51F9Cd9",
+      "privateKey": "0x50aedea69ce623b96b8787f743a4368b33dd68f743b7f4d7a36d6bf057a0bd2a",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x9b879d3dd6d15de150aa89c50b2b7cccc1e3549bbec13e13890cc502d7f1b0f6",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":337,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb92a082520894f4533f2314227719a884115869ce97bcb51f9cd9866d23ad5f800080c001a071d8e666cdb754d96ce1e742d995bcc4acd4f15a4394315362536c86bb9cc44ca01160e6ba5935b2f593e346982f9b34d9fa9e269d90dd395c741aeb8cab67b6bd\\\"],\\\"id\\\":337,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 12,
+      "address": "0xC697Bb12A327A9DEa5E8c591149e08981C5C5457",
+      "privateKey": "0x6294f44d18cb7559347d41f970be2bcb6c9a03f731f6f31b237444a766727dca",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0xafaa451bc2167e87a6c9598fb7d4faad5ae330004c2c9a87953b171f6b0b2c8d",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":346,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb830082520894c697bb12a327a9dea5e8c591149e08981c5c5457866d23ad5f800080c080a0b65b54d2cbcb25e661557f1b0d1930cbfb1d704184d8070e059be5fe52535db9a0232e307d6c2f446cb9e255da0c511ab0fe770e1fa97110f5b2b61018b9fe1d9a\\\"],\\\"id\\\":346,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 13,
+      "address": "0x08C869Ae43E808426B82c240125772492874262F",
+      "privateKey": "0x484928ad83e1d67e63b9b100040d4c8093795e2950a861435562142a4d86cce6",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x3e189c1864c9b93152ddb462ee112e2e1051376405ba31fbd19870e7c5bd7eef",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":353,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcab7e08252089408c869ae43e808426b82c240125772492874262f866d23ad5f800080c080a0d0c18e7870b7b485165f88814b078b4372625f19190898814213516f02684459a0689229be93a436a704430e1f9ae85ee96f6b74caa2c8f853b4132830f28adf35\\\"],\\\"id\\\":353,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 14,
+      "address": "0x9E712517A865557D9828b0Ff55C3966DFa31e967",
+      "privateKey": "0x5e6df795c677dc81f541c362964f074da7c20c46e5cae4f440f8e65aed671e99",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingTx": "0x06f47e0848dd8ec8563b03fc9a0ea6c01fc6a37660af68b054b5673f76eb82ca",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":360,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb8300825208949e712517a865557d9828b0ff55c3966dfa31e967866d23ad5f800080c080a0f096e4481fd31e4f3ca4f8cefbc1cce103aac897715bb4336e290a371cc0a6d5a027a378d7b427e61fb275030525cbbdf21fdcd1a83449ff4d41452c2784b3585d\\\"],\\\"id\\\":360,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 0,
+      "address": "0x85aF2AE9B633b90dD5f20a6e6f14F99AC1edC5Ba",
+      "privateKey": "0x699d91bea63e1ba278b9e128f0f371948c8d2c3fda0bf5e30e06d6ce3c6a753b",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":369,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb25408252089485af2ae9b633b90dd5f20a6e6f14f99ac1edc5ba866d23ad5f800080c080a07280f5cf0ff93431f5868f06a9d2db1dd44cc9d78dde24f3bfb647d3035e8c8ea03f6647116ad685df9ebd029882cb38b601c4257df978e9682878edd78a475c63\\\"],\\\"id\\\":369,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x76fD4488C2E86DA6DD2668E3EcaDc7737A492843",
+      "privateKey": "0x68482df053a0945bc2c7eb95b030570feebb4619373aa5521b6dc7a7ef652b90",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "missing response (requestBody=\"{\\\"method\\\":\\\"eth_getTransactionCount\\\",\\\"params\\\":[\\\"0x28fa223961870f25da9495ee3ee7aae4b450b194\\\",\\\"pending\\\"],\\\"id\\\":374,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", serverError={\"errno\":-3001,\"code\":\"EAI_AGAIN\",\"syscall\":\"getaddrinfo\",\"hostname\":\"sepolia-rollup.arbitrum.io\"}, url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0xFc6b8ce99877850fc140E70CC6E5aFd6f7C1e0AB",
+      "privateKey": "0x92e2c20085d313376b117709ead5ecc69bbbff312de221d221385f4a088d8870",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":383,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca890082520894fc6b8ce99877850fc140e70cc6e5afd6f7c1e0ab866d23ad5f800080c001a05cdda32c2eb6d685d813cf24e28e99ee461193dec7b85bdb6dcff506daa9d6d2a057617597248ec371195acbc937e83e4b47493b08dbba196d60670a5da6ed41ac\\\"],\\\"id\\\":383,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 3,
+      "address": "0x006995abe03842E365518E666E9A951bb99f66fB",
+      "privateKey": "0xc326d80b3b3eb97355535d4991a213588921b95f849e8d6e8e1c2b54343ba021",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":390,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb542082520894006995abe03842e365518e666e9a951bb99f66fb866d23ad5f800080c080a0f1d988464b5818a9d5a58f95353d1dd6fff739ca9e3a35e27e4cdd420c66f51aa041b0c2088b84e7ba9f336c327692df06105bf3dc413409cc462e9a70bbc0df3b\\\"],\\\"id\\\":390,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 4,
+      "address": "0x1F0aA05369a2e1Bf2936aAa09fF690c2C64F2550",
+      "privateKey": "0x3b69456b1e686232aeedc407f1f600c8583a22a8c6d0e3043ad4c901f718423d",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":397,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb34e0825208941f0aa05369a2e1bf2936aaa09ff690c2c64f2550866d23ad5f800080c001a00bb2e5954bcb99b8ca3aea0c6f4a3e0687f6772a37e757d3f741049dbf7336d1a0577090e8667ff0e6dd1b20b497a8dac42a7d6f1d70dca7d356e0c6e651df0522\\\"],\\\"id\\\":397,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 5,
+      "address": "0x74A8DDFF50996028653e25491984e4E3eb0b62c3",
+      "privateKey": "0x2260b93b7f40854dabbfd83375a8c4c628b941c110d65ecd8d1b373d0820bfe2",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":406,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bd17e408252089474a8ddff50996028653e25491984e4e3eb0b62c3866d23ad5f800080c001a072045312c6986cda881faf4b8c9a1b17a4e8be188000f06a6213a0f3dfccdddba0155b23be61381521c94bedb1df8c26fbca0815038921f20579cbc5d89402d32a\\\"],\\\"id\\\":406,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 6,
+      "address": "0x7e5907d21Ffcd56b1f67b21BD0cad3517762Ed9B",
+      "privateKey": "0x7b5748ccca7330ffde983c4d290564e670efa7732dddfc7e1e7b6a01cca24212",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":413,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca8900825208947e5907d21ffcd56b1f67b21bd0cad3517762ed9b866d23ad5f800080c001a055209eac4dfaebb93f6a1d3ddd9470c70247fa30d9be72afbbf6f59064d8a6bea009748ab351532414c8d3ac154fc46e72503f0acad425c14ca5872a8e7a580f18\\\"],\\\"id\\\":413,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 7,
+      "address": "0xc83fb714aa17b5F85e5451FcA0EE9684270e8c25",
+      "privateKey": "0xd6ec217406cf4c8e3d3d1b77961f4cf2d2ed931f9b0a13fee99dc45f019492a8",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":420,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb34e082520894c83fb714aa17b5f85e5451fca0ee9684270e8c25866d23ad5f800080c001a04df308d64c55bd4b187472c8f443ef90ee783226b2ddb75fa0d541b7d7bb8f69a014b292bdd55e39230329da75954261086dce0c5b8eefb783e30b00671e0bfcb7\\\"],\\\"id\\\":420,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 8,
+      "address": "0x9A8a70C6B03af388035B7115842F508682622cEC",
+      "privateKey": "0x1a8ae13db44908c9beb5e7bb878d9e3be0c0d2db20361641c4384b52fde0305e",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":429,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb4480825208949a8a70c6b03af388035b7115842f508682622cec866d23ad5f800080c080a0f89d72fbc20abdca610c159e0b7a8dbce0a02b8b6a13d2a0fe5390fab011377fa0237e6282e0e91101ccdf378b3e1e234fc25191b4850fabfbd0eec9a05c76eeea\\\"],\\\"id\\\":429,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 9,
+      "address": "0x4a91Ec77f5FDDBb19c1bd4B12B4046010c57f4E4",
+      "privateKey": "0xf0455ff0e452441fe1c609f69c2c7aee9d590b4acec4bb0e0841bc3f3b9724d5",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":436,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcaf660825208944a91ec77f5fddbb19c1bd4b12b4046010c57f4e4866d23ad5f800080c080a05f53d7d8a4d5910750f9d3908c5c46bf101bd847052e45a0280c1767be881d4ba029ebc344ab2f0e1b6525c3d200215adc59f8c5cbac1ebc07e86b21d4af1b8476\\\"],\\\"id\\\":436,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 10,
+      "address": "0x15923EeAae51D58f1DF859a2a8C80cBeb64ccdb2",
+      "privateKey": "0x58d4a0e4dfa7ff572632191a3f12329e1e5947e73a116aba16409c49e54e3f05",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":443,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb73608252089415923eeaae51d58f1df859a2a8c80cbeb64ccdb2866d23ad5f800080c080a09f8d5ee6339554f53d7167d979803eba54d6d7024914864c7f12e1086f7da703a023509d8cd0c2335a3512db4d5619bc6bd07780362d179416ec8d80d9f0333341\\\"],\\\"id\\\":443,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 11,
+      "address": "0xc4F00050bbfaA658C8096758B46cC9c1E5F49dA2",
+      "privateKey": "0x2643c8aaf3aed159da674d39d4d957dea2b35b43a0153e6b9d524518be599c5f",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":453,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb736082520894c4f00050bbfaa658c8096758b46cc9c1e5f49da2866d23ad5f800080c001a04a85e6c16d5330e8ee2c73100bdc4c56aabedfdd61460a3f61b003e94e90b767a044811ffb62bbd6d28840ccc905429e03915f65995451fb9780f6bba7acfcb6ac\\\"],\\\"id\\\":453,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 12,
+      "address": "0x8cbF04EFe0Db41AfBB375AB51f1f676ee5885A31",
+      "privateKey": "0x9d962cdc803681cde9089fd403abe5c08a9ea35ff22a40f5f4b774dcadeab3eb",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":460,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845be227e0825208948cbf04efe0db41afbb375ab51f1f676ee5885a31866d23ad5f800080c080a0af6c67030fc25d9ba2ccd9a9574f93397da505ce5af8999d43abecb8a0a51885a05a60ed6fb7f29316aa5c5664551515c4830ff364cda3120afdae35517d6aadbd\\\"],\\\"id\\\":460,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 13,
+      "address": "0x3AB2c09555AA85BaBAeE242cB42eB7716Be983cf",
+      "privateKey": "0x7eb194d7083edf802a83276eb5a124f8af4f4571990eb547c4f4103322933d5e",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":469,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb2540825208943ab2c09555aa85babaee242cb42eb7716be983cf866d23ad5f800080c080a0710ab29d86476b0e31bb286c49be9e04237a50c647fc866d3627dc22fb7b3632a00a737676dffc3c09fca0b9fad16279386bc03441d84cd451ee39fa4f5a3972ca\\\"],\\\"id\\\":469,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 14,
+      "address": "0x014eFf62728A8d85e14aA9ae0317C918CFEe956e",
+      "privateKey": "0x6b25674fb541fd58716b0a8aa9088779a044ad86022227f1e90a2bb0621e04d7",
+      "type": "eligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":476,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb060082520894014eff62728a8d85e14aa9ae0317c918cfee956e866d23ad5f800080c001a02f1eaf44248347a662500e452eef21a255f03c5c38115bf2226e9c6047f2bae8a06c96746a5574710fdfc5a6482497a4beef00940fbdceb85f6c072aa09cb7e272\\\"],\\\"id\\\":476,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    }
+  ],
+  "ineligibleVoters": [
+    {
+      "index": 0,
+      "address": "0x4a60564F4dcdB5d66eCc8d8855C1Faa21b83AcE7",
+      "privateKey": "0x534a3d174f0d181d9dd18b7535e503d523d7b87e8f86bc722c680c07ed314b99",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0xa94c64c20c34fb799fc6908a0201883d950ad0967879f4ba9e5f22fa50306e8d",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":483,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca8900825208944a60564f4dcdb5d66ecc8d8855c1faa21b83ace7866d23ad5f800080c001a0f1673faa3711c8a0c6e6201f3833ffe305ce20d6ca6130aadec3d5830d9a7cd0a02088ba78042d7971ed04dd1a012fa2f0573a581b233c9eede7256a0fb1309fc3\\\"],\\\"id\\\":483,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0xB4Cb02fAE49a72Bd303E733B78Fe4f76D39e76af",
+      "privateKey": "0x4e896b959d50b9cf1e5bddcb4354bc454cd5554d1378e7ad95db1d2f9145e9d8",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0xc5c48ee2fa9262537b192b1bdee2df0bc7f30ba2c1baea0bdddf8369937b9028",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":493,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca98a082520894b4cb02fae49a72bd303e733b78fe4f76d39e76af866d23ad5f800080c080a0a7d51600f98f0e3cd37df4d1e0d9529d006ce516e4034f830492ea0aeb53bbe5a04ca58b0d22de4ba6283172180e02278d6a82e6c58818c7be65d13e1ebf2f58e0\\\"],\\\"id\\\":493,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0x460A6Cb78f0b23De781f3789202406b8A7b59b2D",
+      "privateKey": "0x0ea3493b02fbcd61ac93d36820864c49a16f0fd126d47d0a2d3b846d9c2a959a",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0x0fb207191426479cb8628ef0c84c2c9d33d51abc409978f0379b654a208ed8f9",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":500,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcae6c082520894460a6cb78f0b23de781f3789202406b8a7b59b2d866d23ad5f800080c080a0734416e99227acc5cba85adb4e1c90ecc2e1c7c008ef268fb92dbdbae465da85a03ca2322bbac1ea6606dfbae905001e544b7c0d0bb36c41499f7a9905665b6e25\\\"],\\\"id\\\":500,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 3,
+      "address": "0x04151e89875Dcb775049C6Ef21795fFFf514B6B4",
+      "privateKey": "0xf1349bf0baa37c65bb69e7241bd8d63323c575cb707dbcdc6e0bd40f0109a612",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0x2fd8799d588952af2c800a14c4163f3bd70cdfb5f8a54c3bbdeb4d265f053d37",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":507,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca89008252089404151e89875dcb775049c6ef21795ffff514b6b4866d23ad5f800080c001a0013afc5e766b3fe5e110f7a9ac405bbe04231a69c4d513398f4b2c3d65894c85a04a9bb4fb5bfe6727844625c3e5b9298f2100eff82bd8575a3d03eb7e096c803c\\\"],\\\"id\\\":507,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 4,
+      "address": "0x7B2CaF2F911D2D9859c0f138bdc7602ea6cF4F4D",
+      "privateKey": "0xb3897700c6404f668f8ac08f09e9defc806b53b26f421f4c61b560a3b96bb8fd",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0x5f80971aff53d83ca4ebc3e44e07f9ff9a537b1be5db3c8d91c592fa28e6a0e0",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":516,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bd304e0825208947b2caf2f911d2d9859c0f138bdc7602ea6cf4f4d866d23ad5f800080c080a0f54670f0fdfebfa88877bc117d0cbaa8a01390d04bd8a8377192d7c2da3f8391a0448235eb78b5c7de5a7291c1c95083219172f088d4c3f877b77f1a2feeb4f4c9\\\"],\\\"id\\\":516,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 0,
+      "address": "0xB66C7663025468C6bB7EB775cFF87524848E936A",
+      "privateKey": "0x46091cba551b6f2217218c18178f2c3ecb906624ca18ef4d5a73c154ac46cab4",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0xa3b2660c687c5be6afd6cf11594cd61f8c9fcd17d1ff1e1461d31a41769ed8c2",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":526,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcefda082520894b66c7663025468c6bb7eb775cff87524848e936a866d23ad5f800080c080a003bce0149d1a878f78e51541cf8c1074ba927419cfcd18ec992891fbdfd5261ea02ca38839499f1fcea7b011e7fab77604585b579defe82173a98afb8bdd4d9409\\\"],\\\"id\\\":526,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x8808f4FD7D85FA506b5c1FaCa499f5eb35560Ad1",
+      "privateKey": "0x0c7070d017e0e33b2989b6d5ee3bb10303f31fc2a68be02cb3e4f31b84abb7eb",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0x6d6c6a1dce2405b16b1a5533bbd49d033489f50f39c07681c46425c32d2f5de1",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":533,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcbd120825208948808f4fd7d85fa506b5c1faca499f5eb35560ad1866d23ad5f800080c001a050a8c14e0ee651583f6975bd422c6689b825d1446b60daa407fe2fc893eccb0aa06e5b5ed3323808296d5a510239860dd7a16fb6495ca4250ea527449d37a25fbc\\\"],\\\"id\\\":533,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0x8ca47cb38e74CD08Eb8fdd34129098C4076124C1",
+      "privateKey": "0x81cf72f9d58003c6a6c6201122a07911bb656c3bb6315ff7f9a61f073996f1f1",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0x18fb09959208552c845c60a2c01ae3605a4f444aa4364f5903c8e193f798b431",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":540,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcc7d00825208948ca47cb38e74cd08eb8fdd34129098c4076124c1866d23ad5f800080c080a03e79c8262fbc42c8578f0d820a07a830a98f4fc44bbcb4c23d6a3bc86cf1cd72a039ed463a1597f72c91c826a9577a3d4f7b6d039362df090426b4a5a852e48aef\\\"],\\\"id\\\":540,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 3,
+      "address": "0xc60fD7106a7554573932aC8c55d73ae5C421029B",
+      "privateKey": "0x2af8e2c44172752a63562c8b90ce55c0654621e7b5b4491690590533b35c2d1a",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0xd531236bafe1f1f51634a1df2204fb516c7ef4039f3eeb8c937b1f10901a31bb",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":549,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca98a082520894c60fd7106a7554573932ac8c55d73ae5c421029b866d23ad5f800080c080a0cc9763075e00479a751063568ec8fc9e7fadc0a4921ce4f3aa40edea9669aaa3a03e3f2425e0c1c02092a8481eafe224509d48aabbd55633d3848229edc8c3d724\\\"],\\\"id\\\":549,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 4,
+      "address": "0x896Ae7f1379a23e31e1BEc76c6A0dc8529164447",
+      "privateKey": "0xa2b5d372cda12aaa34f3921e3f5f40fa48fc254425e4129dd67802eff5c273b8",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingTx": "0xdf5854ebee9bb2c85d5fbb449de31aa7263614fbe02c4dcde229bc715d21a08a",
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":558,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca890082520894896ae7f1379a23e31e1bec76c6a0dc8529164447866d23ad5f800080c001a0a25d8ec0d857ed34165d678e6564aca9c931203d7e9fd6957cb2a80020445485a05e0a379fda6503e9d68fd32729a6af34bacb3891c7afc49572070eace4a2d2cc\\\"],\\\"id\\\":558,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 0,
+      "address": "0x75A1d63c1Facd61230184bAb1B09896e2114e421",
+      "privateKey": "0x4bd836255dba0d7758c0e9fa5d8c25f68511740e45319a05bc0d69eead7df118",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":565,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcb25408252089475a1d63c1facd61230184bab1b09896e2114e421866d23ad5f800080c001a02f754c920e3a29bf7477131c6ecd8c718286340e86f64f7f4130cb00de0e5df5a031b87b205da1b295af391b281515796cbdd985a0208676ed7fc4a72120490676\\\"],\\\"id\\\":565,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 1,
+      "address": "0x636154a77560298dD89281dCE2ffa9F36B056Ed3",
+      "privateKey": "0xb8d4edaa933294b5f47235b79c54a8059b94e6773cebd1b6aa5f7bcad1326b92",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":572,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bcab7e082520894636154a77560298dd89281dce2ffa9f36b056ed3866d23ad5f800080c001a0d4ce70184df4661ac19ca9b402abfe2339f6b526c929aa542bb382bedaf75931a0345f7279f19d27495f3003bbaf585ab5f80c3031c3e3e088917c1ed65a5ae6b0\\\"],\\\"id\\\":572,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 2,
+      "address": "0xcADd7299576F49D6Cb0C18CF75b37Dde7Fac0a8d",
+      "privateKey": "0xf4b6eb477b77ba04d65dd6806797608272b215a4655ca9afa85a647a30d6f6ac",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":581,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bd17e4082520894cadd7299576f49d6cb0c18cf75b37dde7fac0a8d866d23ad5f800080c001a09257e5610b8afba5b03c8f8b56e285b9715395d94592cd49db9f11dd4d31e94ca06cbe9a0b661ea76a1bab28d32db05b535fa17ff2a99b36032060bb8f493dc886\\\"],\\\"id\\\":581,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 3,
+      "address": "0x45f56FBdA6F19b1D400Ed9C3fA9f262AFF948490",
+      "privateKey": "0xd97ad80022ebbe6ba84454328ad622691800cd57f3b0e18900f398d0030cd82e",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":590,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca89008252089445f56fbda6f19b1d400ed9c3fa9f262aff948490866d23ad5f800080c001a013daa3b5317d5defd83cc7ff1f84ac9472ec3a2d2415e6c78cf523cfece83f92a0067a56dc06c125a1edd91517cacb4b2fb4cb754dc5cf6989737c6431d9fe8144\\\"],\\\"id\\\":590,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    },
+    {
+      "index": 4,
+      "address": "0x8c38856b76c3455f710c1BA943df4879da45a758",
+      "privateKey": "0x36fb396b0efde4d540b5de85a690c478e57eec42d6291dfe51c6e245351ef11d",
+      "type": "ineligible_voter",
+      "funded": false,
+      "fundingError": "processing response error (body=\"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":597,\\\"error\\\":{\\\"code\\\":-32000,\\\"message\\\":\\\"intrinsic gas too low\\\"}}\\n\", error={\"code\":-32000}, requestBody=\"{\\\"method\\\":\\\"eth_sendRawTransaction\\\",\\\"params\\\":[\\\"0x02f87383066eee628459682f00845bca8900825208948c38856b76c3455f710c1ba943df4879da45a758866d23ad5f800080c001a0d37da4ba801f8abb7d91ffe6c6039f2b23ebb24f7460abe8c08e252f729cdcf2a06ade0c0f042c202ebdd28995e5739ccc8b9c4f8ae1285b2fb9f3fa68dc95e303\\\"],\\\"id\\\":597,\\\"jsonrpc\\\":\\\"2.0\\\"}\", requestMethod=\"POST\", url=\"https://sepolia-rollup.arbitrum.io/rpc\", code=SERVER_ERROR, version=web/5.7.1)"
+    }
+  ]
+}

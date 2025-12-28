@@ -31,21 +31,21 @@ const Sidebar = ({ collapsed: externalCollapsed, onToggle }) => {
   };
 
   const menuItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/profile', icon: User, label: 'User Profile' },
-    { path: '/elections', icon: Vote, label: 'Elections' },
-    { path: '/tables', icon: Table, label: 'Table List' },
-    { path: '/results', icon: BarChart3, label: 'Results' },
-   // { path: '/create-election', icon: PlusCircle, label: 'Create Election' },
     { path: '/legacy-create-election', icon: PlusCircle, label: 'Legacy Create Election' },
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/elections', icon: Vote, label: 'Elections' },
+    { path: '/results', icon: BarChart3, label: 'Results' },
+    { path: '/tables', icon: Table, label: 'Table List' },
+    { path: '/profile', icon: User, label: 'User Profile' },
     { path: '/typography', icon: Type, label: 'Typography' }
-  ];
+   // { path: '/create-election', icon: PlusCircle, label: 'Create Election' },
+    ];
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       {/* Logo Section */}
       <div className="sidebar-logo">
-        <div className="logo-icon">🗳️</div>
+        <div className="logo-icon">α</div>
         {!collapsed && <span className="logo-text">BlockBallot</span>}
       </div>
 

@@ -7,7 +7,6 @@ import {
 import votingService from '../services/votingService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ResultsToggle from '../components/common/ResultsToggle';
-import '../styles/ResultsPage.css';
 
 const OnChainResultsPage = () => {
   const { electionId } = useParams();
