@@ -52,7 +52,7 @@ const NETWORKS = {
   'sei-testnet': {
     name: 'SEI Testnet',
     chainId: 1328,
-    rpcUrl: process.env.SEI_TESTNET_RPC || 'https://evm-rpc-testnet.sei-apis.com',
+    rpcUrl: process.env.SEI_TESTNET_RPC || 'https://evm-rpc-arctic-1.sei-apis.com',
     explorer: 'https://seitrace.com',
     currency: {
       name: 'SEI',
@@ -61,7 +61,13 @@ const NETWORKS = {
     },
     faucet: 'https://atlantic-2.app.sei.io/faucet',
     gasPrice: '0.01', // gwei
-    confirmations: 1
+    confirmations: 1,
+    // Alternative RPC endpoints
+    alternativeRPCs: [
+      'https://evm-rpc-testnet.sei-apis.com',
+      'https://evm-rpc-arctic-1.sei-apis.com',
+      'https://sei-testnet-rpc.polkachu.com'
+    ]
   }
 };
 

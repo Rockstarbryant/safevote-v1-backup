@@ -1,0 +1,156 @@
+# ============================================
+# SafeVote Bot Testing - Environment Configuration
+# ============================================
+
+# Current Network (change to switch networks)
+# Options: arbitrum-sepolia, base-sepolia, eth-sepolia, sei-testnet
+NETWORK=sei-testnet
+
+# ============================================
+# RPC ENDPOINTS
+# ============================================
+
+# Arbitrum Sepolia
+ARBITRUM_SEPOLIA_RPC=https://sepolia-rollup.arbitrum.io/rpc
+ARBITRUM_SEPOLIA_CHAIN_ID=421614
+
+# Base Sepolia
+BASE_SEPOLIA_RPC=https://sepolia.base.org
+BASE_SEPOLIA_CHAIN_ID=84532
+
+# Ethereum Sepolia
+ETH_SEPOLIA_RPC=https://rpc.sepolia.org
+ETH_SEPOLIA_CHAIN_ID=11155111
+
+# SEI Testnet
+SEI_TESTNET_RPC=https://sei-testnet.g.alchemy.com/v2/Q2yshQ_-U-fUSkWeuebk_R18kGpxebkN
+SEI_TESTNET_CHAIN_ID=1328
+
+# ============================================
+# CONTRACT & BACKEND SERVICES
+# ============================================
+
+# SafeVote Contract (same across all networks)
+CONTRACT_ADDRESS=0x432a27B20AB53Db959c30f83177D526C95aFCBa3
+
+# Backend APIs
+BACKEND_API=https://blockballot-results-server.onrender.com
+KEYGEN_API=https://blockballot-node-services.onrender.com
+
+# Database (optional - for direct queries)
+DATABASE_URL=postgresql://postgres.ifxskfgyvlbxtovayzny:Karate4-Species7-Prison2-Dramatize9-Launder2@aws-1-eu-west-3.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+# ============================================
+# FUNDING WALLET
+# ============================================
+
+# CRITICAL: Use a test wallet with testnet funds ONLY
+# This wallet will fund all bot wallets
+# Required balance: ~10-20 testnet ETH for full test
+FUNDING_PRIVATE_KEY=97fbbfc70b5efb6f09dd90890549700eaa23925a0510b5b36ac28efe0724a40b
+#your_private_key_here_without_0x_prefix
+
+# ============================================
+# BOT CONFIGURATION
+# ============================================
+
+# Number of election creator bots (default: 50, max recommended: 500)
+ELECTION_BOTS=1
+
+# Number of eligible voter bots (default: 750, max recommended: 15000)
+ELIGIBLE_VOTER_BOTS=500
+
+# Number of ineligible voter bots for security testing (default: 250)
+INELIGIBLE_VOTER_BOTS=3
+
+# Percentage of voter bots that should be eligible (0.75 = 75%)
+ELIGIBLE_VOTER_PERCENTAGE=0.99
+
+# ============================================
+# TIMING CONFIGURATION (in milliseconds)
+# ============================================
+
+# Delay between major operations (default: 60000 = 1 minute)
+PROCESS_DELAY=60000
+
+# Retry delay range for failed votes
+RETRY_DELAY_MIN=300000    # 5 minutes
+RETRY_DELAY_MAX=420000    # 7 minutes
+
+# Election duration range (in seconds)
+ELECTION_DURATION_MIN=172800   # 2 days
+ELECTION_DURATION_MAX=259200   # 3 days
+
+# Delay between API requests (milliseconds)
+REQUEST_DELAY=50000       # 2 seconds
+
+# Transaction confirmation timeout (milliseconds)
+TX_TIMEOUT=320000         # 2 minutes
+
+# ============================================
+# RATE LIMITING & PERFORMANCE
+# ============================================
+
+# Maximum concurrent operations (adjust based on network)
+MAX_CONCURRENT_OPERATIONS=10
+
+# Maximum retries for failed operations
+MAX_RETRIES=5
+
+# Batch size for bulk operations
+BATCH_SIZE=10
+
+# Funding Configuration (for 500+ wallets)
+
+# Batch funding settings
+FUNDING_BATCH_SIZE=25         # Fund 10 wallets at a time
+FUNDING_BATCH_DELAY=5000       # Wait 5 seconds between batches
+
+
+# ============================================
+# LOGGING & MONITORING
+# ============================================
+
+# Log level: error, warn, info, debug
+LOG_LEVEL=info
+
+# Enable detailed transaction logs
+VERBOSE_LOGGING=false
+
+# Enable monitoring dashboard
+ENABLE_MONITOR=true
+
+# Save detailed reports
+SAVE_REPORTS=true
+
+# ============================================
+# GAS CONFIGURATION
+# ============================================
+
+# Gas price multiplier (1.0 = normal, 1.5 = 50% higher)
+GAS_PRICE_MULTIPLIER=1.2
+
+# Gas limit for election creation
+ELECTION_GAS_LIMIT=800000
+
+# Gas limit for voting
+VOTE_GAS_LIMIT=500000
+
+# Amount to fund each bot wallet (in ETH)
+BOT_WALLET_FUNDING=0.1
+
+# ============================================
+# ADVANCED OPTIONS
+# ============================================
+
+# Skip wallet generation (use existing wallets)
+SKIP_WALLET_GENERATION=true
+
+# Skip funding (use already funded wallets)
+SKIP_FUNDING=true
+
+# Clean up after test completion
+AUTO_CLEANUP=false
+
+# Dry run mode (don't submit transactions)
+DRY_RUN=false

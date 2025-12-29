@@ -24,8 +24,6 @@ const ResultsPage = () => {
   const [electionStatus, setElectionStatus] = useState('active');
   const [selectedPosition, setSelectedPosition] = useState(0);
   const [historyData, setHistoryData] = useState([]);
-  
-  // 0 = disabled. You can change default if you want occasional auto-refresh.
   const [refreshInterval, setRefreshInterval] = useState(0);
 
   const BACKEND_API = process.env.REACT_APP_BACKEND_API || 'http://localhost:5000';
@@ -72,10 +70,10 @@ const ResultsPage = () => {
     }
   }, [electionId]);
 
-  // Fetch real-time results from smart contract
+  // 🔧 FIXED: Fetch real-time results from smart contract
   const fetchResults = useCallback(async (chainId) => {
     if (!chainId || !election) {
-      console.log('⏭️ Skipping results fetch: chainId or election missing');
+      console.log('⏸️ Skipping results fetch: chainId or election missing');
       return;
     }
 
@@ -83,23 +81,53 @@ const ResultsPage = () => {
       console.log(`📈 Fetching results for ${election.positions.length} positions...`);
       
       const newResults = {};
-      let totalVotes = 0;
+      const uniqueVoters = new Set();
 
       for (let posIdx = 0; posIdx < election.positions.length; posIdx++) {
         const position = election.positions[posIdx];
         
         try {
+          console.log(`  Position ${posIdx}: ${position.title}`);
           const response = await votingService.getElectionResults(chainId, posIdx);
+          
+          console.log(`  Raw response:`, response);
+          
+          // 🔧 FIX: Handle both BigNumber and regular numbers
+          let votesArray;
+          if (Array.isArray(response.votesCast)) {
+            votesArray = response.votesCast.map(v => {
+              if (typeof v === 'object' && v._isBigNumber) {
+                return v.toNumber();
+              }
+              return Number(v) || 0;
+            });
+          } else {
+            console.warn(`  ⚠️ Unexpected votesCast format:`, response.votesCast);
+            votesArray = new Array(position.candidates.length).fill(0);
+          }
+          
+          console.log(`  Votes array:`, votesArray);
           
           newResults[posIdx] = {
             title: position.title,
             candidates: position.candidates,
-            votes: response.votesCast || []
+            votes: votesArray
           };
 
-          totalVotes += response.votesCast.reduce((a, b) => a + b, 0);
+          // 🔧 FIX: Count unique voters by checking non-zero votes
+          const positionHasVotes = votesArray.some(v => v > 0);
+          if (positionHasVotes) {
+            // Each position with votes represents at least one voter
+            // We'll use the maximum vote count in any candidate as a proxy
+            const maxVotesInPosition = Math.max(...votesArray);
+            for (let i = 0; i < maxVotesInPosition; i++) {
+              uniqueVoters.add(`voter_${posIdx}_${i}`);
+            }
+          }
+          
+          console.log(`  Position votes: ${votesArray.join(', ')}`);
         } catch (posErr) {
-          console.warn(`⚠️ Error fetching position ${posIdx}:`, posErr);
+          console.error(`  ❌ Error fetching position ${posIdx}:`, posErr);
           newResults[posIdx] = {
             title: position.title,
             candidates: position.candidates,
@@ -109,25 +137,44 @@ const ResultsPage = () => {
       }
 
       setResults(newResults);
-      const avgVotes = election.positions.length > 0 ? totalVotes / election.positions.length : 0;
-      setVotedCount(avgVotes);
+      
+      // 🔧 FIX: Better voter count calculation
+      // Use the database vote count as source of truth
+      try {
+        const voteCountResponse = await fetch(
+          `${BACKEND_API}/api/elections/${electionId}/vote-count`
+        );
+        if (voteCountResponse.ok) {
+          const { count } = await voteCountResponse.json();
+          setVotedCount(count || 0);
+          console.log(`✅ Vote count from database: ${count}`);
+        } else {
+          // Fallback to unique voters from on-chain
+          setVotedCount(uniqueVoters.size);
+          console.log(`✅ Vote count from chain: ${uniqueVoters.size}`);
+        }
+      } catch (dbErr) {
+        console.warn('⚠️ Could not fetch database vote count, using chain data');
+        setVotedCount(uniqueVoters.size);
+      }
 
-      // Add to history for graph (only if auto-refresh is on)
+      // Add to history for graph
       if (refreshInterval > 0) {
         setHistoryData(prev => [...prev, {
           time: new Date().toLocaleTimeString(),
-          votes: avgVotes,
+          votes: uniqueVoters.size,
           timestamp: Date.now()
         }].slice(-50));
       }
 
-      console.log(`✅ Results fetched: ${totalVotes} total votes`);
+      console.log(`✅ Results updated successfully`);
     } catch (err) {
       console.error('❌ Error fetching results:', err);
+      console.error('Error details:', err.message, err.stack);
     }
-  }, [election, refreshInterval]);
+  }, [election, refreshInterval, BACKEND_API, electionId]);
 
-  // Time remaining countdown (minimal state updates)
+  // Time remaining countdown
   useEffect(() => {
     if (!election) return;
 
@@ -157,13 +204,13 @@ const ResultsPage = () => {
       }
     };
 
-    updateTimer(); // Immediate first update
+    updateTimer();
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
   }, [election]);
 
-  // Initial data load (only once)
+  // Initial data load
   useEffect(() => {
     const init = async () => {
       setLoading(true);
@@ -182,7 +229,7 @@ const ResultsPage = () => {
     init();
   }, [electionId, fetchElectionDetails, fetchOnChainId, fetchResults]);
 
-  // Optional long-interval auto-refresh
+  // Auto-refresh
   useEffect(() => {
     if (!onChainId || refreshInterval <= 0) return;
 
@@ -193,7 +240,7 @@ const ResultsPage = () => {
     return () => clearInterval(interval);
   }, [onChainId, fetchResults, refreshInterval]);
 
-  // Manual refresh handler
+  // Manual refresh
   const handleManualRefresh = async () => {
     if (!onChainId) return;
     setLoading(true);
@@ -247,7 +294,7 @@ const ResultsPage = () => {
   return (
     <div className="results-page">
       <div className="results-header">
-         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <ResultsToggle />
           <button className="back-btn" onClick={() => navigate('/elections')}>← Back</button>
         </div>
@@ -446,7 +493,7 @@ const ResultsPage = () => {
             )}
           </div>
 
-          {/* Live Results Line Graph - only shown when auto-refresh is enabled */}
+          {/* Live Results Line Graph */}
           {historyData.length > 1 && refreshInterval > 0 && (
             <div className="chart-card">
               <h3>Vote Trend (Live)</h3>

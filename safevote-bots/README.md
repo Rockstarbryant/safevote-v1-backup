@@ -548,3 +548,223 @@ For issues or questions:
 ---
 
 **Happy Testing! 🚀**
+
+
+# 1. Test connection
+node scripts/check-balances.js
+
+# Should show: Balance: 70.0 SEI ✅
+
+# 2. Fund wallets
+node scripts/batch-fund.js
+
+# 3. Create elections
+node src/orchestrator.js --elections-only
+
+# 4. Run voting
+node src/orchestrator.js --voting-only
+
+
+# Check results
+node scripts/check-balances.js
+
+node scripts/fund-wallets.js --generate
+
+# Basic re-vote
+node scripts/revote.js
+
+# Vote in active elections only
+node scripts/revote.js --active-only
+
+# Vote in specific election
+node scripts/revote.js --election elec-de471849-ee51-4fc7-8860-ee0a722ea8ab
+
+# Use fewer bots for testing
+node scripts/revote.js --voters 50
+
+# Include security tests
+node scripts/revote.js --security-test
+
+### Scenario 2: Vote in Active Elections Only
+
+```bash
+node scripts/revote.js --active-only
+```
+
+**Best for:** Ongoing elections (filters out ended ones)
+
+
+### Scenario 4: Small Test with Few Voters
+
+```bash
+node scripts/revote.js --voters 10 --active-only
+```
+
+**Best for:** Quick verification after code changes
+
+---
+
+## 📝 Logging & Monitoring
+
+### Watch Logs in Real-Time
+
+```bash
+# All activity
+tail -f logs/combined.log
+
+# Just voting
+tail -f logs/voting.log
+
+# Just errors
+tail -f logs/errors.log
+
+# Count successful votes
+grep "Vote confirmed" logs/voting.log | wc -l
+```
+
+---
+
+### Check Vote Count on Blockchain
+
+```bash
+# Use verify script
+node scripts/verify-onchain.js elec-abc123...
+
+# Look for "Votes Cast: X"
+```
+
+---
+
+## 🚨 Troubleshooting
+
+### Issue: "No elections available for voting"
+
+**Cause:** No elections in database or all ended
+
+**Fix:**
+```bash
+# Check database
+curl https://blockballot-results-server.onrender.com/api/elections
+
+# If empty, create elections first
+node src/orchestrator.js --elections-only
+```
+
+---
+
+### Issue: All votes failing
+
+**Cause:** Empty votes array (the issue we just fixed!)
+
+**Fix:**
+1. Apply the fixes to `eligibleVoter.js`, `orchestrator.js`
+2. Make sure elections have positions
+3. Check logs show "Positions found: X"
+
+---
+
+### Issue: "Voter not eligible"
+
+**Cause:** Voter address not in election's Merkle tree
+
+**Fix:** This is **expected** for some bots! Only 75% of bots are added as eligible voters. The other 25% should fail (that's the security test).
+
+---
+
+### Issue: "Already voted"
+
+**Cause:** Voter voted in a previous run
+
+**Fix:** This is **expected** when re-voting! Each voter can only vote once per election. If you want fresh votes, create new elections.
+
+---
+
+## 💡 Pro Tips
+
+### Tip 1: Start Small
+
+When testing fixes, start with a small test:
+```bash
+node scripts/revote.js --voters 5 --election elec-abc123...
+```
+
+Once that works, scale up!
+
+---
+
+### Tip 2: Monitor Gas Usage
+
+```bash
+# Track total gas used
+grep "Gas used:" logs/voting.log | awk '{sum+=$NF} END {print sum}'
+```
+
+---
+
+### Tip 3: Check Success Rate
+
+If success rate is < 50%, something is wrong:
+```bash
+# Count successful
+grep "Vote confirmed" logs/voting.log | wc -l
+
+# Count failed
+grep "Vote failed" logs/voting.log | wc -l
+```
+
+---
+
+### Tip 4: Verify on Arbiscan
+
+Pick a transaction hash from logs and check on:
+https://sepolia.arbiscan.io/tx/0x...
+
+Should show **success** with green checkmark!
+
+---
+
+## 🎯 Quick Decision Tree
+
+**Want to...**
+- ✅ Vote in all elections? → `node src/orchestrator.js --voting-only`
+- ✅ Vote in active elections only? → `node scripts/revote.js --active-only`
+- ✅ Vote in one election? → `node scripts/revote.js --election <uuid>`
+- ✅ Test with few bots? → `node scripts/revote.js --voters 10`
+- ✅ Test security? → `node scripts/revote.js --security-test`
+
+---
+
+## 📈 Expected Performance
+
+**Small Test** (10 voters, 1 election):
+- Duration: ~2 minutes
+- Success rate: 80-90%
+
+**Medium Test** (100 voters, 5 elections):
+- Duration: ~15 minutes
+- Success rate: 75-85%
+
+**Full Test** (750 voters, 50 elections):
+- Duration: 2-4 hours
+- Success rate: 70-80%
+
+---
+
+## ✅ After Voting
+
+Check your results:
+1. Review logs for errors
+2. Check transaction on Arbiscan
+3. Verify vote count in database
+4. Check success rate statistics
+
+Your bots are now voting! 🎉
+
+# Use the election ID from your logs
+node scripts/verify-onchain.js elec-de471849-ee51-4fc7-8860-ee0a722ea8ab
+
+# Copy debug script to your project
+   # Then run with an election ID and voter address from your logs
+   node scripts/debug-merkle.js elec-de471849-ee51-4fc7-8860-ee0a722ea8ab 0xa4c6907dc6C7f6e7728f2a94294f05EC47c4b0B4
+
+   

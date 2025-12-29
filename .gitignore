@@ -2,9 +2,9 @@ node_modules/
 .env
 cache/
 artifacts/
-deployments/
+
 coverage/
 coverage.json
 typechain-types/
-frontend/js/VotingSystemABI.js
+
 .DS_Store

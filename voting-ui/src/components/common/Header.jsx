@@ -45,10 +45,7 @@ export default function Header() {
             {/* Right Section - Wallet & Network */}
             <div className="flex items-center space-x-4">
               {/* Network Badge */}
-              <div className="glass rounded-lg px-4 py-2 flex items-center gap-3">
-                <i className="fas fa-network-wired text-purple-300"></i>
-                <span className="text-white font-medium text-sm">Arbitrum Sepolia</span>
-              </div>
+              
 
               {/* Wallet Connection */}
               {address ? (
